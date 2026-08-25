@@ -47,9 +47,10 @@ export default defineConfig({
         clientsClaim: true,
       },
       devOptions: {
-        // lets the service worker be exercised in `npm run dev`
-        enabled: true,
-        type: 'module',
+        // Off by design. A service worker in dev fights hot reload and produces
+        // spurious page reloads; offline behaviour is verified against the real
+        // Pages deploy instead, which is the only place it actually matters.
+        enabled: false,
       },
     }),
   ],

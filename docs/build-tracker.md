@@ -97,6 +97,10 @@ Newest first. Every entry dated.
   targets, `prefers-reduced-motion` respected, focus rings, and unavailable menu items that say
   *why* in words rather than relying on being greyed out.
 - Known non-blocker: GitHub warns that several official actions still target Node 20. Warning only.
+- **Reviewed in the browser pane and approved by the owner — palette included.** The segment
+  colours now in `theme.css` are therefore the reference the colour-blind palettes (v1.1) have to
+  stay recognisable against: those alternates adjust hues for distinguishability, they do not
+  redesign the look. The approved default is the thing being preserved.
 
 ### 2026-08-25 — Repository live
 - Created **[gdakota222/jnj-wheel-spinner](https://github.com/gdakota222/jnj-wheel-spinner)** —

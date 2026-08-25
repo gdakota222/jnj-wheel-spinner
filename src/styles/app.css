@@ -163,3 +163,318 @@
   color: var(--text-faint);
   font-size: var(--step--1);
 }
+
+/* ---------------------------------------------------------------- utilities */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The main path out of the title screen reads as the main path. */
+.menu__item--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.menu__item--primary .menu__note {
+  color: color-mix(in srgb, var(--accent-ink) 75%, transparent);
+}
+
+.shell__foot .status {
+  justify-content: center;
+  margin-top: 0;
+  margin-bottom: var(--gap-xs);
+}
+
+/* ------------------------------------------------------------ screen header */
+
+.screen-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.back {
+  align-self: flex-start;
+  min-height: var(--touch);
+  padding: 0 var(--gap-sm) 0 0;
+  background: none;
+  border: 0;
+  color: var(--text-dim);
+  font-size: var(--step-0);
+  cursor: pointer;
+}
+
+.screen-title {
+  font-size: var(--step-2);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------- add form */
+
+.add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+}
+
+.add__label {
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 0;
+}
+
+.add__input {
+  min-height: var(--touch);
+  padding: 0 var(--gap-sm);
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step-1);
+}
+
+.add__input::placeholder {
+  color: var(--text-faint);
+}
+
+.add__input[aria-invalid='true'] {
+  border-color: var(--seg-1);
+}
+
+.add__hint {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+
+/* Errors carry an icon and text, never colour alone. */
+.add__error {
+  display: flex;
+  gap: var(--gap-xs);
+  margin-top: var(--gap-xs);
+  padding: var(--gap-sm);
+  background: color-mix(in srgb, var(--seg-1) 18%, transparent);
+  border-left: 4px solid var(--seg-1);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+  color: var(--text);
+}
+
+.add__error::before {
+  content: '!';
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--seg-1);
+  color: #2a0a12;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.25rem;
+}
+
+.roles {
+  display: flex;
+  gap: var(--gap-xs);
+  margin: var(--gap-xs) 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.roles__option {
+  flex: 1;
+  min-height: var(--touch);
+  background: var(--surface-raised);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--step-0);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+/* Selected state uses fill AND border weight, not hue alone. */
+.roles__option[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.add__submit {
+  min-height: var(--touch);
+  margin-top: var(--gap-xs);
+  background: var(--surface-raised);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step-1);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------ size guidance */
+
+.advice {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--text-faint);
+  border-radius: var(--radius);
+  padding: var(--gap);
+}
+
+.advice[data-level='good'] {
+  border-left-color: var(--seg-4);
+}
+
+.advice[data-level='long'],
+.advice[data-level='small'] {
+  border-left-color: var(--seg-3);
+}
+
+.advice[data-level='over'],
+.advice[data-level='unpairable'] {
+  border-left-color: var(--seg-1);
+}
+
+.advice__headline {
+  font-size: var(--step-1);
+  font-weight: 700;
+}
+
+.advice__detail {
+  margin-top: var(--gap-xs);
+  color: var(--text-dim);
+  font-size: var(--step--1);
+}
+
+.advice__note {
+  margin-top: var(--gap-sm);
+  color: var(--text-faint);
+  font-size: var(--step--1);
+}
+
+.counts {
+  display: flex;
+  gap: var(--gap-sm);
+  margin: var(--gap) 0 0;
+}
+
+.counts__item {
+  flex: 1;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: var(--gap-sm);
+  text-align: center;
+}
+
+.counts__item dt {
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+
+.counts__item dd {
+  margin: 2px 0 0;
+  font-size: var(--step-2);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------- dancer list */
+
+.list__title {
+  font-size: var(--step-1);
+  font-weight: 700;
+  margin-bottom: var(--gap-sm);
+}
+
+.list__empty {
+  color: var(--text-faint);
+  font-size: var(--step--1);
+}
+
+.list__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dancer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--gap-sm) var(--gap);
+}
+
+.dancer__name {
+  font-size: var(--step-1);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.dancer__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+.dancer__role select {
+  min-height: var(--touch);
+  padding: 0 var(--gap-xs);
+  background: var(--surface-raised);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step--1);
+}
+
+.dancer__remove {
+  min-height: var(--touch);
+  padding-inline: var(--gap-sm);
+  background: none;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: var(--step--1);
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------- next */
+
+.next__button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  min-height: var(--touch);
+  padding: var(--gap-sm) var(--gap);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
