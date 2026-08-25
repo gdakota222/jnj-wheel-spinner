@@ -76,6 +76,16 @@ code drop — something that can be opened on the tablet and looked at.
 
 Newest first. Every entry dated.
 
+### 2026-08-25 — Repository live
+- Created **[gdakota222/jnj-wheel-spinner](https://github.com/gdakota222/jnj-wheel-spinner)** —
+  public, per D-008. Docs committed and pushed as the first commit.
+- Deploy target now fixed: **https://gdakota222.github.io/jnj-wheel-spinner/**, which sets the
+  Vite `base` to `/jnj-wheel-spinner/`. Getting that wrong is the classic cause of a Pages deploy
+  that serves a blank page with 404s on every asset, so it is set at scaffold time, not after.
+- Commit identity uses GitHub's `noreply` address rather than a personal one. See D-018.
+- `.claude/settings.local.json` untracked and gitignored — machine-local, and it embeds local
+  user paths that don't belong in a public repo.
+
 ### 2026-08-25 — Toolchain ready
 - **Node.js v24.19.0** installed (npm 11.17.0, npx 11.17.0). Node 24 is the current LTS line;
   Vite and React 19 are supported on it.
@@ -248,6 +258,14 @@ suspense.
 
 ---
 
+
+### D-018 — Commit as a GitHub noreply address, not a personal email
+**Decision:** git identity for this repo is `gdakota222` /
+`320862839+gdakota222@users.noreply.github.com`, set per-repo rather than globally.
+**Reasoning:** the repo is public, and every commit permanently embeds the author's email in
+history where it is trivially scraped. GitHub's noreply address still links commits to the
+account without exposing a real inbox. Set locally rather than globally so it does not silently
+apply to unrelated projects on this machine.
 ## Known issues and in-flight notes
 
 *Nothing yet — the build hasn't started.*
