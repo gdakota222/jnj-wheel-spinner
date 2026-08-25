@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.1.0 — deployed and live
-**Current phase:** 0.2.0 — Roster
+**Current version:** 0.2.0 — deployed and live
+**Current phase:** 0.3.0 — The wheel
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -29,9 +29,9 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 1 of 9 |
+| **Versions shipped** | 2 of 9 |
 | **Blocked on** | Nothing |
-| **Next up** | 0.2.0 — Roster |
+| **Next up** | 0.3.0 — The wheel |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
 | **Real-event target** | Not yet scheduled |
@@ -46,7 +46,7 @@ code drop — something that can be opened on the tablet and looked at.
 | Version | Name | Contains | Status |
 |---|---|---|---|
 | **0.1.0** | Scaffold | Vite + React + TS project, PWA manifest and service worker, portrait layout, theme CSS variables, deployed to GitHub Pages, installs to home screen | ✅ Shipped 2026-08-25 |
-| **0.2.0** | Roster | Add/remove dancers, Leader/Follower/Switch, unique-name validation, event-size guidance, roster saved to device | ☐ Not started |
+| **0.2.0** | Roster | Add/remove dancers, Leader/Follower/Switch, unique-name validation, event-size guidance, roster saved to device | ✅ Shipped 2026-08-25 |
 | **0.3.0** | The wheel | SVG wheel, spin animation, lands on a name, pool label (*Now spinning: Followers*), re-spin | ☐ Not started |
 | **0.4.0** | The loop | Two spins → couple reveal → dance hold → `Next Couple`, pools draining, short-pool recycling, session log, session complete | ☐ Not started |
 | **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ☐ Not started |
@@ -77,6 +77,25 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-25 — 0.2.0 shipped: the roster
+- Title screen now leads somewhere: **Start a Session** opens the roster and reports how many
+  dancers are already saved.
+- **Name rules enforced at entry, with the reason shown.** A single first name is rejected
+  ("Sarah" cannot be told apart on a wheel); duplicates are caught case- and whitespace-insensitively;
+  numbered disambiguation ("Sarah M 2") is offered in the error text rather than left for the
+  operator to invent.
+- **Switch balancing is projected live** while the roster is built, so the operator sees the shape
+  of the event before it starts — 3 leaders + 3 followers + 2 switches reads as "4 couples", with a
+  note that it dances as 4 and 4.
+- **Event-size guidance is stated, not enforced.** Below three couples, past five, past ten — each
+  band gets a plain-language reason rather than a blocked button. The app teaches the format.
+- Roster persists to `localStorage` under the versioned key `jnj:v1:roster`, saved on every change.
+- **24 unit tests** cover the switch balancing and the validation rules (D-007) — including that
+  no dancer is ever lost or invented while balancing, and that balancing is deterministic.
+- Fixed during review: a duplicate-name error echoed the operator's typing ("sarah m") instead of
+  the name already on the roster ("Sarah M"). Regression test added.
+- Two decisions taken while building: D-020 (name length cap) and D-021 (no service worker in dev).
 
 ### 2026-08-25 — 0.1.0 shipped: scaffold, PWA shell, deploy pipeline
 **Live: https://gdakota222.github.io/jnj-wheel-spinner/**
@@ -301,6 +320,22 @@ because they read the same colours; regenerating for a new size or a sloth-theme
 is a one-line change rather than a round trip through an image editor; and a reviewer can read the
 artwork as source instead of trusting an opaque PNG. Adding `sharp` or similar would have pulled a
 large native dependency into a project whose only image need is one simple geometric mark.
+
+### D-020 — Cap dancer names at 28 characters
+**Decision:** names longer than 28 characters are rejected at entry, with the reason given as
+fitting on the wheel.
+**Reasoning:** the wheel has to render every name legibly at up to 20 segments, and an
+unbounded name silently breaks that. Rejecting at entry keeps the failure in setup, where it
+costs a retype, rather than on the wheel in front of a room. The number is a judgement call, not
+a measured limit — revisit once the real wheel exists in 0.3.0 and the actual text budget is known.
+
+### D-021 — No service worker in development
+**Decision:** `devOptions.enabled: false` in the PWA plugin config.
+**Reasoning:** a service worker in dev fights hot reload and produced spurious page reloads that
+interrupted testing. Offline behaviour only matters on the deployed app, and it is verified
+there against the real Pages deploy. Consequence: the offline status line is rendered only in
+production builds, since in dev it would sit on "caching…" forever — a screen stating something
+untrue, which principle 1 forbids.
 
 ## Known issues and in-flight notes
 
