@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** none — pre-scaffold
-**Current phase:** Setup complete — ready to scaffold 0.1.0
+**Current version:** 0.1.0 — deployed and live
+**Current phase:** 0.2.0 — Roster
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -29,9 +29,11 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 0 of 9 |
+| **Versions shipped** | 1 of 9 |
 | **Blocked on** | Nothing |
-| **Next up** | 0.1.0 — scaffold and deployment pipeline |
+| **Next up** | 0.2.0 — Roster |
+| **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
+| **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
 | **Real-event target** | Not yet scheduled |
 
 ---
@@ -43,7 +45,7 @@ code drop — something that can be opened on the tablet and looked at.
 
 | Version | Name | Contains | Status |
 |---|---|---|---|
-| **0.1.0** | Scaffold | Vite + React + TS project, PWA manifest and service worker, portrait layout, theme CSS variables, deployed to GitHub Pages, installs to home screen | ☐ Not started |
+| **0.1.0** | Scaffold | Vite + React + TS project, PWA manifest and service worker, portrait layout, theme CSS variables, deployed to GitHub Pages, installs to home screen | ✅ Shipped 2026-08-25 |
 | **0.2.0** | Roster | Add/remove dancers, Leader/Follower/Switch, unique-name validation, event-size guidance, roster saved to device | ☐ Not started |
 | **0.3.0** | The wheel | SVG wheel, spin animation, lands on a name, pool label (*Now spinning: Followers*), re-spin | ☐ Not started |
 | **0.4.0** | The loop | Two spins → couple reveal → dance hold → `Next Couple`, pools draining, short-pool recycling, session log, session complete | ☐ Not started |
@@ -75,6 +77,26 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-25 — 0.1.0 shipped: scaffold, PWA shell, deploy pipeline
+**Live: https://gdakota222.github.io/jnj-wheel-spinner/**
+
+- Vite 8 + React 19 + TypeScript 6, `vite-plugin-pwa` 1.3 (Workbox).
+- **The riskiest unknown is now proven** (D-012): the app builds, deploys to Pages over HTTPS,
+  registers a service worker, precaches 12 files, and reports "Ready to run offline."
+- Base path `/jnj-wheel-spinner/` verified against the real deploy, not just locally — assets,
+  manifest, and service-worker scope all resolve. This is the failure mode that produces a blank
+  white page on Pages, so it was checked live before moving on.
+- Theme tokens live in `src/styles/theme.css` as CSS custom properties. A static SVG wheel
+  (`WheelMark.tsx`) colours its segments from those variables, proving the mechanism D-004 depends
+  on before the real wheel is built in 0.3.0.
+- Icons are **generated from code**, not committed as binaries. See D-019.
+- GitHub Actions deploys on every push to `main`; the `pages` concurrency group cancels superseded
+  runs, which is why the first of two rapid pushes shows as cancelled.
+- Accessibility baseline honoured from the first screen, per principle 4: 56px minimum touch
+  targets, `prefers-reduced-motion` respected, focus rings, and unavailable menu items that say
+  *why* in words rather than relying on being greyed out.
+- Known non-blocker: GitHub warns that several official actions still target Node 20. Warning only.
 
 ### 2026-08-25 — Repository live
 - Created **[gdakota222/jnj-wheel-spinner](https://github.com/gdakota222/jnj-wheel-spinner)** —
@@ -266,6 +288,16 @@ suspense.
 history where it is trivially scraped. GitHub's noreply address still links commits to the
 account without exposing a real inbox. Set locally rather than globally so it does not silently
 apply to unrelated projects on this machine.
+### D-019 — Generate PWA icons from code, not committed binaries
+**Decision:** `scripts/generate-icons.mjs` renders the icon set (192, 512, maskable 512, Apple
+touch) with a hand-rolled PNG encoder over Node's built-in `zlib`. No image library, no design
+tool, no binary blobs in review.
+**Reasoning:** three benefits at essentially no cost. Icons stay in sync with the theme palette
+because they read the same colours; regenerating for a new size or a sloth-themed variant (v1.5)
+is a one-line change rather than a round trip through an image editor; and a reviewer can read the
+artwork as source instead of trusting an opaque PNG. Adding `sharp` or similar would have pulled a
+large native dependency into a project whose only image need is one simple geometric mark.
+
 ## Known issues and in-flight notes
 
 *Nothing yet — the build hasn't started.*
