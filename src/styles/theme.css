@@ -1,0 +1,57 @@
+/*
+ * Theme tokens.
+ *
+ * Everything visual resolves through these variables. That is what makes the
+ * sloth theme (v1.5) and the colour-blind palettes (v1.1) variable swaps rather
+ * than rewrites — see D-004 in docs/build-tracker.md.
+ *
+ * Future themes attach to the <html> element:
+ *   [data-theme="sloth"]        -> alternate artwork/feel
+ *   [data-palette="deuter"] etc -> colour-blind safe wheel segments
+ */
+:root {
+  /* Surfaces */
+  --bg: #1a142c;
+  --surface: #241c3d;
+  --surface-raised: #2e2450;
+  --border: #3d3163;
+
+  /* Text — contrast checked against --bg and --surface */
+  --text: #f6f3ff;
+  --text-dim: #b6abd6;
+  --text-faint: #8a7fae;
+
+  /* Accents */
+  --accent: #ffd64a;
+  --accent-ink: #2a1f05;
+  --pointer: #ffffff;
+
+  /* Wheel segments. Order matters: neighbours must stay distinguishable. */
+  --seg-1: #ff5c7a;
+  --seg-2: #ff9e42;
+  --seg-3: #ffd64a;
+  --seg-4: #56cc84;
+  --seg-5: #48b6dc;
+  --seg-6: #7c7af0;
+  --seg-7: #c76ce2;
+  --seg-8: #ff80ab;
+
+  /* Type scale — deliberately large. Read across a room, at a glance. */
+  --step--1: clamp(0.85rem, 0.8rem + 0.25vw, 0.95rem);
+  --step-0: clamp(1rem, 0.95rem + 0.35vw, 1.15rem);
+  --step-1: clamp(1.25rem, 1.1rem + 0.7vw, 1.5rem);
+  --step-2: clamp(1.6rem, 1.35rem + 1.2vw, 2.1rem);
+  --step-3: clamp(2.1rem, 1.7rem + 2vw, 3rem);
+
+  /* Spacing */
+  --gap-xs: 0.375rem;
+  --gap-sm: 0.75rem;
+  --gap: 1.25rem;
+  --gap-lg: 2rem;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+
+  /* Minimum comfortable touch target. Never go below this. */
+  --touch: 56px;
+}

@@ -1,0 +1,165 @@
+/* Portrait shell. The app is held vertically and never rotates, so the layout
+   is a single centred column with a sane maximum width for tablets. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+  max-width: 34rem;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: calc(env(safe-area-inset-top) + var(--gap)) var(--gap)
+    calc(env(safe-area-inset-bottom) + var(--gap));
+}
+
+.shell__head {
+  text-align: center;
+}
+
+.title {
+  font-size: var(--step-3);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.title__accent {
+  color: var(--accent);
+  display: block;
+}
+
+.subtitle {
+  margin-top: var(--gap-xs);
+  color: var(--text-dim);
+  font-size: var(--step-0);
+}
+
+.mark {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--gap-xs);
+}
+
+.wheel-mark {
+  filter: drop-shadow(0 10px 24px rgb(0 0 0 / 0.45));
+  max-width: 60vw;
+  height: auto;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+}
+
+.card__title {
+  font-size: var(--step-1);
+  font-weight: 700;
+}
+
+.card__body {
+  margin-top: var(--gap-xs);
+  color: var(--text-dim);
+}
+
+.card__body strong {
+  color: var(--text);
+}
+
+/* Offline status. Colour is reinforced by the text and the shape of the dot —
+   never colour alone. */
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  margin-top: var(--gap);
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+
+.status__dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--text-faint);
+  flex: none;
+}
+
+.status[data-ready='true'] {
+  color: var(--text);
+}
+
+.status[data-ready='true'] .status__dot {
+  background: var(--seg-4);
+  box-shadow: 0 0 0 4px rgb(86 204 132 / 0.2);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.menu__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: var(--touch);
+  padding: var(--gap-sm) var(--gap);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu__item:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.menu__label {
+  font-size: var(--step-1);
+  font-weight: 650;
+}
+
+/* Unavailable items say why in words, not by being greyed out alone. */
+.menu__note {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+
+.update {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  padding: var(--gap-sm) var(--gap);
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: var(--radius-sm);
+}
+
+.update__text {
+  font-weight: 650;
+}
+
+.update__button {
+  min-height: var(--touch);
+  padding-inline: var(--gap);
+  border: 2px solid var(--accent-ink);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shell__foot {
+  margin-top: auto;
+  padding-top: var(--gap);
+  text-align: center;
+  color: var(--text-faint);
+  font-size: var(--step--1);
+}
