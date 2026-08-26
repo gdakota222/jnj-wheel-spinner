@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.4.0 — deployed and live
-**Current phase:** 0.5.0 — Prompts
+**Current version:** 0.5.0 — deployed and live
+**Current phase:** 0.6.0 — Persistence
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -29,9 +29,9 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 4 of 9 |
+| **Versions shipped** | 5 of 9 |
 | **Blocked on** | Nothing |
-| **Next up** | 0.5.0 — Prompts |
+| **Next up** | 0.6.0 — Persistence |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
 | **Real-event target** | Not yet scheduled |
@@ -49,7 +49,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.2.0** | Roster | Add/remove dancers, Leader/Follower/Switch, unique-name validation, event-size guidance, roster saved to device | ✅ Shipped 2026-08-25 |
 | **0.3.0** | The wheel | SVG wheel, spin animation, lands on a name, pool label (*Now spinning: Followers*), re-spin | ✅ Shipped 2026-08-25 |
 | **0.4.0** | The loop | Two spins → couple reveal → dance hold → `Next Couple`, pools draining, short-pool recycling, session log, session complete | ✅ Shipped 2026-08-25 |
-| **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ☐ Not started |
+| **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ✅ Shipped 2026-08-25 |
 | **0.6.0** | Persistence | Reducer serialization on every dispatch, resume after close/crash, tablet handoff verified | ☐ Not started |
 | **0.7.0** | Principles pass | Self-describing audit of every screen, label review, contrast and touch targets, no-color-alone check | ☐ Not started |
 | **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | ☐ Not started |
@@ -77,6 +77,25 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-25 — 0.5.0 shipped: prompts
+- **A 20-prompt West Coast Swing starter deck**, read-only in v1.0. Every prompt is a constraint on
+  *how* to dance rather than a demand for a specific move, so a dancer is never stuck because they
+  have not learned a pattern — it works at a social with mixed levels.
+- **Prompts on/off is asked during setup and the session will not start until it is answered**
+  (D-015). The button says why it is disabled rather than just being grey.
+- A couple is drawn, then their challenge. The dance hold shows the couple, then the challenge name
+  in accent, then the description — sized for the **dancers reading it from the floor**, which is
+  who it is actually for.
+- Prompts do not repeat within a session. Exhaustion is announced **before** the deck starts over.
+- "Draw a different challenge" is guaranteed to give a different one.
+
+Two bugs found and fixed, both the same class — see D-028:
+- **The spin was aimed at the wrong pool**, and could hang the wheel forever. Shipped in 0.4.0.
+- **The drawn prompt vanished from the wheel** the instant it landed, and the wheel reverted to a
+  dancer pool mid-dance.
+
+**96 tests.**
 
 ### 2026-08-25 — 0.4.0 shipped: the loop
 This is the version where it stops being a wheel and becomes the product.
@@ -481,6 +500,26 @@ restored.
 **Consequence:** the pool label had to become phase-aware. With the wheel showing leaders while the
 next draw is followers, a fixed "Now spinning: Followers" was a visible contradiction — it reads as
 broken to exactly the second operator the self-describing principle exists for.
+
+### D-028 — Showing and drawing are separate questions, everywhere
+**Decision:** the session exposes `wheelEntries` (what the wheel is *showing*) and `drawEntries`
+(what the next spin will *draw from*) as distinct functions, and anything choosing a winning index
+must size it against the latter. `settled` also clamps an out-of-range index instead of ignoring it.
+
+**Reasoning:** conflating the two caused the worst bug in the build so far, and it shipped in 0.4.0
+unnoticed. The wheel deliberately lags — after a name lands it keeps showing the pool it landed in
+— so with four leaders displayed and two followers to draw, the screen could pick index 3 of a
+two-person pool. The reducer found nobody at that index, returned unchanged, and **the wheel span
+forever in front of the room**. It only reproduced with uneven pools, which is why a full 4-and-2
+session had passed earlier: the bug was introduced by the wheel-lag change *after* that run.
+
+The clamp is deliberate belt-and-braces. An index outside the pool is a caller bug, but the failure
+mode it produces is the single worst thing this app can do, so the reducer now lands on the last
+name rather than stalling. Tests assert both the separation and the clamp.
+
+**The same class of bug appeared twice more** and was fixed the same way: a drawn dancer, and then
+a drawn prompt, each vanishing from the wheel the moment it landed. The rule is now consistent —
+**nothing leaves the wheel until the couple is committed.**
 
 ## Known issues and in-flight notes
 
