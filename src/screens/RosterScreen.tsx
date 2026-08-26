@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import type { SpinOrder } from '../domain/session';
 import {
   ROLE_LABELS,
   adviseOnSize,
@@ -13,12 +14,15 @@ type Props = {
   dancers: Dancer[];
   onChange: (next: Dancer[]) => void;
   onBack: () => void;
-  onStartSpinning: () => void;
+  onStartSession: (order: SpinOrder) => void;
 };
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
 
-export function RosterScreen({ dancers, onChange, onBack, onStartSpinning }: Props) {
+type OrderChoice = SpinOrder | 'random';
+
+export function RosterScreen({ dancers, onChange, onBack, onStartSession }: Props) {
+  const [orderChoice, setOrderChoice] = useState<OrderChoice>('leaders');
   const [draftName, setDraftName] = useState('');
   const [draftRole, setDraftRole] = useState<Role>('leader');
   const [error, setError] = useState<string | null>(null);
@@ -179,18 +183,53 @@ export function RosterScreen({ dancers, onChange, onBack, onStartSpinning }: Pro
         )}
       </section>
 
+      <section className="card">
+        <h2 className="card__title">Which role is drawn first?</h2>
+        <p className="card__body">
+          Set once and locked for the whole session, so the room learns the rhythm of the draw.
+        </p>
+        <fieldset className="roles roles--stacked">
+          <legend className="visually-hidden">Spin order</legend>
+          {(
+            [
+              ['leaders', 'Leaders first'],
+              ['followers', 'Followers first'],
+              ['random', 'Let the app decide'],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              className="roles__option"
+              aria-pressed={orderChoice === value}
+              onClick={() => setOrderChoice(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </fieldset>
+      </section>
+
       <div className="next">
         <button
           className="next__button"
           type="button"
-          onClick={onStartSpinning}
+          onClick={() =>
+            onStartSession(
+              orderChoice === 'random'
+                ? Math.random() < 0.5
+                  ? 'leaders'
+                  : 'followers'
+                : orderChoice,
+            )
+          }
           disabled={projection.couples === 0}
         >
-          <span className="menu__label">Start spinning</span>
+          <span className="menu__label">Start the session</span>
           <span className="menu__note">
             {projection.couples === 0
               ? 'Needs at least one leader and one follower'
-              : `Spin the wheel with ${dancers.length} dancers`}
+              : `${projection.couples} ${projection.couples === 1 ? 'couple' : 'couples'} will dance`}
           </span>
         </button>
       </div>
