@@ -2,7 +2,7 @@
 
 **Current version:** 0.6.0 — deployed and live
 **Current phase:** 0.7.0 — Principles pass
-**Last updated:** 2026-08-25
+**Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
 ---
