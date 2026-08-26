@@ -24,6 +24,9 @@ type Props = {
   session: SessionState;
   dispatch: (action: SessionAction) => void;
   dancers: Dancer[];
+  /** True when this session came back from storage rather than being started. */
+  wasResumed: boolean;
+  onDismissResumed: () => void;
   onEditDancers: (next: Dancer[]) => void;
   onLeave: () => void;
   onStartFresh: () => void;
@@ -33,6 +36,8 @@ export function SessionScreen({
   session,
   dispatch,
   dancers,
+  wasResumed,
+  onDismissResumed,
   onEditDancers,
   onLeave,
   onStartFresh,
@@ -184,6 +189,21 @@ export function SessionScreen({
       >
         Edit dancers
       </button>
+
+      {/* Say plainly that this is a restored session. Whoever is holding the
+          tablet may not be the person who put it down, and a session appearing
+          from nowhere is exactly the kind of unexplained state principle 1 bans. */}
+      {wasResumed && (
+        <div className="resumed">
+          <p className="resumed__text">
+            Picked up where you left off — {session.log.length}{' '}
+            {session.log.length === 1 ? 'couple has' : 'couples have'} danced.
+          </p>
+          <button className="resumed__dismiss" type="button" onClick={onDismissResumed}>
+            Got it
+          </button>
+        </div>
+      )}
 
       {recyclingNow && (
         <p className="recycle-note">

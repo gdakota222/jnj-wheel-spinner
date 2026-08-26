@@ -212,6 +212,30 @@ export function isForegoneConclusion(state: SessionState): boolean {
   return poolEntries(state, state.currentPool).entries.length === 1;
 }
 
+/**
+ * Normalise a session restored from storage.
+ *
+ * A session can be interrupted mid-spin — the tablet locks, the battery dies,
+ * the tab is dropped for memory. The winner was already chosen at that point,
+ * but **nobody in the room saw it land**, and a restored wheel sitting at its
+ * target rotation would never fire the transition that settles it: the app would
+ * come back showing a wheel that is stuck forever.
+ *
+ * So an interrupted spin is rolled back rather than resolved. Nothing was
+ * witnessed, so nothing happened, and the operator simply spins again. That is
+ * both the honest outcome and the one that cannot hang.
+ */
+export function resumeSession(state: SessionState): SessionState {
+  if (state.phase === 'spinning') {
+    const halfDrawn = state.drawn.leaders !== undefined || state.drawn.followers !== undefined;
+    return { ...state, phase: halfDrawn ? 'drawn' : 'ready', pendingIndex: null };
+  }
+  if (state.phase === 'prompt-spinning') {
+    return { ...state, phase: 'pair', pendingIndex: null, currentPrompt: null };
+  }
+  return state;
+}
+
 export function sessionReducer(state: SessionState, action: SessionAction): SessionState {
   switch (action.type) {
     case 'spin': {

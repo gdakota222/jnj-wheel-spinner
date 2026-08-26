@@ -7,6 +7,7 @@ import {
   isForegoneConclusion,
   promptEntries,
   promptsExhausted,
+  resumeSession,
   sessionReducer,
   wheelEntries,
   willRecycle,
@@ -466,5 +467,71 @@ describe('the pool being drawn versus the pool being shown', () => {
     s = apply(s, { type: 'spin', index: 3, rotation: 3600 }, { type: 'settled' });
     expect(s.phase).not.toBe('spinning');
     expect(s.drawn.followers).toBeDefined();
+  });
+});
+
+describe('resuming an interrupted session', () => {
+  it('rolls back a spin that was still turning when the app died', () => {
+    let s = createSession(roster(4, 4), 'leaders');
+    s = apply(s, { type: 'spin', index: 2, rotation: 1800 });
+    expect(s.phase).toBe('spinning');
+
+    const back = resumeSession(s);
+    // Nobody saw it land, so it did not happen.
+    expect(back.phase).toBe('ready');
+    expect(back.pendingIndex).toBeNull();
+    expect(back.drawn.leaders).toBeUndefined();
+  });
+
+  it('returns to the half-drawn state when the second spin was interrupted', () => {
+    let s = createSession(roster(4, 4), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 1, rotation: 3600 });
+
+    const back = resumeSession(s);
+    expect(back.phase).toBe('drawn');
+    // The leader who already landed still stands.
+    expect(back.drawn.leaders?.id).toBe('L0');
+    expect(back.currentPool).toBe('followers');
+  });
+
+  it('rolls an interrupted prompt spin back to the waiting pair', () => {
+    const deck = WCS_STARTER_DECK.prompts.slice(0, 3);
+    let s = createSession(roster(3, 3), 'leaders', true, deck);
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
+    s = apply(s, { type: 'spinPrompt', index: 1, rotation: 5400 });
+
+    const back = resumeSession(s);
+    expect(back.phase).toBe('pair');
+    expect(back.currentPrompt).toBeNull();
+    expect(back.drawn.leaders).toBeDefined();
+    expect(back.drawn.followers).toBeDefined();
+  });
+
+  it('leaves a settled session exactly as it was', () => {
+    let s = createSession(roster(3, 3), 'leaders');
+    s = drawCouple(s);
+    expect(resumeSession(s)).toEqual(s);
+  });
+
+  it('survives a round trip through JSON, as storage does it', () => {
+    // A session mid-flight with prompts on: pools part drained, a couple logged
+    // with its challenge, and the next draw half done.
+    let s = createSession(roster(4, 2), 'leaders', true, WCS_STARTER_DECK.prompts.slice(0, 4));
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
+    s = apply(s, { type: 'spinPrompt', index: 0, rotation: 5400 }, { type: 'settled' });
+    s = apply(s, { type: 'nextCouple' });
+    s = apply(s, { type: 'spin', index: 1, rotation: 7200 }, { type: 'settled' });
+    expect(s.phase).toBe('drawn');
+    expect(s.log[0].prompt).not.toBeNull();
+
+    const revived = JSON.parse(JSON.stringify(s)) as SessionState;
+    expect(revived).toEqual(s);
+
+    // And it carries on working from the revived value.
+    const next = apply(revived, { type: 'spin', index: 0, rotation: revived.rotation + 1800 });
+    expect(next.phase).toBe('spinning');
   });
 });

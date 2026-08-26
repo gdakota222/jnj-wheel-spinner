@@ -1006,3 +1006,47 @@
   font-size: var(--step--1);
   color: var(--text-faint);
 }
+
+/* ------------------------------------------------- persistence and warnings */
+
+/* Storage failure is stated, never swallowed. It sits above every screen because
+   it applies to all of them, and it does not go away on its own. */
+.storage-warning {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: var(--gap-sm) var(--gap);
+  background: var(--seg-1);
+  color: #2a0a12;
+  font-size: var(--step--1);
+  text-align: center;
+}
+
+.resumed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  padding: var(--gap-sm) var(--gap);
+  background: color-mix(in srgb, var(--seg-5) 18%, transparent);
+  border-left: 4px solid var(--seg-5);
+  border-radius: var(--radius-sm);
+}
+
+.resumed__text {
+  font-size: var(--step--1);
+  color: var(--text);
+}
+
+.resumed__dismiss {
+  flex: none;
+  min-height: 44px;
+  padding-inline: var(--gap-sm);
+  background: transparent;
+  border: 2px solid var(--seg-5);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step--1);
+  font-weight: 700;
+  cursor: pointer;
+}
