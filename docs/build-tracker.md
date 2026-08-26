@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.6.0 — deployed and live
-**Current phase:** 0.7.0 — Principles pass
+**Current version:** 0.7.0 — deployed and live
+**Current phase:** 0.8.0 — Device rehearsal
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -29,9 +29,9 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 6 of 9 |
+| **Versions shipped** | 7 of 9 |
 | **Blocked on** | Nothing |
-| **Next up** | 0.7.0 — Principles pass |
+| **Next up** | 0.8.0 — Device rehearsal |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
 | **Real-event target** | Not yet scheduled |
@@ -51,7 +51,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.4.0** | The loop | Two spins → couple reveal → dance hold → `Next Couple`, pools draining, short-pool recycling, session log, session complete | ✅ Shipped 2026-08-25 |
 | **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ✅ Shipped 2026-08-25 |
 | **0.6.0** | Persistence | Reducer serialization on every dispatch, resume after close/crash, tablet handoff verified | ✅ Shipped 2026-08-26 |
-| **0.7.0** | Principles pass | Self-describing audit of every screen, label review, contrast and touch targets, no-color-alone check | ☐ Not started |
+| **0.7.0** | Principles pass | Self-describing audit of every screen, label review, contrast and touch targets, no-color-alone check | ✅ Shipped 2026-08-26 |
 | **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | ☐ Not started |
 | **1.0.0** | **Live** | Run a real event | ☐ Not started |
 
@@ -77,6 +77,29 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-26 — 0.7.0 shipped: principles pass
+Audited **eleven screens and panels** — title, prompt bank, roster, session ready / drawn / pair /
+dance hold / complete, options panel, confirm dialog, session log — against the design principles.
+`scripts/audit-screens.js` keeps the sweep repeatable for the screens v1.1 adds.
+
+**Measured, not eyeballed.** Three findings, all fixed:
+- **`--text-faint` failed contrast** wherever secondary text sits on a raised surface — 3.86:1
+  against a 4.5 requirement. Raised to `#a89ec6` (7.1 / 6.4 / 5.6 across the three surfaces). Fixed
+  at the token, so every screen benefited at once rather than being patched one at a time.
+- **The log button read "Danced: 1"** — a bare count that never said it opened anything. Now
+  "View log · 1".
+- **The wheel called itself a wheel of "names"** even while showing challenges.
+
+**One risk the audit implied rather than found** — see D-032. The spin ended only on
+`transitionend`, an event that does not always arrive.
+
+**After fixes: zero failures** across every screen and panel — no touch target under 44px, no
+unlabelled control, no text below its contrast requirement. Wheel labels were checked separately
+(SVG fills rather than colours): worst case 4.62:1 on indigo, so every name clears AA.
+
+**What the audit could not check:** whether a screen explains itself to someone who just picked up
+the tablet. That was read, not measured, and it is the principle that matters most.
 
 ### 2026-08-26 — 0.6.0 shipped: persistence
 - **The session survives.** Saved on every state change, restored on launch, cleared only when the
@@ -589,6 +612,21 @@ persistent banner across every screen.
 **Reasoning:** the app's whole recovery story rests on storage working. Private browsing and a full
 device both fail *silently* on write, which would let the app promise a saved night it has not
 saved — the operator would find out only when it was already lost. Closes the issue logged in 0.2.0.
+
+### D-032 — A spin ends on a timer as well as on the transition
+**Decision:** the wheel settles on `transitionend` *or* a timer set to the spin duration plus a
+small margin, whichever fires first.
+
+**Reasoning:** relying on `transitionend` alone assumes the animation always runs. It does not. A
+backgrounded tab does not animate, an OS under memory pressure may drop the transition, and a
+viewer with reduced motion has it collapsed to a hundredth of a second by the app's own global
+rule. Any of those leaves the wheel turning forever — the same failure D-028 already fixed once
+from a different cause, and still the worst thing this app can do in front of a room.
+
+Two independent paths to the same outcome is the right shape here: the transition gives the spin
+its timing when everything works, and the timer guarantees the app never hangs when it does not.
+Verified by suppressing the transition entirely so the event could not fire — the spin still
+settled and the button came back live.
 
 ## Known issues and in-flight notes
 
