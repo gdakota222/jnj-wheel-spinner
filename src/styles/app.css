@@ -478,3 +478,107 @@
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+/* ------------------------------------------------------------------ wheel */
+
+.wheel {
+  display: flex;
+  justify-content: center;
+}
+
+.wheel__svg {
+  width: min(88vw, 22rem);
+  height: auto;
+  filter: drop-shadow(0 12px 28px rgb(0 0 0 / 0.45));
+}
+
+.wheel__rotor {
+  transform-origin: 0 0;
+}
+
+/* Dark ink on every segment colour — the palette is bright by design, so a
+   single dark label reads on all of them without per-segment logic. */
+.wheel__label {
+  fill: #221a3a;
+  font-weight: 700;
+  paint-order: stroke;
+}
+
+.wheel__pointer {
+  fill: var(--pointer);
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.5));
+}
+
+.pool-label {
+  text-align: center;
+  font-size: var(--step-1);
+  color: var(--text-dim);
+}
+
+.pool-label strong {
+  color: var(--text);
+}
+
+.result {
+  min-height: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+}
+
+.result__label {
+  font-size: var(--step--1);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.result__name {
+  font-size: var(--step-3);
+  font-weight: 800;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.result__idle {
+  color: var(--text-faint);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.actions__primary {
+  min-height: calc(var(--touch) + 8px);
+  background: var(--accent);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent-ink);
+  font-size: var(--step-2);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.actions__primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.actions__note {
+  text-align: center;
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+
+.next__button:not(:disabled) {
+  opacity: 1;
+  cursor: pointer;
+  border-color: var(--accent);
+}

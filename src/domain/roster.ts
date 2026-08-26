@@ -87,26 +87,45 @@ export type PoolProjection = {
   couples: number;
 };
 
+export type Pools = {
+  leaders: Dancer[];
+  followers: Dancer[];
+};
+
 /**
- * Switches fill whichever pool is short, one at a time, so the two pools end up
- * as even as they can be. Deterministic on purpose — the same roster always
- * projects the same event size.
+ * Split the roster into the two pools that will actually dance.
  *
- * This mirrors what the session will do for real at session start (0.4.0); here
- * it only projects, so the operator can see the shape of their event while
- * building the roster.
+ * Switches fill whichever pool is short at that moment, taken in roster order,
+ * so the two end up as even as they can be. Deterministic on purpose: the same
+ * roster always produces the same pools.
+ *
+ * **This is the single source of truth for switch assignment.** The roster screen
+ * calls it to project the shape of the event; the session calls it for real at
+ * session start. One function, so a projection can never disagree with what
+ * actually happens.
  */
+export function buildPools(dancers: readonly Dancer[]): Pools {
+  const leaders = dancers.filter((d) => d.role === 'leader');
+  const followers = dancers.filter((d) => d.role === 'follower');
+
+  for (const dancer of dancers) {
+    if (dancer.role !== 'switch') continue;
+    if (leaders.length <= followers.length) leaders.push(dancer);
+    else followers.push(dancer);
+  }
+
+  return { leaders, followers };
+}
+
+/** Projection of the event's shape, for guidance while the roster is built. */
 export function projectPools(dancers: readonly Dancer[]): PoolProjection {
   const leaders = dancers.filter((d) => d.role === 'leader').length;
   const followers = dancers.filter((d) => d.role === 'follower').length;
   const switches = dancers.filter((d) => d.role === 'switch').length;
 
-  let l = leaders;
-  let f = followers;
-  for (let i = 0; i < switches; i++) {
-    if (l <= f) l++;
-    else f++;
-  }
+  const pools = buildPools(dancers);
+  const l = pools.leaders.length;
+  const f = pools.followers.length;
 
   // A pool with nobody in it cannot pair with anything.
   const couples = l === 0 || f === 0 ? 0 : Math.max(l, f);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   adviseOnSize,
+  buildPools,
   checkName,
   makeDancer,
   normalizeName,
@@ -146,5 +147,30 @@ describe('makeDancer', () => {
   it('gives every dancer a distinct id', () => {
     const ids = new Set(Array.from({ length: 200 }, () => makeDancer('Sarah M', 'follower').id));
     expect(ids.size).toBe(200);
+  });
+});
+
+describe('buildPools — the single source of switch assignment', () => {
+  it('puts every dancer in exactly one pool', () => {
+    const r = pools(3, 2, 4);
+    const { leaders, followers } = buildPools(r);
+    const ids = [...leaders, ...followers].map((d) => d.id);
+    expect(new Set(ids).size).toBe(r.length);
+  });
+
+  it('agrees with the projection the roster screen shows', () => {
+    for (const [l, f, s] of [[3, 3, 2], [5, 1, 4], [0, 0, 8], [7, 2, 0]]) {
+      const r = pools(l, f, s);
+      const built = buildPools(r);
+      const projected = projectPools(r);
+      expect(built.leaders.length).toBe(projected.balancedLeaders);
+      expect(built.followers.length).toBe(projected.balancedFollowers);
+    }
+  });
+
+  it('keeps declared leaders and followers in their own pool', () => {
+    const { leaders, followers } = buildPools(pools(2, 2, 2));
+    expect(leaders.filter((d) => d.role === 'follower')).toHaveLength(0);
+    expect(followers.filter((d) => d.role === 'leader')).toHaveLength(0);
   });
 });

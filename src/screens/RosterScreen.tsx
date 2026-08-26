@@ -13,11 +13,12 @@ type Props = {
   dancers: Dancer[];
   onChange: (next: Dancer[]) => void;
   onBack: () => void;
+  onStartSpinning: () => void;
 };
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
 
-export function RosterScreen({ dancers, onChange, onBack }: Props) {
+export function RosterScreen({ dancers, onChange, onBack, onStartSpinning }: Props) {
   const [draftName, setDraftName] = useState('');
   const [draftRole, setDraftRole] = useState<Role>('leader');
   const [error, setError] = useState<string | null>(null);
@@ -179,9 +180,18 @@ export function RosterScreen({ dancers, onChange, onBack }: Props) {
       </section>
 
       <div className="next">
-        <button className="next__button" type="button" disabled>
+        <button
+          className="next__button"
+          type="button"
+          onClick={onStartSpinning}
+          disabled={projection.couples === 0}
+        >
           <span className="menu__label">Start spinning</span>
-          <span className="menu__note">The wheel arrives in 0.3.0</span>
+          <span className="menu__note">
+            {projection.couples === 0
+              ? 'Needs at least one leader and one follower'
+              : `Spin the wheel with ${dancers.length} dancers`}
+          </span>
         </button>
       </div>
     </div>
