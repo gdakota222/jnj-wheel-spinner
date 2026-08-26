@@ -5,6 +5,7 @@ import {
   createSession,
   drawEntries,
   isForegoneConclusion,
+  jamboreePrompt,
   promptEntries,
   promptsExhausted,
   resumeSession,
@@ -533,5 +534,111 @@ describe('resuming an interrupted session', () => {
     // And it carries on working from the revived value.
     const next = apply(revived, { type: 'spin', index: 0, rotation: revived.rotation + 1800 });
     expect(next.phase).toBe('spinning');
+  });
+});
+
+describe('the birthday jamboree', () => {
+  const withBirthday = (id: string, dancers: Dancer[]) =>
+    dancers.map((d) => (d.id === id ? { ...d, isBirthday: true } : d));
+
+  it('does nothing at all when nobody is marked', () => {
+    let s = createSession(roster(3, 3), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    expect(s.phase).toBe('drawn');
+    expect(s.jamboreeFor).toBeNull();
+  });
+
+  it('interrupts when the birthday dancer is drawn first', () => {
+    let s = createSession(withBirthday('L0', roster(3, 3)), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+
+    expect(s.phase).toBe('jamboree');
+    expect(s.jamboreeFor?.id).toBe('L0');
+    // The draw still stands underneath the interruption.
+    expect(s.drawn.leaders?.id).toBe('L0');
+
+    s = apply(s, { type: 'jamOver' });
+    // Carries on exactly where it was going: the follower is still to be drawn.
+    expect(s.phase).toBe('drawn');
+    expect(s.currentPool).toBe('followers');
+  });
+
+  it('interrupts when the birthday dancer is drawn second, and returns to the couple', () => {
+    let s = createSession(withBirthday('F0', roster(3, 3)), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
+
+    expect(s.phase).toBe('jamboree');
+    expect(s.jamboreeFor?.id).toBe('F0');
+
+    s = apply(s, { type: 'jamOver' });
+    // Prompts are off here, so the pair goes straight to dancing.
+    expect(s.phase).toBe('couple');
+    expect(s.drawn.followers?.id).toBe('F0');
+  });
+
+  it('returns to the prompt step when challenges are on', () => {
+    const deck = WCS_STARTER_DECK.prompts.slice(0, 3);
+    let s = createSession(withBirthday('F0', roster(3, 3)), 'leaders', true, deck);
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
+    expect(s.phase).toBe('jamboree');
+
+    s = apply(s, { type: 'jamOver' });
+    expect(s.phase).toBe('pair');
+  });
+
+  it('works when the birthday dancer is a follower drawn first', () => {
+    let s = createSession(withBirthday('F0', roster(3, 3)), 'followers');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    expect(s.phase).toBe('jamboree');
+    s = apply(s, { type: 'jamOver' });
+    expect(s.phase).toBe('drawn');
+    expect(s.currentPool).toBe('leaders');
+  });
+
+  it('jams a dancer only once, even when their pool recycles', () => {
+    // One follower, marked, in a pool that must recycle.
+    let s = createSession(withBirthday('F0', roster(3, 1)), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
+    expect(s.phase).toBe('jamboree');
+    s = apply(s, { type: 'jamOver' }, { type: 'nextCouple' });
+
+    // Second couple: the same follower comes back round, and must not re-jam.
+    s = apply(s, { type: 'spin', index: 0, rotation: 5400 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 7200 }, { type: 'settled' });
+    expect(s.drawn.followers?.id).toBe('F0');
+    expect(s.phase).not.toBe('jamboree');
+  });
+
+  it('ignores jamOver when no jam is running', () => {
+    const s = createSession(roster(3, 3), 'leaders');
+    expect(apply(s, { type: 'jamOver' })).toEqual(s);
+  });
+
+  it('survives being interrupted — a jam is a moment, not a spin', () => {
+    let s = createSession(withBirthday('L0', roster(3, 3)), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    expect(resumeSession(s).phase).toBe('jamboree');
+    expect(resumeSession(s).jamboreeFor?.id).toBe('L0');
+  });
+
+  it('supports more than one birthday dancer', () => {
+    let s = createSession(withBirthday('F0', withBirthday('L0', roster(3, 3))), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    expect(s.jamboreeFor?.id).toBe('L0');
+    s = apply(s, { type: 'jamOver' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
+    expect(s.jamboreeFor?.id).toBe('F0');
+    s = apply(s, { type: 'jamOver' });
+    expect(s.jammed).toEqual(['L0', 'F0']);
+  });
+
+  it('writes the prompt with the dancer named in it', () => {
+    const prompt = jamboreePrompt({ id: 'x', name: 'Dakota G', role: 'leader', isBirthday: true });
+    expect(prompt.name).toBe('Jamboree');
+    expect(prompt.description).toContain('Happy Birthday Dakota G!');
+    expect(prompt.description).toContain('they get to choose the song');
   });
 });

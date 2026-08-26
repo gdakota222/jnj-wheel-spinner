@@ -1069,3 +1069,105 @@
   text-align: center;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
 }
+
+/* ------------------------------------------------------------- the jamboree */
+
+/* The birthday dancer's marker in the roster. Subtle on purpose — it is a note
+   to the operator before the session, not a decoration. */
+.dancer__birthday {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--step--1);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.dancer[data-birthday='true'] {
+  border-color: var(--accent);
+}
+
+.dancer__name {
+  /* A hold marks the birthday dancer, so suppress the selection and callout
+     Android would otherwise raise. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.jam {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-sm);
+  text-align: center;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: var(--gap-lg) var(--gap) var(--gap);
+}
+
+.jam__burst {
+  position: relative;
+  width: 100%;
+  height: 8rem;
+  display: grid;
+  place-items: center;
+}
+
+.jam__popper {
+  font-size: 4.5rem;
+  line-height: 1;
+  animation: jam-pop 700ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.jam__confetti {
+  position: absolute;
+  width: 0.7rem;
+  height: 1rem;
+  border-radius: 2px;
+  background: var(--piece);
+  transform: rotate(var(--angle)) translateY(0) ;
+  animation: jam-fly 1100ms ease-out var(--delay) both;
+}
+
+@keyframes jam-pop {
+  from { transform: scale(0.2) rotate(-25deg); opacity: 0; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes jam-fly {
+  from {
+    transform: rotate(var(--angle)) translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  35% { opacity: 1; }
+  to {
+    transform: rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(1) ;
+    opacity: 0;
+  }
+}
+
+.jam__label {
+  font-size: var(--step--1);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.jam__title {
+  font-size: var(--step-3);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--accent);
+}
+
+.jam__description {
+  font-size: var(--step-1);
+  text-wrap: balance;
+}
+
+.jam__button {
+  width: 100%;
+  margin-top: var(--gap);
+}

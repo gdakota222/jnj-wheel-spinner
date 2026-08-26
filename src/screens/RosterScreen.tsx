@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useLongPress } from '../hooks/useLongPress';
 import type { SpinOrder } from '../domain/session';
 import {
   ROLE_LABELS,
@@ -35,6 +37,7 @@ export function RosterScreen({
   const [draftName, setDraftName] = useState('');
   const [draftRole, setDraftRole] = useState<Role>('leader');
   const [error, setError] = useState<string | null>(null);
+  const [birthdayCandidate, setBirthdayCandidate] = useState<Dancer | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const projection = useMemo(() => projectPools(dancers), [dancers]);
@@ -59,6 +62,13 @@ export function RosterScreen({
 
   function remove(id: string) {
     onChange(dancers.filter((d) => d.id !== id));
+  }
+
+  function toggleBirthday(dancer: Dancer) {
+    onChange(
+      dancers.map((d) => (d.id === dancer.id ? { ...d, isBirthday: !d.isBirthday } : d)),
+    );
+    setBirthdayCandidate(null);
   }
 
   return (
@@ -161,8 +171,8 @@ export function RosterScreen({
         ) : (
           <ul className="list__items">
             {dancers.map((dancer) => (
-              <li key={dancer.id} className="dancer">
-                <span className="dancer__name">{dancer.name}</span>
+              <li key={dancer.id} className="dancer" data-birthday={dancer.isBirthday === true}>
+                <DancerName dancer={dancer} onHold={() => setBirthdayCandidate(dancer)} />
                 <div className="dancer__controls">
                   <label className="dancer__role">
                     <span className="visually-hidden">Role for {dancer.name}</span>
@@ -191,6 +201,24 @@ export function RosterScreen({
           </ul>
         )}
       </section>
+
+      {birthdayCandidate && (
+        <ConfirmDialog
+          title={
+            birthdayCandidate.isBirthday
+              ? `Remove the birthday from ${birthdayCandidate.name}?`
+              : `Is ${birthdayCandidate.name} the birthday dancer?`
+          }
+          body={
+            birthdayCandidate.isBirthday
+              ? 'They will be drawn like anyone else, with no jam.'
+              : `When ${birthdayCandidate.name} is drawn, the session stops for a birthday jam — whichever spin lands on them.`
+          }
+          confirmLabel={birthdayCandidate.isBirthday ? 'Remove' : 'Yes, it is their birthday'}
+          onConfirm={() => toggleBirthday(birthdayCandidate)}
+          onCancel={() => setBirthdayCandidate(null)}
+        />
+      )}
 
       <section className="card">
         <h2 className="card__title">Which role is drawn first?</h2>
@@ -282,5 +310,29 @@ export function RosterScreen({
         </button>
       </div>
     </div>
+  );
+}
+
+type DancerNameProps = {
+  dancer: Dancer;
+  onHold: () => void;
+};
+
+/**
+ * The dancer's name, which doubles as the hidden way to mark a birthday dancer:
+ * press and hold. Undiscoverable on purpose — nobody should stumble into it —
+ * and always confirmed, so a stray hold costs one tap.
+ */
+function DancerName({ dancer, onHold }: DancerNameProps) {
+  const hold = useLongPress(onHold);
+  return (
+    <span className="dancer__name" {...hold}>
+      {dancer.name}
+      {dancer.isBirthday && (
+        <span className="dancer__birthday" title="Birthday dancer">
+          🎉 birthday
+        </span>
+      )}
+    </span>
   );
 }

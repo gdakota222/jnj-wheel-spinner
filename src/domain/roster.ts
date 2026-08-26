@@ -12,6 +12,11 @@ export type Dancer = {
   id: string;
   name: string;
   role: Role;
+  /**
+   * Marked in the roster before a session starts. When this dancer is drawn, the
+   * session stops for a birthday jam — see `jamboree` in session.ts.
+   */
+  isBirthday?: boolean;
 };
 
 export const ROLE_LABELS: Record<Role, string> = {

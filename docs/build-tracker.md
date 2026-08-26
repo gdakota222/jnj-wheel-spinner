@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.8.1 — deployed and live
+**Current version:** 0.8.2 — deployed and live
 **Current phase:** 0.8.0 — Device rehearsal (with the owner)
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
@@ -77,6 +77,20 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-26 — 0.8.2: the birthday jamboree, and a real fix to the back guard
+- **The back guard was broken after the first use.** Closing the app consumed its history guard, and
+  Android brought the same page back rather than reloading it — so no mount effect ran, no guard was
+  pushed, and the next back closed the app instantly with no warning. Caught on a real device, which
+  is the only place it could have been caught. Fixed by re-arming on visibility, not just on mount.
+  See D-036.
+- **The birthday jamboree added** (D-035) for the owner's birthday event. Long-press a name in the
+  roster to mark the birthday dancer; when they are drawn — whichever spin, whichever role — the
+  session stops for a party popper and a birthday jam, then picks up exactly where it left off.
+- Session schema bumped to **v2**, so a session saved by an older build is discarded rather than
+  restored without the new fields.
+- **111 tests**, ten of them covering the jamboree across both spins, both roles, both spin orders,
+  prompts on and off, recycling, and interruption.
 
 ### 2026-08-26 — Documentation sweep
 Checked every document against what the app actually is at 0.8.1, rather than what it was planned
@@ -705,6 +719,39 @@ It also turns out to be an opportunity rather than a defect: the owner prefers l
 — it has room for everything and fits a widescreen TV far better than a portrait layout letterboxed
 into one. v1.2 is the right home because it is the first version whose entire purpose is what the
 **room** sees.
+
+### D-035 — The birthday jamboree
+**Decision:** a dancer marked in the roster stops the session when drawn. Long-press to mark,
+always confirmed; a subtle marker in the roster list only; a party popper and a named prompt when
+they are drawn; a `Jam Over` button that resumes exactly where the session was.
+
+**Reasoning and the shape of it:**
+- **The interruption is parked, not special-cased.** The draw resolves normally and computes the
+  phase it was heading for; the jamboree stores that phase and `jamOver` restores it. That is what
+  makes it work identically for the first spin or the second, either role, either spin order, and
+  with challenges on or off — one mechanism rather than six branches.
+- **Once per dancer per session.** A recycled pool can draw the same person twice, and a second jam
+  would deflate the first — a birthday jam is a ceremony, not a recurring event. *This was my call,
+  not a stated requirement; it is the one part worth overriding if a second jam is wanted.*
+- **Marking is hidden and confirming is not.** A long-press keeps it out of the way of anyone who
+  does not know about it; the confirmation means an accidental hold costs a single tap.
+- **Nothing hints at it during the session.** The marker lives in the roster list alone, because the
+  surprise is the entire point.
+- Multiple dancers can be marked, each getting their own jam — future birthdays cost nothing.
+
+### D-036 — The exit guard re-arms on resume, not just on mount
+**Decision:** the back guard checks for and restores its history entry whenever the page becomes
+visible, and forgets any half-armed state at the same time.
+
+**Reasoning:** leaving deliberately **consumes** the guard entry. Android then keeps the app's web
+contents alive, so reopening resumes the same page instead of reloading it — mount effects never
+run again, no guard is pushed, and the next back press finds nothing to pop and closes the app
+instantly. The warning worked exactly once per full relaunch.
+
+**Worth noting how this was found.** It passed every check I could run: the hook was verified in a
+browser, the logic was sound, and the failure needs a real installed Android app that has been
+closed and reopened. It is the clearest case yet for the rehearsal existing at all — no amount of
+desktop verification would have reached it.
 
 ## Known issues and in-flight notes
 

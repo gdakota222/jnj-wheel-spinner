@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { Jamboree } from '../components/Jamboree';
 import { RosterOptions } from '../components/RosterOptions';
 import { SessionLog } from '../components/SessionLog';
 import { Wheel } from '../components/Wheel';
@@ -92,6 +93,19 @@ export function SessionScreen({
     const index = prompts.findIndex((p) => p.id === chosen.id);
     const plan = planSpin(index, prompts.length, session.rotation);
     dispatch({ type, index, rotation: plan.rotation });
+  }
+
+  if (phase === 'jamboree' && session.jamboreeFor) {
+    return (
+      <div className="shell">
+        <header className="screen-head">
+          <h1 className="screen-title">
+            Couple {coupleNumber} of {session.couplesTotal}
+          </h1>
+        </header>
+        <Jamboree dancer={session.jamboreeFor} onJamOver={() => dispatch({ type: 'jamOver' })} />
+      </div>
+    );
   }
 
   if (phase === 'complete') {

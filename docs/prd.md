@@ -303,6 +303,25 @@ a room may be watching. It must **hold, not perform**.
 - `Next Couple` must be the **most obvious control on the screen**. It is the one thing a
   stranger has to find instantly.
 
+### The birthday jamboree
+A dancer can be marked as **the birthday dancer**, and the session stops to celebrate them.
+
+- **Marked by long-pressing their name in the roster**, before the session starts. Undiscoverable
+  on purpose — nobody stumbles into it — and always confirmed, so a stray hold costs one tap.
+- Marked dancers carry a **subtle marker in the roster list only**. Nothing gives it away during
+  the session; the surprise is the point.
+- **When that dancer is drawn — whichever spin, whichever role — everything stops.** A party
+  popper fires and the screen shows:
+  > **Jamboree**
+  > Happy Birthday [Name]! All contestants and/or viewers must birthday jam [Name], but they get
+  > to choose the song!
+- A **Jam Over** button returns the session to exactly where it was. Drawn on the first spin, it
+  goes back to waiting for the second; drawn on the second, it carries on to the challenge or the
+  dance. The interruption leaves no trace in the flow.
+- **Once per dancer per session.** A recycled pool can draw the same person twice; the jam does not
+  repeat. See D-035.
+- More than one dancer can be marked. Each gets their own jam.
+
 ### Session log
 - A running on-screen list of the session's pairings, so the operator can see who has danced.
 - **Display-only and session-only.** Not exported, does not survive a new session, drives no logic.

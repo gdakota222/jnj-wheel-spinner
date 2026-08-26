@@ -119,6 +119,13 @@ swiped away, held the screen awake, and cast acceptably.
 | 1 | Both | The back gesture closes the app outright. The session survives it, so nothing is lost — but the operator still has to relaunch while a room waits. | Annoying | **Fixed in 0.8.1** — see D-033 |
 | 2 | Tablet | The tablet rotates into landscape despite the manifest's portrait lock. The phone does not. | Not a fault | Owner *prefers* landscape on the tablet and finds it better for a TV. Portrait constraint corrected; a proper landscape layout planned for v1.2. See D-034 |
 
+| 3 | Both | The back-gesture warning worked once, then stopped: after closing the app and reopening it, back closed it immediately with no warning, and kept doing so until a full relaunch. | Annoying | **Fixed in 0.8.2** — see D-036 |
+
+### Also added during rehearsal
+- **The birthday jamboree** (D-035), for the owner's birthday event. Long-press a name in the roster
+  to mark the birthday dancer; when they are drawn, the session stops for a party popper and a
+  birthday jam.
+
 ### Still to run
 - **Section 7 — the handoff test.** The one that matters most, and the only one no amount of
   desktop verification could reach.

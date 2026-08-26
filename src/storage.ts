@@ -17,11 +17,11 @@ const PROBE_KEY = 'jnj:v1:probe';
  * The shape of a stored session.
  *
  * Bumped whenever SessionState changes in a way that would break a session saved
- * by an older build. A mismatch discards the saved session rather than restoring
+ * by an older build. v2 added the jamboree fields. A mismatch discards the saved session rather than restoring
  * something the current code cannot read — losing an in-flight session is bad,
  * but crashing on launch in front of a room is worse.
  */
-const SESSION_SCHEMA = 1;
+const SESSION_SCHEMA = 2;
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
 

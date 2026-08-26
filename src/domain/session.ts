@@ -37,6 +37,8 @@ export type SessionPhase =
   | 'prompt-spinning'
   /** The couple is on screen and dancing. */
   | 'couple'
+  /** A birthday dancer was just drawn; everything stops for the jam. */
+  | 'jamboree'
   /** Everyone has danced. */
   | 'complete';
 
@@ -76,6 +78,19 @@ export type SessionState = {
   currentPrompt: Prompt | null;
   /** True once the deck has been exhausted and started over. */
   promptsRecycled: boolean;
+
+  /** The birthday dancer currently being jammed, if any. */
+  jamboreeFor: Dancer | null;
+  /**
+   * Where the session goes once the jam is over.
+   *
+   * The jamboree interrupts *after* a draw has resolved, so the phase the draw
+   * was heading for is parked here and restored by `jamOver`. That is what makes
+   * it work identically whichever spin drew the birthday dancer.
+   */
+  phaseAfterJamboree: SessionPhase | null;
+  /** Birthday dancers already jammed tonight — nobody gets two. */
+  jammed: string[];
 };
 
 export type SessionAction =
@@ -84,6 +99,7 @@ export type SessionAction =
   | { type: 'respin'; index: number; rotation: number }
   | { type: 'spinPrompt'; index: number; rotation: number }
   | { type: 'respinPrompt'; index: number; rotation: number }
+  | { type: 'jamOver' }
   | { type: 'nextCouple' }
   | { type: 'syncDancers'; dancers: Dancer[] };
 
@@ -134,6 +150,18 @@ export function createSession(
     promptsRemaining: [...deck],
     currentPrompt: null,
     promptsRecycled: false,
+    jamboreeFor: null,
+    phaseAfterJamboree: null,
+    jammed: [],
+  };
+}
+
+/** The jam's own prompt. Written here so it reads the same everywhere it appears. */
+export function jamboreePrompt(dancer: Dancer): Prompt {
+  return {
+    id: `jamboree-${dancer.id}`,
+    name: 'Jamboree',
+    description: `Happy Birthday ${dancer.name}! All contestants and/or viewers must birthday jam ${dancer.name}, but they get to choose the song!`,
   };
 }
 
@@ -233,6 +261,7 @@ export function resumeSession(state: SessionState): SessionState {
   if (state.phase === 'prompt-spinning') {
     return { ...state, phase: 'pair', pendingIndex: null, currentPrompt: null };
   }
+  // A jamboree is not a spin — it is a moment in the room, and it survives intact.
   return state;
 }
 
@@ -293,11 +322,19 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
           ? 'pair'
           : 'couple'
         : 'drawn';
+
+      // A birthday dancer stops everything. The phase the draw was heading for is
+      // parked and restored by `jamOver`, so this works the same whether they were
+      // the first name drawn or the second, and whichever role they dance.
+      const owedAJam = dancer.isBirthday === true && !state.jammed.includes(dancer.id);
+
       return {
         ...state,
         drawn,
         pendingIndex: null,
-        phase: nextPhase,
+        phase: owedAJam ? 'jamboree' : nextPhase,
+        jamboreeFor: owedAJam ? dancer : null,
+        phaseAfterJamboree: owedAJam ? nextPhase : null,
         currentPool: bothDrawn ? pool : OTHER_POOL[pool],
       };
     }
@@ -357,6 +394,18 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         phase: 'prompt-spinning',
         pendingIndex: action.index,
         rotation: action.rotation,
+      };
+    }
+
+    /** The jam is done; carry on as if it had never interrupted. */
+    case 'jamOver': {
+      if (state.phase !== 'jamboree' || !state.jamboreeFor) return state;
+      return {
+        ...state,
+        phase: state.phaseAfterJamboree ?? 'drawn',
+        jammed: [...state.jammed, state.jamboreeFor.id],
+        jamboreeFor: null,
+        phaseAfterJamboree: null,
       };
     }
 
@@ -437,7 +486,10 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
 
       const bothDrawn = drawn.leaders !== undefined && drawn.followers !== undefined;
       let phase: SessionPhase;
-      if (log.length >= couplesTotal) phase = 'complete';
+      // Removing the birthday dancer mid-jam ends the jam rather than stranding it.
+      if (state.phase === 'jamboree' && state.jamboreeFor && byId.has(state.jamboreeFor.id)) {
+        phase = 'jamboree';
+      } else if (log.length >= couplesTotal) phase = 'complete';
       else if (bothDrawn) phase = state.currentPrompt ? 'couple' : state.promptsEnabled ? 'pair' : 'couple';
       else if (state.phase === 'spinning' || state.phase === 'prompt-spinning') phase = 'ready';
       else phase = drawn.leaders || drawn.followers ? 'drawn' : 'ready';
@@ -460,6 +512,8 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         currentPool,
         wheelPool: currentPool,
         pendingIndex: null,
+        jamboreeFor: phase === 'jamboree' ? state.jamboreeFor : null,
+        phaseAfterJamboree: phase === 'jamboree' ? state.phaseAfterJamboree : null,
       };
     }
 
