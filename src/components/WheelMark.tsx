@@ -42,7 +42,7 @@ export function WheelMark({ size = 200 }: Props) {
         ))}
         <circle r={r * 0.17} fill="var(--pointer)" />
       </g>
-      <path d="M 0 -49 L 5 -40 L -5 -40 Z" fill="var(--pointer)" />
+      <path d="M -5.5 -50 L 5.5 -50 L 0 -39 Z" fill="var(--pointer)" />
     </svg>
   );
 }

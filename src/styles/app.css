@@ -582,3 +582,194 @@
   cursor: pointer;
   border-color: var(--accent);
 }
+
+/* --------------------------------------------------- options, sheet, dialog */
+
+.options-bar {
+  display: flex;
+  justify-content: center;
+}
+
+.options-bar__button {
+  min-height: var(--touch);
+  padding-inline: var(--gap);
+  background: var(--surface-raised);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step-0);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.options-bar__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--gap-sm);
+  background: rgb(8 5 18 / 0.72);
+}
+
+.sheet {
+  width: 100%;
+  max-width: 34rem;
+  max-height: 82dvh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--gap));
+}
+
+.sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+.sheet__title {
+  font-size: var(--step-2);
+  font-weight: 800;
+}
+
+.sheet__close {
+  min-height: var(--touch);
+  padding-inline: var(--gap);
+  background: var(--accent);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent-ink);
+  font-size: var(--step-0);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sheet__hint {
+  margin-top: var(--gap-xs);
+  color: var(--text-dim);
+  font-size: var(--step--1);
+}
+
+.sheet__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin: var(--gap) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.edit-row {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--gap-sm) var(--gap);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.edit-row__name {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--step-1);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.edit-row__role {
+  font-size: var(--step--1);
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.edit-row__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  width: 100%;
+}
+
+.edit-row__buttons {
+  display: flex;
+  gap: var(--gap-xs);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 26rem;
+  margin: auto;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap-lg) var(--gap) var(--gap);
+}
+
+.dialog__title {
+  font-size: var(--step-2);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.dialog__body {
+  margin-top: var(--gap-sm);
+  color: var(--text-dim);
+}
+
+.dialog__actions {
+  display: flex;
+  gap: var(--gap-sm);
+  margin-top: var(--gap-lg);
+}
+
+.dialog__cancel,
+.dialog__confirm {
+  flex: 1;
+  min-height: var(--touch);
+  border-radius: var(--radius-sm);
+  font-size: var(--step-0);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dialog__cancel {
+  background: transparent;
+  border: 2px solid var(--border);
+  color: var(--text);
+}
+
+.dialog__confirm {
+  background: var(--accent);
+  border: 2px solid var(--accent);
+  color: var(--accent-ink);
+}
+
+.dialog__confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Destructive confirmation is marked by colour AND by its label, never colour alone. */
+.dialog__confirm--destructive {
+  background: var(--seg-1);
+  border-color: var(--seg-1);
+  color: #2a0a12;
+}
+
+/* The dialog sits above the sheet that opened it. */
+.scrim .scrim {
+  z-index: 11;
+  align-items: center;
+}

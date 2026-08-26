@@ -19,7 +19,13 @@ export default function App() {
   }, [dancers]);
 
   if (screen === 'wheel') {
-    return <WheelScreen dancers={dancers} onBack={() => setScreen('roster')} />;
+    return (
+      <WheelScreen
+        dancers={dancers}
+        onChange={setDancers}
+        onBack={() => setScreen('roster')}
+      />
+    );
   }
 
   if (screen === 'roster') {

@@ -154,7 +154,23 @@ Draws and dances **alternate**. Pairings are never drawn up front — the draw i
 show, not preparation for it.
 
 ### Roster
+
+**What a roster is.** A **roster** is a saved list of dancers that the app remembers
+permanently, across sessions and restarts. When a roster is loaded into a spin session, its
+dancers become **the dancers in that session** — and only for that session. The session is a
+working copy; the saved roster is the durable thing.
+
+- The app **always remembers saved rosters**. Ending a session never discards one.
+- Changes made to dancers during a session belong to that session. Whether they are written
+  back to the saved roster is the operator's explicit choice, never automatic — a one-night
+  guest should not silently join the regulars.
+- **v1.0 as built collapses the two.** There is a single stored list, and editing it during a
+  session edits the same object the session draws from. This is a deliberate simplification
+  while the session loop is built; the separation arrives with multiple saved rosters in v1.1.
+
 - Add and remove dancers; each marked **Leader**, **Follower**, or **Switch**.
+- **Rename a dancer.** Typos happen, and a wrong name on the wheel is visible to the whole room.
+  Renaming is confirmed before it applies.
 - **Names must be unique, and must include a last name or at least a last initial.**
   "Sarah" is rejected; "Sarah M" is accepted. Validated at entry, with the reason shown.
 - If two dancers still collide (same first name and last initial), the operator may **use a
@@ -338,6 +354,8 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
 - **Three built-in decks ship**, all editable: **West Coast Swing starter**, **Sudden Death**
   (harder, for head-to-head), **All Skate** (silly, low-pressure, whole-floor).
 - **Saved Rosters / Data** — multiple named rosters, saved indefinitely with each dancer's role.
+  This is where the roster/session split defined in v1.0 above becomes real: loading a roster
+  copies its dancers into the session, and write-back is an explicit action.
   Mid-session edits affect the live session; writing them back to the saved roster is the
   operator's explicit choice, never automatic. A one-night guest shouldn't silently join the regulars.
 - **Options screen** — including **color-blind palettes** that shift the bright default scheme

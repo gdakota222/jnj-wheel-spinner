@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
+import { RosterOptions } from '../components/RosterOptions';
 import { Wheel } from '../components/Wheel';
 import { buildPools, type Dancer } from '../domain/roster';
 import { pickIndex, planSpin } from '../domain/spin';
 
 type Props = {
   dancers: Dancer[];
+  onChange: (next: Dancer[]) => void;
   onBack: () => void;
 };
 
@@ -16,13 +18,14 @@ const POOL_LABEL: Record<Pool, string> = {
   followers: 'Followers',
 };
 
-export function WheelScreen({ dancers, onBack }: Props) {
+export function WheelScreen({ dancers, onChange, onBack }: Props) {
   const pools = useMemo(() => buildPools(dancers), [dancers]);
 
   const [pool, setPool] = useState<Pool>('leaders');
   const [rotation, setRotation] = useState(0);
   const [phase, setPhase] = useState<Phase>('ready');
   const [landedIndex, setLandedIndex] = useState<number | null>(null);
+  const [optionsOpen, setOptionsOpen] = useState(false);
 
   const entries = pools[pool];
   const names = entries.map((d) => d.name);
@@ -35,6 +38,13 @@ export function WheelScreen({ dancers, onBack }: Props) {
     setLandedIndex(index);
     setPhase('spinning');
     setRotation(plan.rotation);
+  }
+
+  function editDancers(next: Dancer[]) {
+    onChange(next);
+    // The pools have changed underneath the draw, so any landed result is stale.
+    setPhase('ready');
+    setLandedIndex(null);
   }
 
   function choosePool(next: Pool) {
@@ -77,6 +87,17 @@ export function WheelScreen({ dancers, onBack }: Props) {
       <p className="pool-label" aria-live="polite">
         Now spinning: <strong>{POOL_LABEL[pool]}</strong>
       </p>
+
+      <div className="options-bar">
+        <button
+          className="options-bar__button"
+          type="button"
+          onClick={() => setOptionsOpen(true)}
+          disabled={phase === 'spinning'}
+        >
+          Options — edit dancers
+        </button>
+      </div>
 
       {names.length === 0 ? (
         <section className="card">
@@ -124,6 +145,14 @@ export function WheelScreen({ dancers, onBack }: Props) {
             )}
           </div>
         </>
+      )}
+
+      {optionsOpen && (
+        <RosterOptions
+          dancers={dancers}
+          onChange={editDancers}
+          onClose={() => setOptionsOpen(false)}
+        />
       )}
     </div>
   );

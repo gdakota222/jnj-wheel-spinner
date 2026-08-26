@@ -88,8 +88,9 @@ export function Wheel({ names, rotation, spinning, onSettled }: Props) {
           <circle r={WHEEL_RADIUS * 0.16} fill="var(--pointer)" />
         </g>
 
-        {/* The pointer stays put while the wheel turns beneath it. */}
-        <path className="wheel__pointer" d="M 0 -49 L 5.5 -39 L -5.5 -39 Z" />
+        {/* The pointer stays put while the wheel turns beneath it, and points
+            down at the name it has landed on. */}
+        <path className="wheel__pointer" d="M -6 -50 L 6 -50 L 0 -38 Z" />
       </svg>
     </div>
   );

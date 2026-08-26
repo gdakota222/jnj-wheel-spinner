@@ -11,5 +11,5 @@
     <path d="M0 0 L-15.6-15.6 A22 22 0 0 1 0-22 Z" fill="#ff80ab"/>
     <circle r="4.5" fill="#fff"/>
   </g>
-  <path d="M32 4 L37 13 L27 13 Z" fill="#fff"/>
+  <path d="M27 4 L37 4 L32 14 Z" fill="#fff"/>
 </svg>

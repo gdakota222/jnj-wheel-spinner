@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.3.0 — deployed and live
+**Current version:** 0.3.1 — deployed and live
 **Current phase:** 0.4.0 — The loop
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
@@ -77,6 +77,24 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-25 — 0.3.1: pointer direction, Options panel, roster model
+- **The pointer now points down at the name it has landed on**, rather than away from it. Fixed in
+  all three places it is drawn — the wheel, the title-screen mark, and the favicon. The generated
+  PNG icons already pointed down, so the set is finally consistent.
+- **Options — edit dancers**, reachable under the spin label. Rename or remove any dancer without
+  leaving the wheel.
+  - **Every change is confirmed**, and the confirmation says what will happen: a rename spells out
+    the before and after; a removal states what it does to the pools ("that leaves 4 leaders and
+    3 followers, so the shorter pool will be recycled").
+  - Renames are validated like any name — a duplicate is rejected, checked against everyone
+    *except* the dancer being renamed, so re-saving an unchanged name is not a clash with itself.
+  - Editing clears any landed result, because the pools have changed underneath it.
+  - The panel and its dialogs can always be escaped — Cancel, Escape, or tapping outside. "No modal
+    traps" matters most here, since Options is reachable mid-session when the tablet may change hands.
+- **The roster model is now defined** in the PRD. See D-023.
+- Verified in the browser: cancel leaves the roster untouched, confirm applies, a duplicate rename
+  is rejected, and the pool warning is arithmetically correct.
 
 ### 2026-08-25 — 0.3.0 shipped: the wheel
 - **The wheel is honest.** `pickIndex` chooses the winner at random *first*; `planSpin` then aims
@@ -381,22 +399,32 @@ never the right constraint for the wheel — the real limit is what stays legibl
 pool size, which the code now derives rather than guesses. At a full 10-dancer pool, roughly 12
 characters render at the floor. D-020's open question is closed.
 
+### D-023 — A roster is a saved list; a session gets a copy of it
+**Decision:** a **roster** is a durable, named list of dancers the app remembers permanently.
+Loading one into a spin session makes those people **the dancers in that session**, for that
+session only. The app always remembers saved rosters; ending a session never discards one.
+Write-back from a session to the saved roster is an explicit choice, never automatic.
+
+**v1.0 as built collapses the two** — one stored list, edited in place — as a deliberate
+simplification while the session loop is built. The separation becomes real with multiple saved
+rosters in v1.1.
+
+**Reasoning:** without this, "edit the roster mid-session" is ambiguous in a way that only shows
+up as a bug later: a one-night guest silently joining the regulars, or a mid-event removal quietly
+deleting someone from a list reused every week. Naming the durable thing and the working copy
+separately makes the v1.1 behaviour obvious instead of a redesign.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
 disappears between checkpoints.
 
 ### Open — needs an answer from the owner
-- **No way to correct a typo in a dancer's name.** Roles can be changed and dancers removed, but
-  a misspelled name has to be removed and retyped. The PRD only ever specified add/remove, so this
-  is in spec — but it is a real gap the first time someone types "Marci R" instead of "Marco R".
-  *Cheap to add. Wanted in v1.0, or left to v1.1?* (found 0.2.0)
-- **The relationship between "the roster" and "the dancers in this session" is undefined for v1.0.**
-  There is one saved roster. If the operator edits it mid-session, they are editing the same object
-  the session is drawing from. v1.1 resolves this by making write-back explicit, but v1.0 needs a
-  rule before the session exists. *Decision needed by 0.4.0.* (found 0.2.0)
 
 ### Closed
+- ~~No way to correct a typo in a dancer's name~~ — resolved in 0.3.1; renaming is available from
+  Options and is confirmed before it applies.
+- ~~Roster vs session dancers undefined~~ — resolved by D-023 and written into the PRD.
 - ~~The 28-character cap is unvalidated~~ — resolved by D-022; the wheel now derives its own limit.
 - ~~`projectPools` must be the code the session uses~~ — resolved in 0.3.0 by extracting `buildPools`.
 
