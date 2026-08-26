@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.5.1 — deployed and live
-**Current phase:** 0.6.0 — Persistence
+**Current version:** 0.6.0 — deployed and live
+**Current phase:** 0.7.0 — Principles pass
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -29,9 +29,9 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 5 of 9 |
+| **Versions shipped** | 6 of 9 |
 | **Blocked on** | Nothing |
-| **Next up** | 0.6.0 — Persistence |
+| **Next up** | 0.7.0 — Principles pass |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
 | **Real-event target** | Not yet scheduled |
@@ -50,7 +50,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.3.0** | The wheel | SVG wheel, spin animation, lands on a name, pool label (*Now spinning: Followers*), re-spin | ✅ Shipped 2026-08-25 |
 | **0.4.0** | The loop | Two spins → couple reveal → dance hold → `Next Couple`, pools draining, short-pool recycling, session log, session complete | ✅ Shipped 2026-08-25 |
 | **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ✅ Shipped 2026-08-25 |
-| **0.6.0** | Persistence | Reducer serialization on every dispatch, resume after close/crash, tablet handoff verified | ☐ Not started |
+| **0.6.0** | Persistence | Reducer serialization on every dispatch, resume after close/crash, tablet handoff verified | ✅ Shipped 2026-08-26 |
 | **0.7.0** | Principles pass | Self-describing audit of every screen, label review, contrast and touch targets, no-color-alone check | ☐ Not started |
 | **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | ☐ Not started |
 | **1.0.0** | **Live** | Run a real event | ☐ Not started |
@@ -77,6 +77,22 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-26 — 0.6.0 shipped: persistence
+- **The session survives.** Saved on every state change, restored on launch, cleared only when the
+  session ends. Crash recovery and tablet handoff are the same mechanism, as D-005 promised.
+- **Verified in the browser**, not just in tests: a reload mid-session came back on Couple 2 of 4
+  with the drawn leader still under the pointer and the logged couple's challenge intact.
+- **An interrupted spin is rolled back, not resolved.** See D-030 — this was the case worth building
+  the version around.
+- Stored under a **schema version**. A session written by an older build is discarded rather than
+  restored into a crash on launch.
+- **A restored session says so on screen** and can be dismissed. Whoever is holding the tablet may
+  not be the person who put it down.
+- **Storage failure is now surfaced** — closing the silent-failure issue logged in 0.2.0. Verified
+  by simulating a quota error: a persistent banner appears rather than the app implying the night
+  is safe.
+- **101 tests.**
 
 ### 2026-08-25 — 0.5.1: the Prompt Bank
 - **Prompt Bank** on the title screen: every challenge with its full description, grouped by bundle.
@@ -548,6 +564,32 @@ likely building the feature twice.
 **Set-asides are stored as prompt ids**, not copies, so a prompt that is later edited or renamed
 stays set aside, and an id that no longer exists is simply ignored.
 
+### D-030 — An interrupted spin is rolled back, never resolved
+**Decision:** a session restored from storage in a mid-spin phase returns to the state *before* the
+spin. The decided winner is discarded and the operator spins again.
+
+**Reasoning:** two reasons, and either alone would be enough.
+
+The practical one: the wheel animates by transitioning to a target rotation, and the settle happens
+on `transitionend`. A restored session is already *at* that rotation, so no transition runs and the
+event never fires — the app would come back showing a wheel that spins forever. That is the single
+worst failure this app has, and it would happen precisely when something has already gone wrong.
+
+The honest one: **nobody in the room saw it land.** A draw the audience did not witness has no
+claim to having happened, and re-spinning is what the operator would do anyway. Resolving it
+silently would put a name on screen that appeared without a spin.
+
+Rolling back to the right phase matters too: an interrupted *second* draw returns to `drawn` with
+the first dancer still standing, not to `ready`, so a landing the room *did* see is not thrown away
+with one it did not.
+
+### D-031 — Storage failure is stated, not swallowed
+**Decision:** `saveSession` reports failure, a startup probe checks writability, and either raises a
+persistent banner across every screen.
+**Reasoning:** the app's whole recovery story rests on storage working. Private browsing and a full
+device both fail *silently* on write, which would let the app promise a saved night it has not
+saved — the operator would find out only when it was already lost. Closes the issue logged in 0.2.0.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
@@ -556,6 +598,7 @@ disappears between checkpoints.
 ### Open — needs an answer from the owner
 
 ### Closed
+- ~~Storage failure is silent~~ — resolved in 0.6.0 by D-031; a failed write raises a banner.
 - ~~No way to correct a typo in a dancer's name~~ — resolved in 0.3.1; renaming is available from
   Options and is confirmed before it applies.
 - ~~Roster vs session dancers undefined~~ — resolved by D-023 and written into the PRD.
@@ -563,10 +606,6 @@ disappears between checkpoints.
 - ~~`projectPools` must be the code the session uses~~ — resolved in 0.3.0 by extracting `buildPools`.
 
 ### Open — flagged, resolvable without input
-- **Storage failure is silent.** `saveRoster` swallows quota and private-browsing errors, so a
-  roster can appear saved when it is not. Given that crash recovery and tablet handoff both rest
-  on storage working, a silent failure is the wrong default — the app should detect and say so.
-  *Fix in 0.6.0, where persistence is the subject.* (found 0.2.0)
 - **Spin-order choice is not on the roster screen.** The PRD's v1.0 screen table puts it there;
   it was deferred to 0.4.0 instead, because the choice is locked *at session start* and no session
   exists before then. A deliberate deviation, recorded so it is not mistaken for an omission.
