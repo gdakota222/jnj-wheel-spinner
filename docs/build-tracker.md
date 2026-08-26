@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.2.0 — deployed and live
-**Current phase:** 0.3.0 — The wheel
+**Current version:** 0.3.0 — deployed and live
+**Current phase:** 0.4.0 — The loop
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -29,9 +29,9 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 2 of 9 |
+| **Versions shipped** | 3 of 9 |
 | **Blocked on** | Nothing |
-| **Next up** | 0.3.0 — The wheel |
+| **Next up** | 0.4.0 — The loop |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
 | **Real-event target** | Not yet scheduled |
@@ -47,7 +47,7 @@ code drop — something that can be opened on the tablet and looked at.
 |---|---|---|---|
 | **0.1.0** | Scaffold | Vite + React + TS project, PWA manifest and service worker, portrait layout, theme CSS variables, deployed to GitHub Pages, installs to home screen | ✅ Shipped 2026-08-25 |
 | **0.2.0** | Roster | Add/remove dancers, Leader/Follower/Switch, unique-name validation, event-size guidance, roster saved to device | ✅ Shipped 2026-08-25 |
-| **0.3.0** | The wheel | SVG wheel, spin animation, lands on a name, pool label (*Now spinning: Followers*), re-spin | ☐ Not started |
+| **0.3.0** | The wheel | SVG wheel, spin animation, lands on a name, pool label (*Now spinning: Followers*), re-spin | ✅ Shipped 2026-08-25 |
 | **0.4.0** | The loop | Two spins → couple reveal → dance hold → `Next Couple`, pools draining, short-pool recycling, session log, session complete | ☐ Not started |
 | **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ☐ Not started |
 | **0.6.0** | Persistence | Reducer serialization on every dispatch, resume after close/crash, tablet handoff verified | ☐ Not started |
@@ -77,6 +77,29 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-25 — 0.3.0 shipped: the wheel
+- **The wheel is honest.** `pickIndex` chooses the winner at random *first*; `planSpin` then aims
+  the animation at it. Nothing is steered or filtered — intent.md § Enduring constraints.
+- Verified in the browser across three consecutive spins that the name shown always matches the
+  segment physically under the pointer. Tests assert the same for every pool size 1–20, at both
+  extremes of the landing jitter, from any starting rotation.
+- Always turns forward by at least five full revolutions, so a spin looks like a spin even when
+  the winner is where the wheel already sat.
+- **Pool label is always on screen** — *Now spinning: Leaders*. It is the one fact a second
+  operator picking up the tablet cannot infer from anything else.
+- Re-spin present, worded as the mechanic actually behaves: "puts {name} back in the pool and
+  draws again."
+- `buildPools` extracted as the **single source of switch assignment**, resolving the drift risk
+  logged in 0.2.0. The roster's projection and the session's real assignment are now the same code,
+  with a test asserting they agree.
+- Two rendering bugs found and fixed by looking at it (see D-022):
+  - Labels on the left half rendered **upside down**.
+  - A single long name shrank **every** label on the wheel.
+- 0.3.0 is a wheel harness, not the session: it spins one pool at a time and has no couples,
+  prompts or draw state. That arrives in 0.4.0.
+- **57 tests.** The suite earned itself during this version — a refactor silently deleted
+  `adviseOnSize` and six failing tests caught it immediately.
 
 ### 2026-08-25 — 0.2.0 shipped: the roster
 - Title screen now leads somewhere: **Start a Session** opens the roster and reports how many
@@ -337,6 +360,27 @@ there against the real Pages deploy. Consequence: the offline status line is ren
 production builds, since in dev it would sit on "caching…" forever — a screen stating something
 untrue, which principle 1 forbids.
 
+### D-022 — Wheel labels: flip for rotation, size per name, floor for legibility
+**Decision:** three related rules for how names render on the wheel.
+1. **Flip left-hand labels.** Text runs outward along its segment, so anything pointing into the
+   left half reads upside down. The flip is computed from the wheel's *resting* rotation, not
+   fixed per segment — a spin sets the final rotation immediately and lets CSS animate toward it,
+   so labels orient for where they will stop. They are unreadable mid-spin either way.
+2. **Size each label for its own name.** Sizing the whole wheel to its longest name meant one
+   "Alex Wintergreen" shrank "Sam O" to match. Per-label sizing keeps short names large.
+3. **Floor the font at 4.2 units and truncate below it.** Past that a name is present but
+   unreadable at arm's length, let alone across a room. Truncation is the lesser loss because the
+   reveal card always shows the full name, in the largest type on the screen.
+
+**Reasoning:** the wheel is the spectacle and the reveal is the information. Given that split, a
+truncated label costs little, while an illegible or upside-down one costs the thing the wheel is
+for. All three were found by looking at the rendered wheel, not by reasoning about it.
+
+**This revises D-020.** The 28-character name cap stands for storage and the reveal, but it was
+never the right constraint for the wheel — the real limit is what stays legible at the current
+pool size, which the code now derives rather than guesses. At a full 10-dancer pool, roughly 12
+characters render at the floor. D-020's open question is closed.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
@@ -352,20 +396,19 @@ disappears between checkpoints.
   the session is drawing from. v1.1 resolves this by making write-back explicit, but v1.0 needs a
   rule before the session exists. *Decision needed by 0.4.0.* (found 0.2.0)
 
+### Closed
+- ~~The 28-character cap is unvalidated~~ — resolved by D-022; the wheel now derives its own limit.
+- ~~`projectPools` must be the code the session uses~~ — resolved in 0.3.0 by extracting `buildPools`.
+
 ### Open — flagged, resolvable without input
 - **Storage failure is silent.** `saveRoster` swallows quota and private-browsing errors, so a
   roster can appear saved when it is not. Given that crash recovery and tablet handoff both rest
   on storage working, a silent failure is the wrong default — the app should detect and say so.
   *Fix in 0.6.0, where persistence is the subject.* (found 0.2.0)
-- **The 28-character name cap (D-020) is unvalidated.** It was a judgement call with no measurement
-  behind it. 0.3.0 produces the real text budget. *Revisit in 0.3.0.* (found 0.2.0)
 - **Spin-order choice is not on the roster screen.** The PRD's v1.0 screen table puts it there;
   it was deferred to 0.4.0 instead, because the choice is locked *at session start* and no session
   exists before then. A deliberate deviation, recorded so it is not mistaken for an omission.
   *Build in 0.4.0.* (found 0.2.0)
-- **`projectPools` must be the same code the session actually uses.** The roster screen projects
-  how switches will balance; 0.4.0 must call that function rather than reimplement it, or the
-  projection and the real assignment can drift apart. (found 0.2.0)
 
 ### Testing gaps
 - **Real touch interaction is untested.** The browser pane's click handling timed out repeatedly,
