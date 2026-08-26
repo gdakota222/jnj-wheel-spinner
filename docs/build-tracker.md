@@ -339,12 +339,42 @@ untrue, which principle 1 forbids.
 
 ## Known issues and in-flight notes
 
-*Nothing yet — the build hasn't started.*
+Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
+disappears between checkpoints.
 
-Items discovered during the build that are **deferred within v1.0** get listed here with the
-version they were found in, so nothing quietly disappears between checkpoints.
+### Open — needs an answer from the owner
+- **No way to correct a typo in a dancer's name.** Roles can be changed and dancers removed, but
+  a misspelled name has to be removed and retyped. The PRD only ever specified add/remove, so this
+  is in spec — but it is a real gap the first time someone types "Marci R" instead of "Marco R".
+  *Cheap to add. Wanted in v1.0, or left to v1.1?* (found 0.2.0)
+- **The relationship between "the roster" and "the dancers in this session" is undefined for v1.0.**
+  There is one saved roster. If the operator edits it mid-session, they are editing the same object
+  the session is drawing from. v1.1 resolves this by making write-back explicit, but v1.0 needs a
+  rule before the session exists. *Decision needed by 0.4.0.* (found 0.2.0)
 
----
+### Open — flagged, resolvable without input
+- **Storage failure is silent.** `saveRoster` swallows quota and private-browsing errors, so a
+  roster can appear saved when it is not. Given that crash recovery and tablet handoff both rest
+  on storage working, a silent failure is the wrong default — the app should detect and say so.
+  *Fix in 0.6.0, where persistence is the subject.* (found 0.2.0)
+- **The 28-character name cap (D-020) is unvalidated.** It was a judgement call with no measurement
+  behind it. 0.3.0 produces the real text budget. *Revisit in 0.3.0.* (found 0.2.0)
+- **Spin-order choice is not on the roster screen.** The PRD's v1.0 screen table puts it there;
+  it was deferred to 0.4.0 instead, because the choice is locked *at session start* and no session
+  exists before then. A deliberate deviation, recorded so it is not mistaken for an omission.
+  *Build in 0.4.0.* (found 0.2.0)
+- **`projectPools` must be the same code the session actually uses.** The roster screen projects
+  how switches will balance; 0.4.0 must call that function rather than reimplement it, or the
+  projection and the real assignment can drift apart. (found 0.2.0)
+
+### Testing gaps
+- **Real touch interaction is untested.** The browser pane's click handling timed out repeatedly,
+  so the roster was driven programmatically. Logic, rendering, validation and persistence are all
+  verified; what is *not* verified is that a finger on a real screen hits what it means to. This
+  is what 0.8.0's device rehearsal exists for, but it means UI confidence is currently lower than
+  the green test count suggests. (found 0.2.0)
+- **No component or end-to-end tests.** By design (D-007) — but it means screen-level regressions
+  would be caught by eye, not by the suite.
 
 ## Open questions carried into the build
 
