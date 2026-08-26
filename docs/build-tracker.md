@@ -93,6 +93,10 @@ Newest first. Every entry dated.
   - The panel and its dialogs can always be escaped — Cancel, Escape, or tapping outside. "No modal
     traps" matters most here, since Options is reachable mid-session when the tablet may change hands.
 - **The roster model is now defined** in the PRD. See D-023.
+- Follow-up tweak: the button reads simply **Edit dancers**, sits directly beneath the pool toggle
+  and spans the same width, reading as one control group. Slimmed to 44px so it stays visually
+  secondary to the spin. That is below the app's own 56px target but at the accepted floor, and it
+  is not a control anyone reaches for mid-spin — noted as a deliberate exception, not an oversight.
 - Verified in the browser: cancel leaves the roster untouched, confirm applies, a duplicate rename
   is rejected, and the pool warning is arithmetically correct.
 

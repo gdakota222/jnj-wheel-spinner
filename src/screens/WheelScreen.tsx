@@ -82,22 +82,20 @@ export function WheelScreen({ dancers, onChange, onBack }: Props) {
         ))}
       </fieldset>
 
+      <button
+        className="edit-dancers"
+        type="button"
+        onClick={() => setOptionsOpen(true)}
+        disabled={phase === 'spinning'}
+      >
+        Edit dancers
+      </button>
+
       {/* The pool being spun is stated, always. It is the one thing a second
           operator picking up the tablet cannot infer from anything else. */}
       <p className="pool-label" aria-live="polite">
         Now spinning: <strong>{POOL_LABEL[pool]}</strong>
       </p>
-
-      <div className="options-bar">
-        <button
-          className="options-bar__button"
-          type="button"
-          onClick={() => setOptionsOpen(true)}
-          disabled={phase === 'spinning'}
-        >
-          Options — edit dancers
-        </button>
-      </div>
 
       {names.length === 0 ? (
         <section className="card">
