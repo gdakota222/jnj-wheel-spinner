@@ -34,6 +34,31 @@ confirming once v1.0 has been run at a real event:
 
 ---
 
+## Devices
+
+**Primary device: a Samsung Android tablet.** That is what the owner runs events on, so it is the
+device that must work on the night and the one every rehearsal (0.8.0) is done against.
+
+**Apple must work too.** iPhone and iPad are fully supported targets — other organisers will not
+all be on Android, and a web app that only works on one platform has thrown away its main
+advantage. Neither platform is allowed a broken experience.
+
+**Where the platforms genuinely differ**, and what it means:
+
+| | Android (Chrome) | Apple (Safari) |
+|---|---|---|
+| **Install to home screen** | Full install; the manifest is honoured | Add to Home Screen; more limited |
+| **Portrait lock** | Manifest `orientation: portrait` is respected | Ignored — the layout must hold up if rotated anyway |
+| **Second screen (v1.3)** | Presentation API supported — the private-ballot path genuinely works | Not supported; falls back to the "pause mirroring" warning |
+| **Screen wake lock** | Supported | Supported from iOS 16.4 |
+
+**Consequence worth noting early:** the audience-vote privacy feature in v1.3 was written assuming
+it would usually degrade to a warning. On the primary device it will actually work, because Android
+Chrome supports driving a second screen with different content. The fallback still has to exist for
+Apple, but the good path is the likely one here.
+
+---
+
 ## Users
 
 More people use this app than "the organizer." Several design constraints come from the
@@ -358,9 +383,13 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
   copies its dancers into the session, and write-back is an explicit action.
   Mid-session edits affect the live session; writing them back to the saved roster is the
   operator's explicit choice, never automatic. A one-night guest shouldn't silently join the regulars.
-- **Options screen** — including **color-blind palettes** that shift the bright default scheme
-  into distinguishable ranges. (Baseline accessibility is always-on from v1.0; this is the
-  configurable layer.)
+- **Options screen** — the configurable layer on top of the always-on accessibility baseline:
+  - **Color-blind palettes** that shift the bright default scheme into distinguishable ranges.
+  - **Large touch targets.** When switched on, *every* control in the app is raised to a minimum
+    of **56px**, including ones deliberately slimmed for visual hierarchy (the `Edit dancers`
+    button being the first such case — see D-025). Off by default, because the slimmer treatment
+    is what makes secondary controls read as secondary; on by request, because hierarchy is worth
+    less than being able to hit the thing.
 - **Add a dancer mid-session.** Requires confirmation, like removal. A switch added mid-session
   is assigned to whichever pool is short at that moment, and locked from then on.
 - **Announce a re-spin.** Per re-spin, the operator chooses whether the room is told

@@ -135,6 +135,10 @@ These hold for every version and are not up for renegotiation feature by feature
 - **Installable to the home screen**, opening fullscreen like a native app.
 - **Portrait only.** Built for phones and tablets held vertically; the app does not rotate. Casting
   to a TV shows the portrait layout — accepted, not a bug.
+- **Android and Apple both.** The owner runs the app on a **Samsung Android tablet**, so Android is
+  the device that has to work on the night. But the app must also run correctly on iPhone and iPad —
+  other organisers will not all be on Android, and the whole point of a web app is that it does not
+  care. Neither platform gets a broken experience.
 - **Castable to a TV or projector** as a supported use case: large text, high contrast, readable
   from across a room.
 - **Small events by design.** Spotlight format means 3–10 couples, with 5 the sweet spot and 10 a

@@ -418,6 +418,27 @@ up as a bug later: a one-night guest silently joining the regulars, or a mid-eve
 deleting someone from a list reused every week. Naming the durable thing and the working copy
 separately makes the v1.1 behaviour obvious instead of a redesign.
 
+### D-024 — Android is the primary device; Apple is a supported target
+**Decision:** the app is developed and rehearsed against a **Samsung Android tablet**, with iPhone
+and iPad as fully supported secondary targets. Neither platform is allowed a broken experience.
+**Reasoning:** Android is what the owner will actually hold on the night, so it decides what
+"working" means for v1.0. Apple still has to work, because other organisers (v1.4 onward) will not
+all be on Android, and a web app that only runs on one platform has discarded its main advantage.
+**Consequence:** the v1.3 audience-vote privacy feature was written expecting to degrade to a
+"pause mirroring" warning. Android Chrome supports the Presentation API, so on the primary device
+the genuinely-private path will work. The Apple fallback still has to exist, but the good path is
+now the likely one. Recorded in [prd.md § Devices](prd.md).
+
+### D-025 — 56px touch targets become an accessibility option, not the floor
+**Decision:** the app keeps its 56px default for primary controls, allows deliberate exceptions
+down to the 44px accepted floor for secondary ones, and adds a **Large touch targets** option in
+v1.1 that raises *everything* to 56px when switched on.
+**Reasoning:** the slimmer treatment is what makes a secondary control read as secondary — the
+`Edit dancers` button is the first case. But visual hierarchy is worth less than being able to hit
+the thing, so anyone who needs the larger target gets it on request rather than having to argue
+with the design. This resolves the exception logged in 0.3.1 rather than leaving it as a standing
+inconsistency with principle 3.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly

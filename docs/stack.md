@@ -4,6 +4,9 @@
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md)
 
+**Target devices:** a **Samsung Android tablet** primarily, with iPhone and iPad as fully
+supported secondary targets. See [prd.md § Devices](prd.md).
+
 **Working model:** Claude writes the code and explains it; the owner reviews, tests at real
 events, and directs. This biases every choice toward **mainstream and well-documented** over
 clever — when the owner searches for an answer without Claude present, the answer should exist.
@@ -84,7 +87,9 @@ This folder is not yet a git repository. It needs to be one for GitHub Pages dep
 in order to install. The flow:
 
 1. Push to GitHub; GitHub Pages serves the built site over HTTPS.
-2. Open the URL on the tablet once, **Add to Home Screen**.
+2. Open the URL on the tablet once, **Add to Home Screen**. On Android Chrome this is a full
+   install and the manifest's portrait lock is honoured; on iOS it is the more limited Add to
+   Home Screen, and orientation is not locked.
 3. The service worker precaches everything. **From then on it runs fully offline**, as specified.
 4. To update: redeploy, then open the app once while online. The service worker picks up the new
    version.
