@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
 **Current version:** 0.7.0 — deployed and live
-**Current phase:** 0.8.0 — Device rehearsal
+**Current phase:** 0.8.0 — Device rehearsal (with the owner)
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -30,7 +30,7 @@ so the history of *why* stays intact.
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
 | **Versions shipped** | 7 of 9 |
-| **Blocked on** | Nothing |
+| **Blocked on** | Rehearsal findings (owner testing on Samsung phone + tablet) |
 | **Next up** | 0.8.0 — Device rehearsal |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
@@ -52,7 +52,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ✅ Shipped 2026-08-25 |
 | **0.6.0** | Persistence | Reducer serialization on every dispatch, resume after close/crash, tablet handoff verified | ✅ Shipped 2026-08-26 |
 | **0.7.0** | Principles pass | Self-describing audit of every screen, label review, contrast and touch targets, no-color-alone check | ✅ Shipped 2026-08-26 |
-| **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | ☐ Not started |
+| **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | 🔄 In progress |
 | **1.0.0** | **Live** | Run a real event | ☐ Not started |
 
 ### Why this order
@@ -77,6 +77,20 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-26 — 0.8.0 started: device rehearsal
+- Confirmed the deployed app meets Android Chrome's install criteria before handing it over:
+  HTTPS, valid manifest (standalone, portrait, 192 + 512 + maskable icons), service worker
+  serving, every asset returning 200.
+- **[rehearsal.md](rehearsal.md) written** — install steps for Samsung Android plus a nine-part
+  checklist covering touch, readability, wake lock, offline, interruption, casting, and a full
+  realistic run.
+- **The handoff test is the one that matters**: give the tablet to somebody who has never seen the
+  app, say nothing, and find out whether the screen explains itself. Everything in the design
+  principles builds to that, and it is the only part no amount of desktop verification could reach.
+- Chrome is specified over Samsung Internet: Chrome installs a real WebAPK, which is what makes the
+  portrait lock and fullscreen launch behave.
+- Now with the owner. Findings return here as decision entries.
 
 ### 2026-08-26 — 0.7.0 shipped: principles pass
 Audited **eleven screens and panels** — title, prompt bank, roster, session ready / drawn / pair /
