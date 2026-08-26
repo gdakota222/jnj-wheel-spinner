@@ -2,7 +2,7 @@
 
 **Devices:** Samsung Android phone and Samsung Android tablet
 **App:** https://gdakota222.github.io/jnj-wheel-spinner/
-**Status:** In progress
+**Status:** Sections 1–6 and 8 passed on both devices. 7 and 9 outstanding.
 
 This is the first version the owner runs rather than Claude verifies. Everything up to now has
 been checked in a desktop browser pane, which can prove logic, layout, wording and contrast — and
@@ -48,8 +48,8 @@ front of a room.
 ### 1. Does it feel like an app?
 - [ ] Launches fullscreen from the home-screen icon, no address bar
 - [ ] Icon looks right on the home screen — not a generic globe or a squashed square
-- [ ] **Rotate the device.** It should stay portrait and not flip
-- [ ] Back gesture / back button does something sane, not something surprising
+- [x] **Rotate the device.** Phones stay portrait. Tablets rotate — expected, see D-034
+- [x] Back gesture / back button does something sane — since 0.8.1 it warns before closing
 
 ### 2. Can you hit things?
 This is the biggest gap in everything verified so far.
@@ -109,12 +109,21 @@ Everything in the design principles builds to this.
 
 ## Findings
 
-Record everything here, however small. Anything that changes the build becomes a decision entry
-in [build-tracker.md](build-tracker.md).
+### Round 1 — 2026-08-26, Samsung phone and tablet
 
-| # | Device | What happened | Severity |
-|---|---|---|---|
-| | | | |
+**Sections 1–6 and 8 all passed on both devices.** Installed cleanly, ran offline, survived being
+swiped away, held the screen awake, and cast acceptably.
+
+| # | Device | What happened | Severity | Outcome |
+|---|---|---|---|---|
+| 1 | Both | The back gesture closes the app outright. The session survives it, so nothing is lost — but the operator still has to relaunch while a room waits. | Annoying | **Fixed in 0.8.1** — see D-033 |
+| 2 | Tablet | The tablet rotates into landscape despite the manifest's portrait lock. The phone does not. | Not a fault | Owner *prefers* landscape on the tablet and finds it better for a TV. Portrait constraint corrected; a proper landscape layout planned for v1.2. See D-034 |
+
+### Still to run
+- **Section 7 — the handoff test.** The one that matters most, and the only one no amount of
+  desktop verification could reach.
+- **Section 9 — a realistic full run**, including timing the pacing.
+- **A real event**, which will produce more evidence in one night than everything above combined.
 
 **Severity:** *blocker* (cannot run an event), *annoying* (would irritate mid-event),
 *polish* (noticed it, would not stop anything).

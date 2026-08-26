@@ -48,7 +48,7 @@ advantage. Neither platform is allowed a broken experience.
 | | Android (Chrome) | Apple (Safari) |
 |---|---|---|
 | **Install to home screen** | Full install; the manifest is honoured | Add to Home Screen; more limited |
-| **Portrait lock** | Manifest `orientation: portrait` is respected | Ignored — the layout must hold up if rotated anyway |
+| **Portrait lock** | Respected on phones; **ignored on tablets**, which rotate freely | Ignored — the layout must hold up if rotated anyway |
 | **Second screen (v1.3)** | Presentation API supported — the private-ballot path genuinely works | Not supported; falls back to the "pause mirroring" warning |
 | **Screen wake lock** | Supported | Supported from iOS 16.4 |
 
@@ -429,6 +429,13 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
   3. Behind it, the winner is decided.
   4. The operator triggers the reveal: **curtains part with a countdown**, then the winning
      couple's names land big with celebration effects.
+- **A landscape layout, built for the TV.** Android tablets rotate whatever the manifest asks, and
+  the owner *prefers* landscape on a tablet: it has the room for everything and it fits a TV far
+  better than a portrait layout letterboxed into a widescreen. v1.0 tolerates landscape; this is
+  where it gets designed for — the couple's names and the challenge using the width properly, the
+  wheel and the controls sharing the space instead of stacking. It belongs in this version because
+  v1.2 is the first one whose whole purpose is what the *room* sees.
+
 - **All-skate finale (optional).** After the reveal, the operator can trigger one last spin:
   everyone dances one prompt together. No pairs, no spotlight, no judging, no winner.
   - **Operator-triggered, never automatic.** Some nights end better on the crown.

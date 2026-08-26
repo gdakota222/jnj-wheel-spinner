@@ -23,6 +23,7 @@ import {
   saveRoster,
   saveSession,
 } from './storage';
+import { useExitGuard } from './hooks/useExitGuard';
 import './styles/app.css';
 
 type Screen = 'title' | 'roster' | 'session' | 'bank';
@@ -43,6 +44,9 @@ export default function App() {
   const [excludedPrompts, setExcludedPrompts] = useState<string[]>(() => loadExcludedPrompts());
   const [storageBroken, setStorageBroken] = useState(() => !isStorageWritable());
   const [wasResumed, setWasResumed] = useState(restored !== null);
+
+  // A stray back gesture should not close the app out from under an event.
+  const { warning: exitWarning } = useExitGuard();
 
   // Persist on every change rather than on a timer. The data is tiny and the
   // event is slow, so there is no reason to risk losing an edit.
@@ -151,6 +155,11 @@ export default function App() {
     <>
       {banner}
       {view}
+      {exitWarning && (
+        <p className="exit-warning" role="status">
+          Press back again to close the app
+        </p>
+      )}
     </>
   );
 }

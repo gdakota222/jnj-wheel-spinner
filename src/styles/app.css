@@ -1050,3 +1050,22 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* Back-gesture warning. Sits above everything, out of the way of the controls a
+   thumb reaches for, and disappears on its own. */
+.exit-warning {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + var(--gap));
+  transform: translateX(-50%);
+  z-index: 30;
+  max-width: calc(100% - 2 * var(--gap));
+  padding: var(--gap-sm) var(--gap);
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 999px;
+  font-size: var(--step--1);
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
+}

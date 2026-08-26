@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.7.0 — deployed and live
+**Current version:** 0.8.1 — deployed and live
 **Current phase:** 0.8.0 — Device rehearsal (with the owner)
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
@@ -77,6 +77,21 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-26 — 0.8.1: rehearsal round 1 findings
+**Sections 1–6 and 8 of the rehearsal passed on both a Samsung phone and a Samsung tablet.**
+Installed cleanly as a real app, ran with the network off, survived being swiped away mid-session,
+held the screen awake through a dance, and cast acceptably.
+
+Two findings, both acted on:
+- **A stray back gesture closed the app.** Fixed — see D-033. The session always survived it, so
+  nothing was ever lost, but relaunching while a room waits is precisely the interruption this app
+  exists to prevent.
+- **The tablet rotates into landscape and the phone does not.** Not a fault, and the owner prefers
+  it that way. This **corrects a documented constraint that was wrong** — see D-034.
+
+Still outstanding: **section 7 (the handoff test)** and **section 9 (a realistic full run)**, plus a
+real event. That event will produce more evidence in one night than every check so far combined.
 
 ### 2026-08-26 — 0.8.0 started: device rehearsal
 - Confirmed the deployed app meets Android Chrome's install criteria before handing it over:
@@ -641,6 +656,36 @@ Two independent paths to the same outcome is the right shape here: the transitio
 its timing when everything works, and the timer guarantees the app never hangs when it does not.
 Verified by suppressing the transition entirely so the event could not fire — the spin still
 settled and the button came back live.
+
+### D-033 — The back gesture warns once before closing the app
+**Decision:** the first back press is absorbed and answered with "Press back again to close the
+app"; a second press within three seconds goes through. Uniform on every screen.
+
+**Reasoning:** on an installed Android app the back gesture leaves immediately, and the edge of a
+tablet is easy to brush mid-event. Persistence means nothing is lost — the session comes straight
+back — but the operator still has to find the icon and relaunch with a room watching, which is the
+kind of interruption success is defined against.
+
+**Uniform on purpose.** Back could instead have walked the app's own screens — session to roster to
+title — but that risks a stray gesture abandoning a running session, the exact problem being solved.
+"Back always warns once" is a rule that can be learned in a single go; "back sometimes navigates and
+sometimes exits" is one that has to be thought about, mid-event, by someone who may not have started
+the session.
+
+### D-034 — Portrait is the design target, not a guarantee — and landscape is wanted
+**Decision:** the "portrait only, the app does not rotate" constraint is **corrected**. Phones honour
+the manifest's portrait lock; **Android tablets ignore it and rotate freely**, confirmed on a Samsung
+tablet. The layout must stay usable in landscape, and a landscape layout designed for a TV is added
+to v1.2.
+
+**Reasoning:** the original constraint was written from what the manifest *asks for* rather than what
+devices *do*, and it was only ever true of phones. Worth correcting rather than quietly tolerating,
+because a future reader would otherwise treat tablet landscape as a bug to suppress.
+
+It also turns out to be an opportunity rather than a defect: the owner prefers landscape on a tablet
+— it has room for everything and fits a widescreen TV far better than a portrait layout letterboxed
+into one. v1.2 is the right home because it is the first version whose entire purpose is what the
+**room** sees.
 
 ## Known issues and in-flight notes
 

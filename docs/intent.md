@@ -133,8 +133,12 @@ These hold for every version and are not up for renegotiation feature by feature
 - **Works fully offline.** Venue wifi is unreliable and must never be a dependency.
 - **No server, no accounts, no network calls.** Everything lives on the device.
 - **Installable to the home screen**, opening fullscreen like a native app.
-- **Portrait only.** Built for phones and tablets held vertically; the app does not rotate. Casting
-  to a TV shows the portrait layout — accepted, not a bug.
+- **Portrait first, and portrait is what the layout is designed for.** Phones honour the manifest's
+  portrait lock and stay vertical. **Android tablets do not** — they rotate regardless, as confirmed
+  on a Samsung tablet during the 0.8.0 rehearsal. The layout therefore has to remain usable in
+  landscape even though it is not designed for it, and a landscape layout built for a TV is a
+  wanted future addition rather than a bug to suppress. This corrects an earlier claim that the app
+  "does not rotate", which was true of phones and never true of tablets.
 - **Android and Apple both.** The owner runs the app on a **Samsung Android tablet**, so Android is
   the device that has to work on the night. But the app must also run correctly on iPhone and iPad —
   other organisers will not all be on Android, and the whole point of a web app is that it does not
