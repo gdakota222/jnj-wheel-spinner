@@ -10,6 +10,7 @@
  * deterministic and testable.
  */
 import { buildPools, type Dancer } from './roster';
+import { WCS_STARTER_DECK, type Prompt } from './prompts';
 
 export type PoolName = 'leaders' | 'followers';
 
@@ -19,6 +20,8 @@ export type SpinOrder = PoolName;
 export type Couple = {
   leader: Dancer;
   follower: Dancer;
+  /** What they danced, when prompts are on. */
+  prompt: Prompt | null;
 };
 
 export type SessionPhase =
@@ -28,7 +31,11 @@ export type SessionPhase =
   | 'spinning'
   /** The first of the pair has landed; the second pool is next. */
   | 'drawn'
-  /** Both landed. The couple is on screen and dancing. */
+  /** Both dancers are drawn, but their prompt has not been spun yet. */
+  | 'pair'
+  /** The prompt wheel is turning. */
+  | 'prompt-spinning'
+  /** The couple is on screen and dancing. */
   | 'couple'
   /** Everyone has danced. */
   | 'complete';
@@ -58,12 +65,25 @@ export type SessionState = {
   log: Couple[];
   /** How many couples this session will produce in total. */
   couplesTotal: number;
+
+  /** Chosen during setup, never defaulted — see D-015. */
+  promptsEnabled: boolean;
+  /** The whole deck this session draws from. */
+  promptDeck: Prompt[];
+  /** Prompts not yet used tonight. Refilled only once exhausted, and never silently. */
+  promptsRemaining: Prompt[];
+  /** The prompt this couple is dancing. */
+  currentPrompt: Prompt | null;
+  /** True once the deck has been exhausted and started over. */
+  promptsRecycled: boolean;
 };
 
 export type SessionAction =
   | { type: 'spin'; index: number; rotation: number }
   | { type: 'settled' }
   | { type: 'respin'; index: number; rotation: number }
+  | { type: 'spinPrompt'; index: number; rotation: number }
+  | { type: 'respinPrompt'; index: number; rotation: number }
   | { type: 'nextCouple' }
   | { type: 'syncDancers'; dancers: Dancer[] };
 
@@ -83,7 +103,12 @@ export const POOL_NOUN: Record<PoolName, string> = {
   followers: 'follower',
 };
 
-export function createSession(dancers: readonly Dancer[], spinOrder: SpinOrder): SessionState {
+export function createSession(
+  dancers: readonly Dancer[],
+  spinOrder: SpinOrder,
+  promptsEnabled = false,
+  deck: readonly Prompt[] = WCS_STARTER_DECK.prompts,
+): SessionState {
   const pools = buildPools(dancers);
   const originals = { leaders: pools.leaders, followers: pools.followers };
   const couplesTotal =
@@ -104,7 +129,36 @@ export function createSession(dancers: readonly Dancer[], spinOrder: SpinOrder):
     rotation: 0,
     log: [],
     couplesTotal,
+    promptsEnabled,
+    promptDeck: [...deck],
+    promptsRemaining: [...deck],
+    currentPrompt: null,
+    promptsRecycled: false,
   };
+}
+
+/**
+ * The prompts the wheel should show, refilled first if the deck has run dry.
+ *
+ * Exhaustion is surfaced rather than hidden (see `promptsExhausted`): the
+ * operator is told the deck has been used up before it starts over, so they can
+ * add prompts or switch decks instead if they would rather.
+ */
+function promptEntriesFor(state: SessionState): { entries: Prompt[]; recycledNow: boolean } {
+  if (state.promptsRemaining.length > 0) {
+    return { entries: state.promptsRemaining, recycledNow: false };
+  }
+  return { entries: [...state.promptDeck], recycledNow: true };
+}
+
+/** What the prompt wheel should be showing. */
+export function promptEntries(state: SessionState): Prompt[] {
+  return promptEntriesFor(state).entries;
+}
+
+/** True when the next prompt spin will start the deck over. */
+export function promptsExhausted(state: SessionState): boolean {
+  return state.promptsEnabled && promptEntriesFor(state).recycledNow;
 }
 
 /**
@@ -123,9 +177,26 @@ function poolEntries(
   return { entries: [...state.originals[pool]], recycledNow: true };
 }
 
-/** What the wheel should be showing right now. */
+/**
+ * What the wheel is *showing*.
+ *
+ * Deliberately not the same as what is being *drawn*: between a landing and the
+ * next spin, the wheel still shows the pool it landed in. Use `drawEntries` for
+ * anything that has to agree with the reducer.
+ */
 export function wheelEntries(state: SessionState): Dancer[] {
   return poolEntries(state, state.wheelPool).entries;
+}
+
+/**
+ * The pool the next spin will actually draw from.
+ *
+ * Any caller picking a winning index **must** size it against this, not against
+ * `wheelEntries` — the two differ whenever a name has just landed, and an index
+ * chosen against the wrong one lands outside the pool.
+ */
+export function drawEntries(state: SessionState): Dancer[] {
+  return poolEntries(state, state.currentPool).entries;
 }
 
 /** True when the next spin will bring already-danced dancers back onto the wheel. */
@@ -163,20 +234,46 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     }
 
     case 'settled': {
-      if (state.phase !== 'spinning' || state.pendingIndex === null) return state;
+      if (state.pendingIndex === null) return state;
+
+      if (state.phase === 'prompt-spinning') {
+        const prompt = promptEntriesFor(state).entries[state.pendingIndex];
+        if (!prompt) return state;
+        // The prompt stays on the wheel until the couple is committed, exactly
+        // like a dancer — otherwise it vanishes from under the pointer the moment
+        // it lands, at the moment the room is looking at it.
+        return {
+          ...state,
+          currentPrompt: prompt,
+          pendingIndex: null,
+          phase: 'couple',
+        };
+      }
+
+      if (state.phase !== 'spinning') return state;
       const pool = state.currentPool;
-      const dancer = state.remaining[pool][state.pendingIndex];
-      if (!dancer) return state;
+      const candidates = state.remaining[pool];
+      if (candidates.length === 0) return state;
+      // Clamp rather than stall. An index outside the pool is a caller bug, but
+      // the failure mode here would be the wheel spinning forever in front of a
+      // room, which is far worse than quietly landing on the last name.
+      const dancer = candidates[Math.min(state.pendingIndex, candidates.length - 1)];
 
       // The winner stays on the wheel until the couple is committed, so the name
       // does not vanish from under the pointer the moment it lands.
       const drawn = { ...state.drawn, [pool]: dancer };
       const bothDrawn = drawn.leaders !== undefined && drawn.followers !== undefined;
+      // With prompts on, the pair still needs its challenge before they dance.
+      const nextPhase: SessionPhase = bothDrawn
+        ? state.promptsEnabled
+          ? 'pair'
+          : 'couple'
+        : 'drawn';
       return {
         ...state,
         drawn,
         pendingIndex: null,
-        phase: bothDrawn ? 'couple' : 'drawn',
+        phase: nextPhase,
         currentPool: bothDrawn ? pool : OTHER_POOL[pool],
       };
     }
@@ -189,9 +286,11 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
      * only finished once it is in the log.
      */
     case 'respin': {
-      if (state.phase !== 'drawn' && state.phase !== 'couple') return state;
+      if (state.phase !== 'drawn' && state.phase !== 'pair' && state.phase !== 'couple') {
+        return state;
+      }
       // The most recent draw is the one from the pool spun last.
-      const pool = state.phase === 'couple' ? state.currentPool : OTHER_POOL[state.currentPool];
+      const pool = state.phase === 'drawn' ? OTHER_POOL[state.currentPool] : state.currentPool;
       if (!state.drawn[pool]) return state;
 
       // The discarded dancer never left the pool, so they are still eligible —
@@ -210,24 +309,57 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       };
     }
 
+    /**
+     * Draw this couple's prompt. Same shape as a dancer spin: the caller picks
+     * the index, so the draw stays honest and testable.
+     */
+    case 'spinPrompt':
+    case 'respinPrompt': {
+      const allowed =
+        action.type === 'spinPrompt'
+          ? state.phase === 'pair'
+          : state.phase === 'couple' || state.phase === 'pair';
+      if (!allowed || !state.promptsEnabled) return state;
+
+      const { entries, recycledNow } = promptEntriesFor(state);
+      if (entries.length === 0) return state;
+
+      return {
+        ...state,
+        promptsRemaining: recycledNow ? entries : state.promptsRemaining,
+        promptsRecycled: recycledNow ? true : state.promptsRecycled,
+        // A re-spun prompt goes back in the deck; it was never danced.
+        currentPrompt: null,
+        phase: 'prompt-spinning',
+        pendingIndex: action.index,
+        rotation: action.rotation,
+      };
+    }
+
     case 'nextCouple': {
       if (state.phase !== 'couple') return state;
       const leader = state.drawn.leaders;
       const follower = state.drawn.followers;
       if (!leader || !follower) return state;
 
-      const log = [...state.log, { leader, follower }];
+      const log = [...state.log, { leader, follower, prompt: state.currentPrompt }];
       const complete = log.length >= state.couplesTotal;
-      // Committing the pairing is what takes both dancers off the wheel.
+      // Committing the pairing is what takes both dancers, and their prompt,
+      // out of play for the rest of the session.
       const remaining = {
         leaders: state.remaining.leaders.filter((d) => d.id !== leader.id),
         followers: state.remaining.followers.filter((d) => d.id !== follower.id),
       };
+      const promptsRemaining = state.currentPrompt
+        ? state.promptsRemaining.filter((p) => p.id !== state.currentPrompt!.id)
+        : state.promptsRemaining;
       return {
         ...state,
         remaining,
+        promptsRemaining,
         log,
         drawn: {},
+        currentPrompt: null,
         pendingIndex: null,
         phase: complete ? 'complete' : 'ready',
         currentPool: state.spinOrder,
@@ -270,6 +402,7 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         .map((couple) => ({
           leader: byId.get(couple.leader.id) ?? couple.leader,
           follower: byId.get(couple.follower.id) ?? couple.follower,
+          prompt: couple.prompt,
         }))
         .filter(Boolean);
 
@@ -281,8 +414,8 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       const bothDrawn = drawn.leaders !== undefined && drawn.followers !== undefined;
       let phase: SessionPhase;
       if (log.length >= couplesTotal) phase = 'complete';
-      else if (bothDrawn) phase = 'couple';
-      else if (state.phase === 'spinning') phase = 'ready';
+      else if (bothDrawn) phase = state.currentPrompt ? 'couple' : state.promptsEnabled ? 'pair' : 'couple';
+      else if (state.phase === 'spinning' || state.phase === 'prompt-spinning') phase = 'ready';
       else phase = drawn.leaders || drawn.followers ? 'drawn' : 'ready';
 
       // Whichever half is still missing is the pool to spin next.

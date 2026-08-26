@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Dancer, Role } from './roster';
+import { WCS_STARTER_DECK } from './prompts';
 import {
   createSession,
+  drawEntries,
   isForegoneConclusion,
+  promptEntries,
+  promptsExhausted,
   sessionReducer,
   wheelEntries,
   willRecycle,
@@ -86,6 +90,7 @@ describe('drawing a couple', () => {
     expect(s.log[0]).toEqual({
       leader: expect.objectContaining({ id: 'L0' }),
       follower: expect.objectContaining({ id: 'F0' }),
+      prompt: null,
     });
     expect(s.phase).toBe('ready');
   });
@@ -328,5 +333,138 @@ describe('a pool down to its last name', () => {
     let s = createSession(roster(2, 1), 'followers');
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
     expect(s.drawn.followers?.id).toBe('F0');
+  });
+});
+
+describe('prompts', () => {
+  const deck = WCS_STARTER_DECK.prompts.slice(0, 3);
+
+  /** Draw a couple and its prompt. */
+  function drawWithPrompt(state: SessionState, promptIndex = 0): SessionState {
+    let s = state;
+    for (let half = 0; half < 2; half++) {
+      s = apply(s, { type: 'spin', index: 0, rotation: s.rotation + 1800 }, { type: 'settled' });
+    }
+    expect(s.phase).toBe('pair');
+    s = apply(s, { type: 'spinPrompt', index: promptIndex, rotation: s.rotation + 1800 });
+    expect(s.phase).toBe('prompt-spinning');
+    return apply(s, { type: 'settled' });
+  }
+
+  it('stays out of the way entirely when switched off', () => {
+    let s = createSession(roster(3, 3), 'leaders', false);
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
+    // Straight to dancing; no prompt step at all.
+    expect(s.phase).toBe('couple');
+    s = apply(s, { type: 'nextCouple' });
+    expect(s.log[0].prompt).toBeNull();
+  });
+
+  it('holds the pair until their prompt is drawn', () => {
+    let s = createSession(roster(3, 3), 'leaders', true, deck);
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
+    expect(s.phase).toBe('pair');
+    expect(s.currentPrompt).toBeNull();
+  });
+
+  it('records what the couple danced', () => {
+    let s = createSession(roster(3, 3), 'leaders', true, deck);
+    s = drawWithPrompt(s, 1);
+    expect(s.currentPrompt?.id).toBe(deck[1].id);
+    s = apply(s, { type: 'nextCouple' });
+    expect(s.log[0].prompt?.id).toBe(deck[1].id);
+    expect(s.currentPrompt).toBeNull();
+  });
+
+  it('never repeats a prompt while the deck still has unused ones', () => {
+    let s = createSession(roster(3, 3), 'leaders', true, deck);
+    const drawn: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      s = drawWithPrompt(s, 0);
+      drawn.push(s.currentPrompt!.id);
+      s = apply(s, { type: 'nextCouple' });
+    }
+    expect(new Set(drawn).size).toBe(3);
+  });
+
+  it('shrinks the wheel as prompts are used up', () => {
+    let s = createSession(roster(3, 3), 'leaders', true, deck);
+    expect(promptEntries(s)).toHaveLength(3);
+    s = drawWithPrompt(s, 0);
+    s = apply(s, { type: 'nextCouple' });
+    expect(promptEntries(s)).toHaveLength(2);
+  });
+
+  it('announces exhaustion before starting the deck over, never silently', () => {
+    // Two prompts, three couples: the third must run the deck dry.
+    let s = createSession(roster(3, 3), 'leaders', true, deck.slice(0, 2));
+    expect(promptsExhausted(s)).toBe(false);
+
+    s = apply(drawWithPrompt(s, 0), { type: 'nextCouple' });
+    s = apply(drawWithPrompt(s, 0), { type: 'nextCouple' });
+
+    // Deck is spent. The app must be able to say so before it recycles.
+    expect(promptsExhausted(s)).toBe(true);
+    expect(s.promptsRecycled).toBe(false);
+
+    s = drawWithPrompt(s, 0);
+    expect(s.promptsRecycled).toBe(true);
+    expect(s.currentPrompt).not.toBeNull();
+  });
+
+  it('keeps the drawn prompt on the wheel until the couple is committed', () => {
+    let s = createSession(roster(3, 3), 'leaders', true, deck);
+    s = drawWithPrompt(s, 0);
+    const drawnPrompt = s.currentPrompt!;
+    // Still on the wheel, under the pointer, while they dance.
+    expect(promptEntries(s).map((p) => p.id)).toContain(drawnPrompt.id);
+
+    s = apply(s, { type: 'nextCouple' });
+    // Spent only once the couple is in the log.
+    expect(promptEntries(s).map((p) => p.id)).not.toContain(drawnPrompt.id);
+  });
+
+  it('re-spinning a prompt clears the current one and draws again', () => {
+    let s = createSession(roster(3, 3), 'leaders', true, deck);
+    s = drawWithPrompt(s, 0);
+    s = apply(s, { type: 'respinPrompt', index: 1, rotation: s.rotation + 1800 });
+    expect(s.currentPrompt).toBeNull();
+    s = apply(s, { type: 'settled' });
+    expect(s.currentPrompt?.id).toBe(deck[1].id);
+  });
+
+  it('is reported as exhausted only when prompts are actually on', () => {
+    const off = createSession(roster(3, 3), 'leaders', false, []);
+    expect(promptsExhausted(off)).toBe(false);
+  });
+});
+
+describe('the pool being drawn versus the pool being shown', () => {
+  /**
+   * Regression: the screen sized its spin against the names on the wheel rather
+   * than the pool being drawn. With four leaders showing and two followers to
+   * draw from, it could pick index 3 of a two-person pool — the reducer found
+   * nobody there and the wheel span forever.
+   */
+  it('reports the drawn pool separately from the displayed one', () => {
+    let s = createSession(roster(4, 2), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+
+    // The wheel still shows the four leaders it landed in...
+    expect(wheelEntries(s)).toHaveLength(4);
+    // ...but the next draw comes from the two followers.
+    expect(drawEntries(s)).toHaveLength(2);
+    expect(s.currentPool).toBe('followers');
+  });
+
+  it('lands rather than stalling if an index arrives outside the pool', () => {
+    let s = createSession(roster(4, 2), 'leaders');
+    s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
+    // An index valid for the displayed pool but not for the drawn one.
+    s = apply(s, { type: 'spin', index: 3, rotation: 3600 }, { type: 'settled' });
+    expect(s.phase).not.toBe('spinning');
+    expect(s.drawn.followers).toBeDefined();
   });
 });

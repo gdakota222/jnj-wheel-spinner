@@ -51,6 +51,7 @@ export function SessionLog({ log, couplesTotal, onClose }: Props) {
                   <span className="log__name">{couple.follower.name}</span>
                   <span className="log__role">Follower</span>
                 </span>
+                {couple.prompt && <span className="log__prompt">{couple.prompt.name}</span>}
               </li>
             ))}
           </ol>

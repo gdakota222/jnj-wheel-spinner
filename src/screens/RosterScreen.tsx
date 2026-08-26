@@ -14,7 +14,7 @@ type Props = {
   dancers: Dancer[];
   onChange: (next: Dancer[]) => void;
   onBack: () => void;
-  onStartSession: (order: SpinOrder) => void;
+  onStartSession: (order: SpinOrder, promptsEnabled: boolean) => void;
 };
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
@@ -23,6 +23,7 @@ type OrderChoice = SpinOrder | 'random';
 
 export function RosterScreen({ dancers, onChange, onBack, onStartSession }: Props) {
   const [orderChoice, setOrderChoice] = useState<OrderChoice>('leaders');
+  const [promptsEnabled, setPromptsEnabled] = useState<boolean | null>(null);
   const [draftName, setDraftName] = useState('');
   const [draftRole, setDraftRole] = useState<Role>('leader');
   const [error, setError] = useState<string | null>(null);
@@ -210,6 +211,36 @@ export function RosterScreen({ dancers, onChange, onBack, onStartSession }: Prop
         </fieldset>
       </section>
 
+      {/* Asked, never defaulted (D-015). A default set the wrong way is only
+          discovered mid-session, when changing it is disruptive — and asking makes
+          the feature visible to an organiser who has never seen the app. */}
+      <section className="card">
+        <h2 className="card__title">Dance challenges?</h2>
+        <p className="card__body">
+          Each couple can draw a challenge to dance — a named constraint like{' '}
+          <em>A Whole New Level</em>. Or run it as a plain pairing wheel.
+        </p>
+        <fieldset className="roles roles--stacked">
+          <legend className="visually-hidden">Prompts on or off</legend>
+          <button
+            type="button"
+            className="roles__option"
+            aria-pressed={promptsEnabled === true}
+            onClick={() => setPromptsEnabled(true)}
+          >
+            Yes — draw a challenge for each couple
+          </button>
+          <button
+            type="button"
+            className="roles__option"
+            aria-pressed={promptsEnabled === false}
+            onClick={() => setPromptsEnabled(false)}
+          >
+            No — just pair them up
+          </button>
+        </fieldset>
+      </section>
+
       <div className="next">
         <button
           className="next__button"
@@ -221,15 +252,18 @@ export function RosterScreen({ dancers, onChange, onBack, onStartSession }: Prop
                   ? 'leaders'
                   : 'followers'
                 : orderChoice,
+              promptsEnabled === true,
             )
           }
-          disabled={projection.couples === 0}
+          disabled={projection.couples === 0 || promptsEnabled === null}
         >
           <span className="menu__label">Start the session</span>
           <span className="menu__note">
             {projection.couples === 0
               ? 'Needs at least one leader and one follower'
-              : `${projection.couples} ${projection.couples === 1 ? 'couple' : 'couples'} will dance`}
+              : promptsEnabled === null
+                ? 'Choose whether to use challenges first'
+                : `${projection.couples} ${projection.couples === 1 ? 'couple' : 'couples'} will dance`}
           </span>
         </button>
       </div>

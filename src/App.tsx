@@ -29,8 +29,8 @@ export default function App() {
   const dispatch = (action: SessionAction) =>
     setSession((current) => (current ? sessionReducer(current, action) : current));
 
-  function startSession(order: SpinOrder) {
-    setSession(createSession(dancers, order));
+  function startSession(order: SpinOrder, promptsEnabled: boolean) {
+    setSession(createSession(dancers, order, promptsEnabled));
     setScreen('session');
   }
 
@@ -55,7 +55,9 @@ export default function App() {
           setSession(null);
           setScreen('roster');
         }}
-        onStartFresh={() => setSession(createSession(dancers, session.spinOrder))}
+        onStartFresh={() =>
+          setSession(createSession(dancers, session.spinOrder, session.promptsEnabled))
+        }
       />
     );
   }

@@ -8,7 +8,10 @@ import {
   OTHER_POOL,
   POOL_LABEL,
   POOL_NOUN,
+  drawEntries,
   isForegoneConclusion,
+  promptEntries,
+  promptsExhausted,
   wheelEntries,
   willRecycle,
   type SessionAction,
@@ -41,20 +44,52 @@ export function SessionScreen({
   // Hold the screen awake for the whole session, including the dance hold.
   useWakeLock(session.phase !== 'complete');
 
-  const entries = wheelEntries(session);
-  const recyclingNow = willRecycle(session);
-  const foregone = isForegoneConclusion(session) && session.phase !== 'couple';
-  const spinning = session.phase === 'spinning';
+  const { phase } = session;
+  // The prompt wheel stays up through the dance, with the drawn challenge still
+  // under the pointer — the wheel should never show a pool nobody is looking at.
+  const onPromptWheel =
+    phase === 'pair' ||
+    phase === 'prompt-spinning' ||
+    (phase === 'couple' && session.currentPrompt !== null);
+  const spinning = phase === 'spinning' || phase === 'prompt-spinning';
+
+  // What the wheel is showing, versus what the next spin will draw from. These
+  // differ between a landing and the next spin, and conflating them is how a spin
+  // ends up aimed outside its own pool.
+  const shownEntries = wheelEntries(session);
+  const drawPool = drawEntries(session);
+  const prompts = promptEntries(session);
+  const wheelNames = onPromptWheel ? prompts.map((p) => p.name) : shownEntries.map((d) => d.name);
+
+  const recyclingNow = willRecycle(session) && !onPromptWheel;
+  const deckSpent = promptsExhausted(session) && onPromptWheel;
+  const foregone = isForegoneConclusion(session) && !onPromptWheel && phase !== 'couple';
+
   const coupleNumber = Math.min(session.log.length + 1, session.couplesTotal);
 
-  function spin(type: 'spin' | 'respin') {
-    if (entries.length === 0) return;
-    const index = pickIndex(entries.length);
-    const plan = planSpin(index, entries.length, session.rotation);
+  function spinDancer(type: 'spin' | 'respin') {
+    if (drawPool.length === 0) return;
+    const index = pickIndex(drawPool.length);
+    const plan = planSpin(index, drawPool.length, session.rotation);
     dispatch({ type, index, rotation: plan.rotation });
   }
 
-  if (session.phase === 'complete') {
+  function spinPrompt(type: 'spinPrompt' | 'respinPrompt') {
+    if (prompts.length === 0) return;
+    // "Draw a different challenge" has to actually differ, so the current prompt
+    // is excluded — unless it is the only one left to give.
+    const excluded =
+      type === 'respinPrompt' && session.currentPrompt
+        ? prompts.filter((p) => p.id !== session.currentPrompt!.id)
+        : prompts;
+    const pool = excluded.length > 0 ? excluded : prompts;
+    const chosen = pool[pickIndex(pool.length)];
+    const index = prompts.findIndex((p) => p.id === chosen.id);
+    const plan = planSpin(index, prompts.length, session.rotation);
+    dispatch({ type, index, rotation: plan.rotation });
+  }
+
+  if (phase === 'complete') {
     return (
       <div className="shell">
         <header className="screen-head">
@@ -77,6 +112,7 @@ export function SessionScreen({
                 <span className="log__name">{couple.follower.name}</span>
                 <span className="log__role">Follower</span>
               </span>
+              {couple.prompt && <span className="log__prompt">{couple.prompt.name}</span>}
             </li>
           ))}
         </ol>
@@ -118,17 +154,20 @@ export function SessionScreen({
       </header>
 
       {/* What the wheel is for, stated at all times — the one fact a second
-          operator picking up the tablet cannot infer from anything else.
-          The wording follows the phase: while a name is still showing on the
-          wheel it would be a contradiction to claim the other pool is spinning. */}
+          operator picking up the tablet cannot infer from anything else. The
+          wording follows the phase, so it never contradicts what is on the wheel. */}
       <p className="pool-label" aria-live="polite">
-        {session.phase === 'drawn' ? (
-          <>
-            Next: <strong>{POOL_LABEL[session.currentPool]}</strong>
-          </>
-        ) : session.phase === 'couple' ? (
+        {phase === 'couple' ? (
           <>
             This couple is <strong>up</strong>
+          </>
+        ) : onPromptWheel ? (
+          <>
+            Now spinning: <strong>The challenge</strong>
+          </>
+        ) : phase === 'drawn' ? (
+          <>
+            Next: <strong>{POOL_LABEL[session.currentPool]}</strong>
           </>
         ) : (
           <>
@@ -153,24 +192,31 @@ export function SessionScreen({
         </p>
       )}
 
-      {/* D-017: the last name still gets a spin, and the app is in on the joke
-          rather than pretending there is suspense. */}
+      {/* Deck exhaustion is surfaced before it recycles, never after. */}
+      {deckSpent && (
+        <p className="recycle-note recycle-note--wink">
+          You have used all {session.promptDeck.length} prompts tonight. The deck starts over from
+          here.
+        </p>
+      )}
+
+      {/* D-017: the last name still gets a spin, and the app is in on the joke. */}
       {foregone && !recyclingNow && (
         <p className="recycle-note recycle-note--wink">
-          Only {entries[0]?.name} left in the {POOL_NOUN[session.currentPool]} pool. Spin it
+          Only {drawPool[0]?.name} left in the {POOL_NOUN[session.currentPool]} pool. Spin it
           anyway — they have earned the moment.
         </p>
       )}
 
       <Wheel
-        names={entries.map((d) => d.name)}
+        names={wheelNames}
         rotation={session.rotation}
         spinning={spinning}
         onSettled={() => dispatch({ type: 'settled' })}
       />
 
       <div className="result" aria-live="polite">
-        {session.phase === 'couple' ? (
+        {phase === 'couple' ? (
           <>
             <p className="result__label">Dancing now</p>
             <p className="result__couple">
@@ -178,27 +224,41 @@ export function SessionScreen({
               <span className="result__amp">and</span>
               <span className="result__name">{session.drawn.followers?.name}</span>
             </p>
+            {session.currentPrompt && (
+              <div className="challenge">
+                <p className="challenge__name">{session.currentPrompt.name}</p>
+                {/* The description is for the dancers on the floor, not the
+                    operator — so it stays up for the whole dance. */}
+                <p className="challenge__description">{session.currentPrompt.description}</p>
+              </div>
+            )}
           </>
-        ) : session.phase === 'drawn' ? (
+        ) : phase === 'pair' ? (
+          <>
+            <p className="result__label">Drawn</p>
+            <p className="result__couple">
+              <span className="result__name">{session.drawn.leaders?.name}</span>
+              <span className="result__amp">and</span>
+              <span className="result__name">{session.drawn.followers?.name}</span>
+            </p>
+            <p className="result__idle">Now draw their challenge.</p>
+          </>
+        ) : phase === 'drawn' ? (
           <>
             <p className="result__label">
               {POOL_LABEL[OTHER_POOL[session.currentPool]].replace(/s$/, '')}
             </p>
-            <p className="result__name">
-              {session.drawn[OTHER_POOL[session.currentPool]]?.name}
-            </p>
+            <p className="result__name">{session.drawn[OTHER_POOL[session.currentPool]]?.name}</p>
           </>
         ) : (
           <p className="result__idle">
-            {spinning
-              ? 'Spinning…'
-              : `Press spin to draw a ${POOL_NOUN[session.currentPool]}.`}
+            {spinning ? 'Spinning…' : `Press spin to draw a ${POOL_NOUN[session.currentPool]}.`}
           </p>
         )}
       </div>
 
       <div className="actions">
-        {session.phase === 'couple' ? (
+        {phase === 'couple' ? (
           <button
             className="actions__primary"
             type="button"
@@ -206,12 +266,20 @@ export function SessionScreen({
           >
             Next couple
           </button>
+        ) : phase === 'pair' ? (
+          <button
+            className="actions__primary"
+            type="button"
+            onClick={() => spinPrompt('spinPrompt')}
+          >
+            Spin their challenge
+          </button>
         ) : (
           <button
             className="actions__primary"
             type="button"
-            onClick={() => spin('spin')}
-            disabled={spinning || entries.length === 0}
+            onClick={() => spinDancer('spin')}
+            disabled={spinning || drawPool.length === 0}
           >
             {spinning
               ? 'Spinning…'
@@ -224,16 +292,32 @@ export function SessionScreen({
         {/* Re-spin stays available right up until Next couple commits the pairing.
             A dancer who has stepped outside is most often noticed on the second
             draw, not the first. */}
-        {(session.phase === 'drawn' || session.phase === 'couple') && (
-          <button className="edit-dancers" type="button" onClick={() => spin('respin')}>
+        {(phase === 'drawn' || phase === 'pair' || phase === 'couple') && (
+          <button
+            className="edit-dancers"
+            type="button"
+            onClick={() => spinDancer('respin')}
+            disabled={spinning}
+          >
             Re-spin{' '}
-            {session.phase === 'couple'
-              ? session.drawn[session.currentPool]?.name
-              : session.drawn[OTHER_POOL[session.currentPool]]?.name}
+            {phase === 'drawn'
+              ? session.drawn[OTHER_POOL[session.currentPool]]?.name
+              : session.drawn[session.currentPool]?.name}
           </button>
         )}
 
-        {session.phase === 'couple' && (
+        {phase === 'couple' && session.currentPrompt && (
+          <button
+            className="edit-dancers"
+            type="button"
+            onClick={() => spinPrompt('respinPrompt')}
+            disabled={spinning}
+          >
+            Draw a different challenge
+          </button>
+        )}
+
+        {phase === 'couple' && (
           <p className="actions__note">
             They dance now. Press Next couple when the floor is clear.
           </p>
