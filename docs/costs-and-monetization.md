@@ -1,7 +1,7 @@
 # Costs and Monetization
 
 **Status:** Free today. Monetization is a possible future, with no model chosen.
-**Last updated:** 2026-08-25
+**Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [stack.md](stack.md) · [prd.md](prd.md)
 
 This document exists so that a decision to charge money later doesn't arrive as a surprise

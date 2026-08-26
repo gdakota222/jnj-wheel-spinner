@@ -1,7 +1,9 @@
 # JnJ Wheel Spinner — Product Requirements
 
-**Status:** v1.0 (MVP) scoped and ready to build. Later versions outlined.
-**Last updated:** 2026-08-10
+**Status:** v1.0 is **built and deployed**, in device rehearsal before its first real event.
+Later versions outlined.
+**Last updated:** 2026-08-26
+**Progress:** see [build-tracker.md](build-tracker.md) · **Live:** https://gdakota222.github.io/jnj-wheel-spinner/
 **Companion doc:** [intent.md](intent.md) — why this exists, design principles, permanent non-goals.
 
 This document is **what gets built, and in what order**. Detail is deliberately front-loaded

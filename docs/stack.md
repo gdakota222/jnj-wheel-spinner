@@ -1,7 +1,7 @@
 # JnJ Wheel Spinner — Technical Stack
 
-**Status:** Recommended, pending setup
-**Last updated:** 2026-08-25
+**Status:** **In use.** Every choice below is running in the deployed app.
+**Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md)
 
 **Target devices:** a **Samsung Android tablet** primarily, with iPhone and iPad as fully
@@ -54,7 +54,7 @@ Those get unit tests. Nothing else needs them in v1.
 
 ## Setup required
 
-### 1. Install Node.js — not currently on this machine
+### 1. Install Node.js — done (v24.19.0)
 Git is present (2.55.0); Node and npm are not. Install the LTS release:
 
 ```bash
@@ -64,7 +64,7 @@ winget install OpenJS.NodeJS.LTS
 Or download the Windows installer from nodejs.org. Restart the terminal afterward so `node` and
 `npm` resolve.
 
-### 2. Decide where the project lives — recommend moving it out of OneDrive
+### 2. Where the project lives — done, moved out of OneDrive
 The project currently sits in `OneDrive\Desktop\Claude Projects\`. Once `npm install` runs, it will
 create a `node_modules` folder holding tens of thousands of small files, and **OneDrive will try to
 sync every one of them.** The usual results are slow installs, file-lock errors mid-build, and
@@ -76,8 +76,8 @@ on **git plus GitHub for backup** — which is better versioned than OneDrive an
 Staying in OneDrive is workable but will be intermittently annoying, and the annoyance arrives
 during builds rather than at a convenient moment.
 
-### 3. Initialize the repo
-This folder is not yet a git repository. It needs to be one for GitHub Pages deployment.
+### 3. Initialise the repo — done
+Live at https://github.com/gdakota222/jnj-wheel-spinner, deploying to Pages on every push to `main`.
 
 ---
 

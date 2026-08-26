@@ -78,6 +78,25 @@ code drop — something that can be opened on the tablet and looked at.
 
 Newest first. Every entry dated.
 
+### 2026-08-26 — Documentation sweep
+Checked every document against what the app actually is at 0.8.1, rather than what it was planned
+to be. Four were stale:
+
+- **[app-store-description.md](app-store-description.md) promised features that do not exist.** It
+  was written before the v1.0 scope was cut and described the winner, the audience vote and the
+  theatre curtain — all v1.2/v1.3. Its own notes claimed "every claim is one the product actually
+  makes", which had quietly stopped being true. Now split into **v1.0 copy that is true today** and
+  **finished-product copy held until v1.3**, with a list of claims to keep out until the version
+  that delivers them ships.
+- **[prd.md](prd.md)** still said "scoped and ready to build". v1.0 is built and deployed.
+- **[stack.md](stack.md)** still said "recommended, pending setup", with setup steps written as
+  to-dos. All three are done; marked as such.
+- Dates corrected across intent, prd, stack and costs.
+
+**The lesson, recorded because it will recur:** the store copy went stale because it was written
+against the product's *vision* while the build shipped against its *scope*. Marketing copy now
+carries a version number, not just a date.
+
 ### 2026-08-26 — 0.8.1: rehearsal round 1 findings
 **Sections 1–6 and 8 of the rehearsal passed on both a Samsung phone and a Samsung tablet.**
 Installed cleanly as a real app, ran with the network off, survived being swiped away mid-session,
