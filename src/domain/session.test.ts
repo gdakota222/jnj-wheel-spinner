@@ -5,6 +5,7 @@ import {
   createSession,
   drawEntries,
   isForegoneConclusion,
+  formatNames,
   jamboreePrompt,
   promptEntries,
   promptsExhausted,
@@ -545,7 +546,7 @@ describe('the birthday jamboree', () => {
     let s = createSession(roster(3, 3), 'leaders');
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
     expect(s.phase).toBe('drawn');
-    expect(s.jamboreeFor).toBeNull();
+    expect(s.jamboreeDancers).toHaveLength(0);
   });
 
   it('interrupts when the birthday dancer is drawn first', () => {
@@ -553,7 +554,7 @@ describe('the birthday jamboree', () => {
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
 
     expect(s.phase).toBe('jamboree');
-    expect(s.jamboreeFor?.id).toBe('L0');
+    expect(s.jamboreeDancers[0]?.id).toBe('L0');
     // The draw still stands underneath the interruption.
     expect(s.drawn.leaders?.id).toBe('L0');
 
@@ -569,7 +570,7 @@ describe('the birthday jamboree', () => {
     s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
 
     expect(s.phase).toBe('jamboree');
-    expect(s.jamboreeFor?.id).toBe('F0');
+    expect(s.jamboreeDancers[0]?.id).toBe('F0');
 
     s = apply(s, { type: 'jamOver' });
     // Prompts are off here, so the pair goes straight to dancing.
@@ -621,22 +622,48 @@ describe('the birthday jamboree', () => {
     let s = createSession(withBirthday('L0', roster(3, 3)), 'leaders');
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
     expect(resumeSession(s).phase).toBe('jamboree');
-    expect(resumeSession(s).jamboreeFor?.id).toBe('L0');
+    expect(resumeSession(s).jamboreeDancers[0]?.id).toBe('L0');
   });
 
-  it('supports more than one birthday dancer', () => {
+  it('jams every birthday dancer together at the first one drawn', () => {
     let s = createSession(withBirthday('F0', withBirthday('L0', roster(3, 3))), 'leaders');
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
-    expect(s.jamboreeFor?.id).toBe('L0');
+
+    // L0 was drawn, but F0 is celebrated at the same time.
+    expect(s.phase).toBe('jamboree');
+    expect(s.jamboreeDancers.map((d) => d.id).sort()).toEqual(['F0', 'L0']);
+
     s = apply(s, { type: 'jamOver' });
+    expect(s.jammed.sort()).toEqual(['F0', 'L0']);
+
+    // Drawing the other one later must not stop the night a second time.
     s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
-    expect(s.jamboreeFor?.id).toBe('F0');
-    s = apply(s, { type: 'jamOver' });
-    expect(s.jammed).toEqual(['L0', 'F0']);
+    expect(s.drawn.followers?.id).toBe('F0');
+    expect(s.phase).not.toBe('jamboree');
+  });
+
+  it('names everyone in the prompt, however many there are', () => {
+    const d = (id: string, name: string): Dancer => ({ id, name, role: 'leader', isBirthday: true });
+    expect(jamboreePrompt([d('a', 'Dakota G')]).description).toContain('Happy Birthday Dakota G!');
+    expect(jamboreePrompt([d('a', 'Dakota G'), d('b', 'Zoe K')]).description).toContain(
+      'Happy Birthday Dakota G and Zoe K!',
+    );
+    expect(
+      jamboreePrompt([d('a', 'Dakota G'), d('b', 'Zoe K'), d('c', 'Marco R')]).description,
+    ).toContain('Happy Birthday Dakota G, Zoe K and Marco R!');
+  });
+
+  it('formats a list the way it would be read aloud', () => {
+    expect(formatNames([])).toBe('');
+    expect(formatNames(['A'])).toBe('A');
+    expect(formatNames(['A', 'B'])).toBe('A and B');
+    expect(formatNames(['A', 'B', 'C'])).toBe('A, B and C');
   });
 
   it('writes the prompt with the dancer named in it', () => {
-    const prompt = jamboreePrompt({ id: 'x', name: 'Dakota G', role: 'leader', isBirthday: true });
+    const prompt = jamboreePrompt([
+      { id: 'x', name: 'Dakota G', role: 'leader', isBirthday: true },
+    ]);
     expect(prompt.name).toBe('Jamboree');
     expect(prompt.description).toContain('Happy Birthday Dakota G!');
     expect(prompt.description).toContain('they get to choose the song');

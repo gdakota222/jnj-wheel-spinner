@@ -95,7 +95,7 @@ export function SessionScreen({
     dispatch({ type, index, rotation: plan.rotation });
   }
 
-  if (phase === 'jamboree' && session.jamboreeFor) {
+  if (phase === 'jamboree' && session.jamboreeDancers.length > 0) {
     return (
       <div className="shell">
         <header className="screen-head">
@@ -103,7 +103,10 @@ export function SessionScreen({
             Couple {coupleNumber} of {session.couplesTotal}
           </h1>
         </header>
-        <Jamboree dancer={session.jamboreeFor} onJamOver={() => dispatch({ type: 'jamOver' })} />
+        <Jamboree
+          dancers={session.jamboreeDancers}
+          onJamOver={() => dispatch({ type: 'jamOver' })}
+        />
       </div>
     );
   }

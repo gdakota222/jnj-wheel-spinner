@@ -320,7 +320,10 @@ A dancer can be marked as **the birthday dancer**, and the session stops to cele
   dance. The interruption leaves no trace in the flow.
 - **Once per dancer per session.** A recycled pool can draw the same person twice; the jam does not
   repeat. See D-035.
-- More than one dancer can be marked. Each gets their own jam.
+- **More than one birthday dancer is jammed together, in one interruption.** The jam fires at
+  whichever of them the wheel reaches first and names them all — *"Happy Birthday Dakota G and
+  Zoe K!"* Drawing the others later does not stop the night again. Quicker than pausing once per
+  person, and better as a moment: everyone is celebrated at once rather than in instalments.
 
 ### Session log
 - A running on-screen list of the session's pairings, so the operator can see who has danced.

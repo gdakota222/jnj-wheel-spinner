@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.8.2 — deployed and live
+**Current version:** 0.8.3 — deployed and live
 **Current phase:** 0.8.0 — Device rehearsal (with the owner)
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
@@ -77,6 +77,16 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-26 — 0.8.3: one jam for every birthday
+- **Several birthday dancers are now jammed together.** The jam fires at whichever of them the
+  wheel reaches first, names them all — *"Happy Birthday Dakota G and Zoe K!"* — and drawing the
+  others later does not stop the night again. Owner's idea, and better than the per-dancer jam that
+  shipped in 0.8.2: one interruption instead of several, and everybody celebrated at once.
+- Name lists read the way they would be said aloud: *"A"*, *"A and B"*, *"A, B and C"*.
+- Session schema bumped to **v3**.
+- **113 tests.** Verified in the browser with two birthday dancers, one in each pool: the jam fired
+  on the first draw naming both, resumed correctly, and stayed silent when the second was drawn.
 
 ### 2026-08-26 — 0.8.2: the birthday jamboree, and a real fix to the back guard
 - **The back guard was broken after the first use.** Closing the app consumed its history guard, and
@@ -731,8 +741,13 @@ they are drawn; a `Jam Over` button that resumes exactly where the session was.
   makes it work identically for the first spin or the second, either role, either spin order, and
   with challenges on or off — one mechanism rather than six branches.
 - **Once per dancer per session.** A recycled pool can draw the same person twice, and a second jam
-  would deflate the first — a birthday jam is a ceremony, not a recurring event. *This was my call,
-  not a stated requirement; it is the one part worth overriding if a second jam is wanted.*
+  would deflate the first — a birthday jam is a ceremony, not a recurring event. *Proposed as my
+  call rather than a stated requirement; the owner confirmed it in 0.8.3.*
+- **Several birthday dancers are jammed together (0.8.3).** The jam fires at whichever of them the
+  wheel reaches first and names them all; drawing the others later does not interrupt again. The
+  owner asked for this and it is plainly better than what shipped in 0.8.2 — one interruption
+  instead of several, and the room celebrates everybody at once rather than in instalments. Session
+  schema bumped to v3 for the shape change.
 - **Marking is hidden and confirming is not.** A long-press keeps it out of the way of anyone who
   does not know about it; the confirmation means an accidental hold costs a single tap.
 - **Nothing hints at it during the session.** The marker lives in the roster list alone, because the

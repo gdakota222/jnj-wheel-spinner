@@ -79,8 +79,13 @@ export type SessionState = {
   /** True once the deck has been exhausted and started over. */
   promptsRecycled: boolean;
 
-  /** The birthday dancer currently being jammed, if any. */
-  jamboreeFor: Dancer | null;
+  /**
+   * Everyone being jammed right now. Empty when no jam is running.
+   *
+   * All the birthday dancers at once, not just the one who was drawn: the jam
+   * fires at whichever of them the wheel reaches first and covers the lot.
+   */
+  jamboreeDancers: Dancer[];
   /**
    * Where the session goes once the jam is over.
    *
@@ -150,18 +155,39 @@ export function createSession(
     promptsRemaining: [...deck],
     currentPrompt: null,
     promptsRecycled: false,
-    jamboreeFor: null,
+    jamboreeDancers: [],
     phaseAfterJamboree: null,
     jammed: [],
   };
 }
 
-/** The jam's own prompt. Written here so it reads the same everywhere it appears. */
-export function jamboreePrompt(dancer: Dancer): Prompt {
+/** "A", "A and B", "A, B and C" — read aloud to a room, so it has to scan. */
+export function formatNames(names: readonly string[]): string {
+  if (names.length === 0) return '';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
+/** Everyone in this session marked as a birthday dancer, in pool order. */
+export function birthdayDancers(state: SessionState): Dancer[] {
+  return [...state.originals.leaders, ...state.originals.followers].filter(
+    (d) => d.isBirthday === true,
+  );
+}
+
+/**
+ * The jam's own prompt. Written here so it reads the same everywhere it appears.
+ *
+ * Names every birthday dancer, however many there are: the room jams them all
+ * together in one go rather than stopping the session once per person.
+ */
+export function jamboreePrompt(dancers: readonly Dancer[]): Prompt {
+  const names = formatNames(dancers.map((d) => d.name));
   return {
-    id: `jamboree-${dancer.id}`,
+    id: `jamboree-${dancers.map((d) => d.id).join('-')}`,
     name: 'Jamboree',
-    description: `Happy Birthday ${dancer.name}! All contestants and/or viewers must birthday jam ${dancer.name}, but they get to choose the song!`,
+    description: `Happy Birthday ${names}! All contestants and/or viewers must birthday jam ${names}, but they get to choose the song!`,
   };
 }
 
@@ -326,14 +352,21 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       // A birthday dancer stops everything. The phase the draw was heading for is
       // parked and restored by `jamOver`, so this works the same whether they were
       // the first name drawn or the second, and whichever role they dance.
+      //
+      // The jam covers *every* birthday dancer, not only the one the wheel
+      // reached. One interruption, everybody jammed together — quicker than
+      // stopping the night once per person, and better as a moment.
       const owedAJam = dancer.isBirthday === true && !state.jammed.includes(dancer.id);
+      const celebrating = owedAJam
+        ? birthdayDancers({ ...state, drawn }).filter((d) => !state.jammed.includes(d.id))
+        : [];
 
       return {
         ...state,
         drawn,
         pendingIndex: null,
         phase: owedAJam ? 'jamboree' : nextPhase,
-        jamboreeFor: owedAJam ? dancer : null,
+        jamboreeDancers: celebrating,
         phaseAfterJamboree: owedAJam ? nextPhase : null,
         currentPool: bothDrawn ? pool : OTHER_POOL[pool],
       };
@@ -399,12 +432,14 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
 
     /** The jam is done; carry on as if it had never interrupted. */
     case 'jamOver': {
-      if (state.phase !== 'jamboree' || !state.jamboreeFor) return state;
+      if (state.phase !== 'jamboree' || state.jamboreeDancers.length === 0) return state;
       return {
         ...state,
         phase: state.phaseAfterJamboree ?? 'drawn',
-        jammed: [...state.jammed, state.jamboreeFor.id],
-        jamboreeFor: null,
+        // Everyone jammed together is everyone marked done together, so a second
+        // birthday dancer being drawn later does not stop the night again.
+        jammed: [...state.jammed, ...state.jamboreeDancers.map((d) => d.id)],
+        jamboreeDancers: [],
         phaseAfterJamboree: null,
       };
     }
@@ -487,7 +522,8 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       const bothDrawn = drawn.leaders !== undefined && drawn.followers !== undefined;
       let phase: SessionPhase;
       // Removing the birthday dancer mid-jam ends the jam rather than stranding it.
-      if (state.phase === 'jamboree' && state.jamboreeFor && byId.has(state.jamboreeFor.id)) {
+      const stillCelebrating = state.jamboreeDancers.filter((d) => byId.has(d.id));
+      if (state.phase === 'jamboree' && stillCelebrating.length > 0) {
         phase = 'jamboree';
       } else if (log.length >= couplesTotal) phase = 'complete';
       else if (bothDrawn) phase = state.currentPrompt ? 'couple' : state.promptsEnabled ? 'pair' : 'couple';
@@ -512,7 +548,7 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         currentPool,
         wheelPool: currentPool,
         pendingIndex: null,
-        jamboreeFor: phase === 'jamboree' ? state.jamboreeFor : null,
+        jamboreeDancers: phase === 'jamboree' ? stillCelebrating : [],
         phaseAfterJamboree: phase === 'jamboree' ? state.phaseAfterJamboree : null,
       };
     }

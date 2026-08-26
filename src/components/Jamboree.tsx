@@ -2,15 +2,15 @@ import type { Dancer } from '../domain/roster';
 import { jamboreePrompt } from '../domain/session';
 
 type Props = {
-  dancer: Dancer;
+  dancers: Dancer[];
   onJamOver: () => void;
 };
 
 /** Enough pieces to read as a burst, few enough to stay smooth on a tablet. */
 const CONFETTI = Array.from({ length: 28 }, (_, i) => i);
 
-export function Jamboree({ dancer, onJamOver }: Props) {
-  const prompt = jamboreePrompt(dancer);
+export function Jamboree({ dancers, onJamOver }: Props) {
+  const prompt = jamboreePrompt(dancers);
 
   return (
     <section className="jam" aria-live="assertive">
@@ -39,7 +39,9 @@ export function Jamboree({ dancer, onJamOver }: Props) {
         <span className="jam__popper">🎉</span>
       </div>
 
-      <p className="jam__label">Everything stops</p>
+      <p className="jam__label">
+        {dancers.length > 1 ? `${dancers.length} birthdays` : 'Everything stops'}
+      </p>
       <h2 className="jam__title">{prompt.name}</h2>
       <p className="jam__description">{prompt.description}</p>
 
