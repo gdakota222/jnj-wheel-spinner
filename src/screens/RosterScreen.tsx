@@ -15,13 +15,21 @@ type Props = {
   onChange: (next: Dancer[]) => void;
   onBack: () => void;
   onStartSession: (order: SpinOrder, promptsEnabled: boolean) => void;
+  /** How many challenges are left in play after Prompt Bank set-asides. */
+  promptsInPlay: number;
 };
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
 
 type OrderChoice = SpinOrder | 'random';
 
-export function RosterScreen({ dancers, onChange, onBack, onStartSession }: Props) {
+export function RosterScreen({
+  dancers,
+  onChange,
+  onBack,
+  onStartSession,
+  promptsInPlay,
+}: Props) {
   const [orderChoice, setOrderChoice] = useState<OrderChoice>('leaders');
   const [promptsEnabled, setPromptsEnabled] = useState<boolean | null>(null);
   const [draftName, setDraftName] = useState('');
@@ -220,6 +228,11 @@ export function RosterScreen({ dancers, onChange, onBack, onStartSession }: Prop
           Each couple can draw a challenge to dance — a named constraint like{' '}
           <em>A Whole New Level</em>. Or run it as a plain pairing wheel.
         </p>
+        <p className="card__body">
+          {promptsInPlay === 0
+            ? 'Every challenge is set aside in the Prompt Bank, so there is nothing to draw. Put some back to use them.'
+            : `${promptsInPlay} ${promptsInPlay === 1 ? 'challenge is' : 'challenges are'} in play.`}
+        </p>
         <fieldset className="roles roles--stacked">
           <legend className="visually-hidden">Prompts on or off</legend>
           <button
@@ -227,6 +240,7 @@ export function RosterScreen({ dancers, onChange, onBack, onStartSession }: Prop
             className="roles__option"
             aria-pressed={promptsEnabled === true}
             onClick={() => setPromptsEnabled(true)}
+            disabled={promptsInPlay === 0}
           >
             Yes — draw a challenge for each couple
           </button>

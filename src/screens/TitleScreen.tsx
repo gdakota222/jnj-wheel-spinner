@@ -5,18 +5,27 @@ const VERSION = __APP_VERSION__;
 
 type Props = {
   onStartSession: () => void;
+  onOpenBank: () => void;
   rosterCount: number;
+  promptsInPlay: number;
+  promptsTotal: number;
 };
 
 /** Destinations that do not exist yet say when they arrive, rather than being
  *  greyed out with no explanation. Principle 1: the screen explains itself. */
 const UPCOMING = [
-  { label: 'Create Decks', arrives: 'v1.1' },
   { label: 'Saved Rosters', arrives: 'v1.1' },
+  { label: 'Share Bundles', arrives: 'v1.4' },
   { label: 'Options', arrives: 'v1.1' },
 ] as const;
 
-export function TitleScreen({ onStartSession, rosterCount }: Props) {
+export function TitleScreen({
+  onStartSession,
+  onOpenBank,
+  rosterCount,
+  promptsInPlay,
+  promptsTotal,
+}: Props) {
   const { offlineReady } = useRegisterSW();
   const [isOfflineReady] = offlineReady;
 
@@ -42,6 +51,15 @@ export function TitleScreen({ onStartSession, rosterCount }: Props) {
             {rosterCount === 0
               ? 'Build your roster first'
               : `${rosterCount} ${rosterCount === 1 ? 'dancer' : 'dancers'} on the roster`}
+          </span>
+        </button>
+
+        <button className="menu__item" type="button" onClick={onOpenBank}>
+          <span className="menu__label">Prompt Bank</span>
+          <span className="menu__note">
+            {promptsInPlay === promptsTotal
+              ? `${promptsTotal} challenges ready`
+              : `${promptsInPlay} of ${promptsTotal} challenges in play`}
           </span>
         </button>
 

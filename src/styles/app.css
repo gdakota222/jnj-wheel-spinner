@@ -921,3 +921,88 @@
   color: var(--accent);
   font-weight: 650;
 }
+
+/* ------------------------------------------------------------- prompt bank */
+
+.bank {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bank__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--seg-4);
+  border-radius: var(--radius-sm);
+  padding: var(--gap-sm) var(--gap);
+}
+
+/* Set-aside prompts are marked by a dashed edge and their button's words, so the
+   state survives a colour-blind palette and a dim room. */
+.bank__item[data-out='true'] {
+  border-left-style: dashed;
+  border-left-color: var(--text-faint);
+  opacity: 0.72;
+}
+
+.bank__text {
+  min-width: 0;
+}
+
+.bank__name {
+  font-size: var(--step-1);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.bank__item[data-out='true'] .bank__name {
+  text-decoration: line-through;
+  text-decoration-color: var(--text-faint);
+}
+
+.bank__description {
+  margin-top: 2px;
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+
+.bank__toggle {
+  flex: none;
+  min-height: 44px;
+  min-width: 5.5rem;
+  padding-inline: var(--gap-sm);
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  font-size: var(--step--1);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bank__toggle--in {
+  background: color-mix(in srgb, var(--seg-4) 22%, transparent);
+  border-color: var(--seg-4);
+  color: var(--text);
+}
+
+.bank__bulk {
+  display: flex;
+  gap: var(--gap-xs);
+  margin-top: var(--gap);
+}
+
+.bank__note {
+  padding-bottom: var(--gap);
+  text-align: center;
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}

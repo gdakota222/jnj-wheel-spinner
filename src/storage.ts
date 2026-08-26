@@ -8,6 +8,7 @@
 import type { Dancer, Role } from './domain/roster';
 
 const ROSTER_KEY = 'jnj:v1:roster';
+const EXCLUDED_PROMPTS_KEY = 'jnj:v1:excluded-prompts';
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
 
@@ -40,5 +41,31 @@ export function saveRoster(dancers: readonly Dancer[]): void {
   } catch {
     // Storage full or blocked (private browsing). The session still works in
     // memory; losing persistence is better than losing the app mid-event.
+  }
+}
+
+/**
+ * Prompts the operator has set aside in the Prompt Bank.
+ *
+ * Stored as ids rather than whole prompts, so a prompt that is later edited or
+ * renamed stays excluded, and an id that no longer exists is simply ignored.
+ */
+export function loadExcludedPrompts(): string[] {
+  try {
+    const raw = localStorage.getItem(EXCLUDED_PROMPTS_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === 'string');
+  } catch {
+    return [];
+  }
+}
+
+export function saveExcludedPrompts(ids: readonly string[]): void {
+  try {
+    localStorage.setItem(EXCLUDED_PROMPTS_KEY, JSON.stringify(ids));
+  } catch {
+    // See loadRoster: losing persistence is better than losing the app.
   }
 }

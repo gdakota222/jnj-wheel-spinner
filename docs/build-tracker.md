@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.5.0 — deployed and live
+**Current version:** 0.5.1 — deployed and live
 **Current phase:** 0.6.0 — Persistence
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
@@ -77,6 +77,18 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-25 — 0.5.1: the Prompt Bank
+- **Prompt Bank** on the title screen: every challenge with its full description, grouped by bundle.
+  The built-in 20 are now the **Westie Starter Pack**.
+- **Set prompts aside.** Anything set aside stays off the wheel until put back, persists on the
+  device, and applies to every future session. Verified end to end: setting three aside showed
+  "17 of 20" on the title screen and the roster, and produced a 17-segment prompt wheel.
+- Set-aside state is carried three ways — a dashed edge, a struck-through name, and the button's
+  own words — so it survives a colour-blind palette and a dim room.
+- With everything set aside, the roster screen **disables the prompts-on option and says why**,
+  rather than starting a session that cannot draw anything.
+- **Custom bundles deferred to v1.1.** See D-029.
 
 ### 2026-08-25 — 0.5.0 shipped: prompts
 - **A 20-prompt West Coast Swing starter deck**, read-only in v1.0. Every prompt is a constraint on
@@ -520,6 +532,21 @@ name rather than stalling. Tests assert both the separation and the clamp.
 **The same class of bug appeared twice more** and was fixed the same way: a drawn dancer, and then
 a drawn prompt, each vanishing from the wheel the moment it landed. The rule is now consistent —
 **nothing leaves the wheel until the couple is committed.**
+
+### D-029 — Prompt Bank ships as view-and-exclude; building bundles waits for v1.1
+**Decision:** v1.0 gets a read-only Prompt Bank with per-prompt set-aside. Creating custom bundles
+moves to v1.1, alongside prompt authoring.
+
+**Reasoning:** excluding a prompt is a *filter* over a fixed deck — small, self-contained, and it
+makes the bank useful immediately. Creating bundles is *authoring*, and v1.1 already specifies the
+session prompt pool: adding a deck mid-session merges into what is there, used prompts stay out,
+duplicates match on name. Bundles have to answer all of that — what a bundle is versus a deck, what
+happens when a bundle references a prompt later deleted, how adding a bundle mid-session behaves.
+Building them in v1.0, separately from deck authoring, means designing those rules twice and very
+likely building the feature twice.
+
+**Set-asides are stored as prompt ids**, not copies, so a prompt that is later edited or renamed
+stays set aside, and an id that no longer exists is simply ignored.
 
 ## Known issues and in-flight notes
 

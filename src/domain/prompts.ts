@@ -31,8 +31,8 @@ export type Deck = {
  * nobody is stuck because they have not learned a pattern yet.
  */
 export const WCS_STARTER_DECK: Deck = {
-  id: 'wcs-starter',
-  name: 'West Coast Swing',
+  id: 'westie-starter-pack',
+  name: 'Westie Starter Pack',
   style: 'West Coast Swing',
   prompts: [
     {
@@ -159,3 +159,26 @@ export const WCS_STARTER_DECK: Deck = {
 };
 
 export const BUILT_IN_DECKS: Deck[] = [WCS_STARTER_DECK];
+
+/** Every prompt the app knows about, across all bundles. */
+export function allPrompts(decks: readonly Deck[] = BUILT_IN_DECKS): Prompt[] {
+  const seen = new Map<string, Prompt>();
+  for (const deck of decks) {
+    for (const prompt of deck.prompts) {
+      if (!seen.has(prompt.id)) seen.set(prompt.id, prompt);
+    }
+  }
+  return [...seen.values()];
+}
+
+/**
+ * The prompts a session will actually draw from: everything in the chosen
+ * bundle, minus anything the operator has set aside in the Prompt Bank.
+ */
+export function promptsInPlay(
+  prompts: readonly Prompt[],
+  excludedIds: readonly string[],
+): Prompt[] {
+  const excluded = new Set(excludedIds);
+  return prompts.filter((prompt) => !excluded.has(prompt.id));
+}

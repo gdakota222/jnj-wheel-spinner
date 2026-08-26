@@ -270,8 +270,12 @@ or the operator double-tapped. One correction tool: **re-spin the current draw.*
 - **On the wheel: the name only.** Descriptions don't fit on a wheel segment; the short name is
   doing real work, not just being fun.
 - **On the reveal: both**, name large and bold, description beneath, sized for the room.
-- **Built-in decks, read-only in v1.0.** Authoring is v1.1. The owner is also the developer and
-  can edit deck contents in source before an event.
+- **The Westie Starter Pack** ships built in: 20 West Coast Swing prompts, each a constraint on
+  *how* to dance rather than a demand for a specific move, so mixed levels can all take part.
+- **The Prompt Bank** (title screen) lists every prompt with its description, grouped by bundle,
+  and lets the operator **set prompts aside** so they stay off the wheel until put back. Set-asides
+  persist on the device and apply to every future session.
+- **Writing prompts and building custom bundles is v1.1**, alongside deck authoring — see below.
 - **One prompt per couple**, drawn immediately after the couple forms.
 - **Prompts do not repeat within a session.** A drawn prompt is out for the night.
 - If the pool runs dry, the app **says so plainly** ("You've used all 24 prompts") and only then
@@ -339,7 +343,7 @@ another person must not cost the night.
 ### Screens in v1.0
 | Screen | Notes |
 |---|---|
-| Title | Only **Start a Session** is live. Other destinations arrive in v1.1. Also the permanent home of the app title. |
+| Title | **Start a Session** and **Prompt Bank** are live. Saved Rosters, Share Bundles and Options arrive later. Also the permanent home of the app title. |
 | Roster setup | Add/remove/role, validation, size guidance, spin-order choice. |
 | Wheel | Labeled with the pool being spun. Re-spin available. |
 | Couple reveal | Both names, big. |
@@ -347,6 +351,7 @@ another person must not cost the night.
 | Dance hold | Prompt + `Next Couple`. |
 | Session log | Reachable during the session. |
 | Session complete | End of the pass. No winner in v1.0. |
+| Prompt Bank | Every prompt with its description, by bundle, with set-aside toggles. |
 
 ### Explicitly not in v1.0
 The winner feature in any form, deck authoring, deck sharing, the all-skate, sloth mode, audio,
@@ -368,8 +373,11 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
 
 **Goal:** run events without touching source code.
 
-- **Create Decks** — full prompt and deck authoring. The editor captures **both** fields and
-  must not save a prompt with either blank.
+- **Prompt Bank grows up** — the read-only bank from v1.0 gains authoring:
+  - Write, edit and delete prompts. The editor captures **both** fields and must not save a prompt
+    with either blank.
+  - **Build custom bundles** from any prompts the app holds. Deliberately deferred from v1.0 (see
+    D-029) so bundles and decks are designed together rather than as two overlapping ideas.
 - **The session prompt pool.** A session draws from a live pool, not a deck directly.
   - **Adding a deck mid-session merges it into the pool** — it does not replace or reset anything.
   - **Prompts already drawn stay out.** Used-prompt tracking is **session-scoped, not
