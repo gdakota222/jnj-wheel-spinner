@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.3.1 — deployed and live
-**Current phase:** 0.4.0 — The loop
+**Current version:** 0.4.0 — deployed and live
+**Current phase:** 0.5.0 — Prompts
 **Last updated:** 2026-08-25
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -29,9 +29,9 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 3 of 9 |
+| **Versions shipped** | 4 of 9 |
 | **Blocked on** | Nothing |
-| **Next up** | 0.4.0 — The loop |
+| **Next up** | 0.5.0 — Prompts |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
 | **Real-event target** | Not yet scheduled |
@@ -48,7 +48,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.1.0** | Scaffold | Vite + React + TS project, PWA manifest and service worker, portrait layout, theme CSS variables, deployed to GitHub Pages, installs to home screen | ✅ Shipped 2026-08-25 |
 | **0.2.0** | Roster | Add/remove dancers, Leader/Follower/Switch, unique-name validation, event-size guidance, roster saved to device | ✅ Shipped 2026-08-25 |
 | **0.3.0** | The wheel | SVG wheel, spin animation, lands on a name, pool label (*Now spinning: Followers*), re-spin | ✅ Shipped 2026-08-25 |
-| **0.4.0** | The loop | Two spins → couple reveal → dance hold → `Next Couple`, pools draining, short-pool recycling, session log, session complete | ☐ Not started |
+| **0.4.0** | The loop | Two spins → couple reveal → dance hold → `Next Couple`, pools draining, short-pool recycling, session log, session complete | ✅ Shipped 2026-08-25 |
 | **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ☐ Not started |
 | **0.6.0** | Persistence | Reducer serialization on every dispatch, resume after close/crash, tablet handoff verified | ☐ Not started |
 | **0.7.0** | Principles pass | Self-describing audit of every screen, label review, contrast and touch targets, no-color-alone check | ☐ Not started |
@@ -77,6 +77,26 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-25 — 0.4.0 shipped: the loop
+This is the version where it stops being a wheel and becomes the product.
+
+- **The session is a reducer** (D-005). The whole session is one serialisable value, which is what
+  makes crash recovery and tablet handoff in 0.6.0 the same mechanism rather than three features.
+- Two spins make a couple; the **dance hold** holds until `Next couple`, with no timer.
+- **Recycling works and announces itself** — verified live with 4 leaders and 2 followers: all four
+  leaders danced exactly once, both followers danced twice, and no couple repeated.
+- **Spin order** is chosen on the roster screen, including "let the app decide", and locked for the
+  session (resolving the deviation logged in 0.2.0).
+- **Session log** is a slide-up panel, per D-016.
+- **Screen wake lock** holds the display awake through the dance hold. See D-026.
+- D-017's wink is in: a pool down to one name still spins, and the copy is in on the joke.
+- **85 tests**, including the no-repeat guarantee asserted across randomised sessions in seven pool
+  shapes and both spin orders.
+
+Two bugs found by looking at the screen, not by reasoning about it (see D-027):
+- The landed name **vanished from the wheel the instant it landed**.
+- The pool label claimed one pool while the wheel showed the other.
 
 ### 2026-08-25 — 0.3.1: pointer direction, Options panel, roster model
 - **The pointer now points down at the name it has landed on**, rather than away from it. Fixed in
@@ -438,6 +458,29 @@ v1.1 that raises *everything* to 56px when switched on.
 the thing, so anyone who needs the larger target gets it on request rather than having to argue
 with the design. This resolves the exception logged in 0.3.1 rather than leaving it as a standing
 inconsistency with principle 3.
+
+### D-026 — Hold the screen awake during a session
+**Decision:** request a screen wake lock for the whole session, re-acquiring it whenever the tab
+becomes visible again. Unsupported or refused is not an error.
+**Reasoning:** the dance hold sits untouched for two or three minutes at a time. Without this the
+tablet dims and locks mid-dance and the operator has to unlock it before drawing the next couple —
+the app holding up the night, which is precisely what success is defined against. Supported on
+Android Chrome (the primary device, D-024) and Safari from iOS 16.4.
+
+### D-027 — A drawn dancer leaves the wheel when the couple is committed, not when the name lands
+**Decision:** drawing no longer removes a dancer from the pool. Both dancers leave when
+`Next couple` commits the pairing. The wheel also keeps showing the pool it last spun until the
+next spin starts, rather than switching pools the moment a name lands.
+**Reasoning:** removing on landing made the winning name **disappear from under the pointer** —
+the wheel re-rendered without them and visually jumped, at the exact moment the room was looking
+at it. It also made the wheel swap to the other pool instantly, so the operator never saw what
+they had just drawn. Committing on `Next couple` matches how the app already talks about a couple
+being "finished", and makes re-spin simpler: the discarded dancer never left, so nothing has to be
+restored.
+
+**Consequence:** the pool label had to become phase-aware. With the wheel showing leaders while the
+next draw is followers, a fixed "Now spinning: Followers" was a visible contradiction — it reads as
+broken to exactly the second operator the self-describing principle exists for.
 
 ## Known issues and in-flight notes
 
