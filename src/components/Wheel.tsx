@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   LABEL_INNER,
   WHEEL_RADIUS,
@@ -16,14 +16,50 @@ type Props = {
   rotation: number;
   spinning: boolean;
   onSettled: () => void;
+  /** What this wheel is a wheel of, for assistive tech. */
+  label?: string;
 };
 
 /** How long a spin takes. Long enough to build suspense, short enough to keep an
  *  event moving. Reduced-motion users get an instant result via the global rule. */
 const SPIN_SECONDS = 4.2;
 
-export function Wheel({ names, rotation, spinning, onSettled }: Props) {
+export function Wheel({ names, rotation, spinning, onSettled, label = 'names' }: Props) {
   const count = names.length;
+  const settled = useRef(false);
+
+  /**
+   * Safety net: settle on a timer as well as on `transitionend`.
+   *
+   * The spin normally ends when the CSS transition reports back. That event does
+   * not always arrive — the app is backgrounded mid-spin, the OS drops the
+   * animation, or the viewer has reduced motion and the transition is over in a
+   * hundredth of a second. Any of those would leave the wheel turning forever,
+   * which is the worst thing this app can do in front of a room. So the spin also
+   * ends on a timer, and whichever fires first wins.
+   */
+  useEffect(() => {
+    if (!spinning) {
+      settled.current = false;
+      return;
+    }
+    const timer = window.setTimeout(
+      () => {
+        if (!settled.current) {
+          settled.current = true;
+          onSettled();
+        }
+      },
+      SPIN_SECONDS * 1000 + 600,
+    );
+    return () => window.clearTimeout(timer);
+  }, [spinning, rotation, onSettled]);
+
+  function handleTransitionEnd() {
+    if (settled.current) return;
+    settled.current = true;
+    onSettled();
+  }
 
   // Each label is sized for its own name, so one long name does not shrink the
   // whole wheel. Anything that still cannot fit at the legibility floor is
@@ -43,7 +79,7 @@ export function Wheel({ names, rotation, spinning, onSettled }: Props) {
         className="wheel__svg"
         viewBox="-50 -50 100 100"
         role="img"
-        aria-label={`Wheel of ${count} ${count === 1 ? 'name' : 'names'}`}
+        aria-label={`Wheel of ${count} ${label}`}
       >
         <g
           className="wheel__rotor"
@@ -53,7 +89,7 @@ export function Wheel({ names, rotation, spinning, onSettled }: Props) {
               ? `transform ${SPIN_SECONDS}s cubic-bezier(0.16, 0.84, 0.22, 1)`
               : 'none',
           }}
-          onTransitionEnd={onSettled}
+          onTransitionEnd={handleTransitionEnd}
         >
           {names.map((name, i) => (
             <path

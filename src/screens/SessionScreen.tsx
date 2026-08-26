@@ -153,7 +153,7 @@ export function SessionScreen({
             Couple {coupleNumber} of {session.couplesTotal}
           </h1>
           <button className="progress__log" type="button" onClick={() => setLogOpen(true)}>
-            Danced: {session.log.length}
+            View log · {session.log.length}
           </button>
         </div>
       </header>
@@ -233,6 +233,7 @@ export function SessionScreen({
         rotation={session.rotation}
         spinning={spinning}
         onSettled={() => dispatch({ type: 'settled' })}
+        label={onPromptWheel ? 'challenges' : POOL_NOUN[session.currentPool] + 's'}
       />
 
       <div className="result" aria-live="polite">

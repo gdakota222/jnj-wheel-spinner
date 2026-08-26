@@ -19,7 +19,10 @@
   /* Text — contrast checked against --bg and --surface */
   --text: #f6f3ff;
   --text-dim: #b6abd6;
-  --text-faint: #8a7fae;
+  /* Raised to clear 4.5:1 on every surface the app uses, measured rather than
+     eyeballed: 7.1 on --bg, 6.4 on --surface, 5.6 on --surface-raised. The old
+     value failed at 3.9 on raised surfaces, where most secondary text sits. */
+  --text-faint: #a89ec6;
 
   /* Accents */
   --accent: #ffd64a;
