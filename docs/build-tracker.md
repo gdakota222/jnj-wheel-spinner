@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
 **Current version:** 0.8.3 — deployed and live
-**Current phase:** 0.8.0 — Device rehearsal (with the owner)
+**Current phase:** Triaging real-event feedback before 1.0.0
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
 
@@ -30,11 +30,11 @@ so the history of *why* stays intact.
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
 | **Versions shipped** | 7 of 9 |
-| **Blocked on** | Rehearsal findings (owner testing on Samsung phone + tablet) |
+| **Blocked on** | Owner decisions on what ships in v1.0 (see 2026-09-08 entry) |
 | **Next up** | 0.8.0 — Device rehearsal |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
-| **Real-event target** | Not yet scheduled |
+| **First real event** | Ran 2026-09-02 — it worked; findings being triaged |
 
 ---
 
@@ -77,6 +77,37 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-08 — First real event: it worked, and it produced a backlog
+The app ran a real Jack & Jill on 2026-09-02. **The core loop did its job**, the cast to the TV drew
+good reactions, and the birthday jamboree landed. Full findings in
+[rehearsal.md § Round 2](rehearsal.md).
+
+**Two things broke the night:**
+- **A pocket press re-spun a follower mid-prompt**, wrecking the draw order. Repairing it via
+  *Edit dancers* removed that follower from the session entirely, with **no way to undo and no way
+  to put them back**. The night ended with an improvised second session.
+- **Two dancers arrived who were not on the roster**, and could not be added mid-session.
+
+**Two things the app got wrong about its own users:**
+- **Almost everyone tapped the wheel rather than the Spin button** — dancers as well as the
+  operator. The operator deliberately handed the device around so the *drawn follower* spun for
+  their leader and the leader spun for the prompt, which is a better ritual than the one designed
+  for, and makes the wheel the obvious control.
+- **A non-dancer expected the spinning wheel to stop when tapped.**
+
+**The prompts were too strict.** *Anchor Detective* was softened out loud mid-event. Wanted
+throughout: creative-expression framing — *as many as you can*, *with as little as you can* — with
+hard limits only where a prompt is exploitable.
+
+**Also raised:** too much scrolling and a wish for tabs and staged setup; names cut off on the
+challenge wheel and a suggestion of a vertical Price-is-Right reel; no way to move a roster between
+phone and tablet; a wish to cast from the tablet but drive from the phone; an About page with a
+donate option; and — unprompted — that the app has obvious uses beyond dance.
+
+**Section 7, the handoff test, is still outstanding.** The operator ran the whole night alone.
+
+Triage and scope decisions to follow. No code changed on this entry.
 
 ### 2026-08-26 — 0.8.3: one jam for every birthday
 - **Several birthday dancers are now jammed together.** The jam fires at whichever of them the

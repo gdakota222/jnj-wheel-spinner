@@ -2,7 +2,7 @@
 
 **Devices:** Samsung Android phone and Samsung Android tablet
 **App:** https://gdakota222.github.io/jnj-wheel-spinner/
-**Status:** Sections 1–6 and 8 passed on both devices. 7 and 9 outstanding.
+**Status:** Rehearsal passed. **Ran at a real event on 2026-09-02.** Section 7 (handoff) still outstanding.
 
 This is the first version the owner runs rather than Claude verifies. Everything up to now has
 been checked in a desktop browser pane, which can prove logic, layout, wording and contrast — and
@@ -126,11 +126,60 @@ swiped away, held the screen awake, and cast acceptably.
   to mark the birthday dancer; when they are drawn, the session stops for a party popper and a
   birthday jam.
 
+---
+
+## Round 2 — the real event, 2026-09-02
+
+**It worked.** The session ran, the room reacted, the cast to the TV got great reactions, and the
+birthday jamboree landed — everyone laughed. The core loop did its job. What follows is everything
+that went wrong or felt wrong, which is the useful part.
+
+**How it was actually run**, which differs from how it was designed:
+- Followers were spun first, then **the drawn follower spun the wheel for their leader**, then
+  **the leader spun for the prompt**. The operator handed the device to dancers deliberately, to
+  make the draw theirs rather than something done to them.
+- The roster was built on the **phone** during sign-ups, but the tablet was meant to run the night.
+  The roster only existed on the phone, so the phone ran the whole event.
+- The tablet was cast to a TV for the room.
+
+### Blockers — these broke the night
+
+| # | What happened | Why it matters |
+|---|---|---|
+| B1 | **A pocket press re-spun the follower** during prompt selection, wrecking the draw order. Fixing it meant removing the dancing couple via *Edit dancers*, which **also removed the re-spun follower from the session entirely** — and there was no way to put them back. | The app had no way to undo anything. One accidental touch cost a dancer their place and forced a whole second session at the end of the night. |
+| B2 | **Two dancers arrived who were not on the list**, and there was no way to add them mid-session. | Late arrivals are normal at a social. The PRD had already parked "add a dancer mid-session" in v1.1; the event proved it belongs in v1.0. |
+
+The night ended with an improvised second session for the skipped follower, the two late arrivals,
+and a leader who had never been paired.
+
+### Friction — did not break it, but was felt
+
+| # | What happened |
+|---|---|
+| F1 | **Almost everyone tapped the wheel itself rather than the Spin button.** Dancers, not just the operator. |
+| F2 | **Prompts were too strict.** *Anchor Detective* demands every anchor differ, which is genuinely hard; the operator softened it out loud to "as many as you can". Wanted throughout: creative-expression framing — *as many as you can*, *with as little as you can* — and hard limits **only** where a prompt is exploitable (a distance prompt needs a cap on walks, or dancers just tandem-walk the whole song). |
+| F3 | **The roster could not move between devices.** Built on the phone, needed on the tablet. |
+| F4 | Wanted: **cast from the tablet, control from the phone.** |
+
+### Cold read — a non-dancer colleague, before the event
+
+Given the app with no explanation. Liked it overall: called out the **sleekness of the UI and the
+colour palette**, and understood how it worked. Unprompted, she saw uses **beyond dance** — a
+general spinner, something for gamers, a decision-maker.
+
+| # | What she said |
+|---|---|
+| C1 | **Too much scrolling**, especially on the session setup screen. She did not scroll at first, so the options below the fold were not obviously there. Suggested **tabs along the bottom** to move around the app, and breaking session setup into **stages** rather than one long screen. |
+| C2 | **Disliked names being cut off on the challenge wheel.** Suggested a **vertical, Price-is-Right style reel** for prompts so full names are readable. |
+| C3 | **Pressed the spinning wheel expecting it to stop.** Wanted a way to stop it, or to get to the result faster. |
+| C4 | Wanted an **About page** — who made this — with a way for early adopters to **donate or buy a coffee**. Suggested it appear on first open after install, with an **About button on the title screen** to find it again later. |
+
 ### Still to run
-- **Section 7 — the handoff test.** The one that matters most, and the only one no amount of
-  desktop verification could reach.
-- **Section 9 — a realistic full run**, including timing the pacing.
-- **A real event**, which will produce more evidence in one night than everything above combined.
+- **Section 7 — the handoff test.** Still outstanding: the operator ran the whole event alone, so
+  no second organiser ever took over. Dancers *did* hold the device to spin, which is a partial
+  signal, but not the test.
+- ~~Section 9 — a realistic full run~~ — done, at the event itself.
+- ~~A real event~~ — done 2026-09-02.
 
 **Severity:** *blocker* (cannot run an event), *annoying* (would irritate mid-event),
 *polish* (noticed it, would not stop anything).
