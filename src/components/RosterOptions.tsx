@@ -19,7 +19,8 @@ type Props = {
 type Pending =
   | { kind: 'rename'; dancer: Dancer; name: string }
   | { kind: 'remove'; dancer: Dancer }
-  | { kind: 'add'; name: string; role: Role };
+  | { kind: 'add'; name: string; role: Role }
+  | { kind: 'role'; dancer: Dancer; role: Role };
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
 
@@ -38,6 +39,7 @@ export function RosterOptions({ dancers, onChange, onClose }: Props) {
   const [newName, setNewName] = useState('');
   const [newRole, setNewRole] = useState<Role>('follower');
   const [addError, setAddError] = useState<string | null>(null);
+  const [roleFor, setRoleFor] = useState<string | null>(null);
 
   function startEdit(dancer: Dancer) {
     setEditingId(dancer.id);
@@ -90,6 +92,12 @@ export function RosterOptions({ dancers, onChange, onClose }: Props) {
       onChange([...dancers, makeDancer(pending.name, pending.role)]);
       setNewName('');
       setAddError(null);
+      setPending(null);
+      return;
+    }
+    if (pending.kind === 'role') {
+      onChange(dancers.map((d) => (d.id === pending.dancer.id ? { ...d, role: pending.role } : d)));
+      setRoleFor(null);
       setPending(null);
       return;
     }
@@ -243,6 +251,14 @@ export function RosterOptions({ dancers, onChange, onClose }: Props) {
                       <button
                         className="dancer__remove"
                         type="button"
+                        onClick={() => setRoleFor(roleFor === dancer.id ? null : dancer.id)}
+                      >
+                        Role
+                        <span className="visually-hidden"> for {dancer.name}</span>
+                      </button>
+                      <button
+                        className="dancer__remove"
+                        type="button"
                         onClick={() => setPending({ kind: 'remove', dancer })}
                       >
                         Remove
@@ -250,6 +266,24 @@ export function RosterOptions({ dancers, onChange, onClose }: Props) {
                       </button>
                     </div>
                   </>
+                )}
+
+                {roleFor === dancer.id && editingId !== dancer.id && (
+                  <fieldset className="roles edit-row__roles">
+                    <legend className="visually-hidden">New role for {dancer.name}</legend>
+                    {ROLES.map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        className="roles__option"
+                        aria-pressed={dancer.role === role}
+                        disabled={dancer.role === role}
+                        onClick={() => setPending({ kind: 'role', dancer, role })}
+                      >
+                        {ROLE_LABELS[role]}
+                      </button>
+                    ))}
+                  </fieldset>
                 )}
               </li>
             ))}
@@ -262,6 +296,20 @@ export function RosterOptions({ dancers, onChange, onClose }: Props) {
           title={`Add ${pending.name}?`}
           body={`${ROLE_LABELS[pending.role]}. ${additionEffect(pending.role)}`}
           confirmLabel="Add dancer"
+          onConfirm={applyPending}
+          onCancel={() => setPending(null)}
+        />
+      )}
+
+      {pending?.kind === 'role' && (
+        <ConfirmDialog
+          title={`Make ${pending.dancer.name} a ${ROLE_LABELS[pending.role].toLowerCase()}?`}
+          body={`They change pools, so the night may change shape: ${
+            projectPools(
+              dancers.map((d) => (d.id === pending.dancer.id ? { ...d, role: pending.role } : d)),
+            ).couples
+          } couples after this.`}
+          confirmLabel="Change role"
           onConfirm={applyPending}
           onCancel={() => setPending(null)}
         />

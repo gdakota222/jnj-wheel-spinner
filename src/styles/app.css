@@ -1319,3 +1319,243 @@
   margin-top: var(--gap);
   background: var(--bg);
 }
+
+/* ============================================================================
+   Session screen: one screen, no scrolling
+   At the first real event the Lock control sat below the fold and had to be
+   hunted for mid-event. Anything needing a scroll during a session is hidden.
+   ========================================================================== */
+
+.shell--session {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  gap: var(--gap-sm);
+  padding-top: calc(env(safe-area-inset-top) + var(--gap-sm));
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  flex: none;
+}
+
+.toolbar__title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--step-0);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbar__back,
+.toolbar__button {
+  flex: none;
+  min-height: 44px;
+  padding-inline: var(--gap-sm);
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step--1);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.toolbar__back {
+  padding-inline: var(--gap-sm);
+  font-size: var(--step-0);
+}
+
+.toolbar__back:disabled,
+.toolbar__button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* The wheel takes whatever room is left, and stays dead centre. */
+.stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
+}
+
+.stage--wheel .wheel,
+.stage--wheel .wheel__tap {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stage--wheel .wheel__svg {
+  width: auto;
+  height: 100%;
+  max-height: 100%;
+  max-width: min(92vw, 26rem);
+}
+
+/* The dance hold: no wheel, all information. This is the cast view. */
+.stage--dancing {
+  justify-content: center;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  overflow-y: auto;
+}
+
+.stage__label {
+  font-size: var(--step--1);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.stage__couple {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stage__name {
+  font-size: var(--step-3);
+  font-weight: 800;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.stage__amp {
+  font-size: var(--step-0);
+  color: var(--text-dim);
+}
+
+.stage__challenge {
+  margin-top: var(--gap);
+  padding-top: var(--gap);
+  border-top: 2px dashed var(--border);
+}
+
+.note {
+  flex: none;
+  padding: var(--gap-xs) var(--gap-sm);
+  border-left: 4px solid var(--text-faint);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+}
+
+.note--info {
+  background: color-mix(in srgb, var(--seg-5) 16%, transparent);
+  border-left-color: var(--seg-5);
+}
+
+.note--wink {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-left-color: var(--accent);
+}
+
+.shell--session .pool-label,
+.shell--session .result {
+  flex: none;
+}
+
+.shell--session .result {
+  min-height: 0;
+  padding: var(--gap-sm) var(--gap);
+}
+
+.result__pair {
+  font-size: var(--step-1);
+  font-weight: 700;
+}
+
+.result__pair span {
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.actions--pinned {
+  flex: none;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* One-time reminder, floated clear of the layout so it never shifts the wheel. */
+.hint-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 5.5rem);
+  transform: translateX(-50%);
+  z-index: 25;
+  max-width: calc(100% - 2 * var(--gap));
+  padding: var(--gap-sm) var(--gap);
+  background: var(--surface-raised);
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  font-size: var(--step--1);
+  text-align: center;
+}
+
+.lock__stage {
+  text-align: center;
+}
+
+.edit-row__roles {
+  width: 100%;
+  margin-top: var(--gap-xs);
+}
+
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin-top: var(--gap);
+}
+
+.tools__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: var(--touch);
+  padding: var(--gap-sm) var(--gap);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tools__label {
+  font-size: var(--step-1);
+  font-weight: 650;
+}
+
+.tools__note {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+
+/* Tighten the toolbar so the couple count is never clipped on a phone. */
+.toolbar {
+  gap: 6px;
+}
+
+.toolbar__title {
+  font-size: var(--step--1);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.toolbar__back,
+.toolbar__button {
+  padding-inline: 10px;
+  font-size: 0.82rem;
+}

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Jamboree } from '../components/Jamboree';
 import { LockScreen } from '../components/LockScreen';
 import { RosterOptions } from '../components/RosterOptions';
 import { SessionLog } from '../components/SessionLog';
+import { SessionTools } from '../components/SessionTools';
 import { Wheel } from '../components/Wheel';
 import type { Dancer } from '../domain/roster';
 import {
@@ -21,14 +22,16 @@ import {
 } from '../domain/session';
 import { pickIndex, planSpin } from '../domain/spin';
 import { useWakeLock } from '../hooks/useWakeLock';
+import { hasSeenWheelHint, markWheelHintSeen } from '../storage';
 
 type Props = {
   session: SessionState;
   dispatch: (action: SessionAction) => void;
   dancers: Dancer[];
   canUndo: boolean;
+  /** What the next undo would reverse, for the confirmation. */
+  undoLabel: string | null;
   onUndo: () => void;
-  /** True when this session came back from storage rather than being started. */
   wasResumed: boolean;
   onDismissResumed: () => void;
   onEditDancers: (next: Dancer[]) => void;
@@ -41,6 +44,7 @@ export function SessionScreen({
   dispatch,
   dancers,
   canUndo,
+  undoLabel,
   onUndo,
   wasResumed,
   onDismissResumed,
@@ -48,34 +52,31 @@ export function SessionScreen({
   onLeave,
   onStartFresh,
 }: Props) {
-  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [dancersOpen, setDancersOpen] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [confirmRespin, setConfirmRespin] = useState(false);
-  /**
-   * Locked between couples, for pocketing the device.
-   *
-   * At the first real event a pocket press re-spun a follower and cost her place
-   * in the night. The confirmation on Re-spin catches a mis-tap while the app is
-   * in use; this catches everything while it is not.
-   */
+  const [confirmRedraw, setConfirmRedraw] = useState(false);
+  const [confirmUndo, setConfirmUndo] = useState(false);
   const [locked, setLocked] = useState(false);
+  const [showHint, setShowHint] = useState(() => !hasSeenWheelHint());
 
-  // Hold the screen awake for the whole session, including the dance hold.
   useWakeLock(session.phase !== 'complete');
 
+  /** The hint is a one-time reminder, not permanent furniture beside the wheel. */
+  useEffect(() => {
+    if (!showHint) return;
+    markWheelHintSeen();
+    const timer = window.setTimeout(() => setShowHint(false), 6000);
+    return () => window.clearTimeout(timer);
+  }, [showHint]);
+
   const { phase } = session;
-  // The prompt wheel stays up through the dance, with the drawn challenge still
-  // under the pointer — the wheel should never show a pool nobody is looking at.
-  const onPromptWheel =
-    phase === 'pair' ||
-    phase === 'prompt-spinning' ||
-    (phase === 'couple' && session.currentPrompt !== null);
+  const dancing = phase === 'couple';
+  const onPromptWheel = phase === 'pair' || phase === 'prompt-spinning';
   const spinning = phase === 'spinning' || phase === 'prompt-spinning';
 
-  // What the wheel is showing, versus what the next spin will draw from. These
-  // differ between a landing and the next spin, and conflating them is how a spin
-  // ends up aimed outside its own pool.
   const shownEntries = wheelEntries(session);
   const drawPool = drawEntries(session);
   const prompts = promptEntries(session);
@@ -83,9 +84,16 @@ export function SessionScreen({
 
   const recyclingNow = willRecycle(session) && !onPromptWheel;
   const deckSpent = promptsExhausted(session) && onPromptWheel;
-  const foregone = isForegoneConclusion(session) && !onPromptWheel && phase !== 'couple';
+  const foregone = isForegoneConclusion(session) && !onPromptWheel && !dancing;
 
   const coupleNumber = Math.min(session.log.length + 1, session.couplesTotal);
+  const isLastCouple = session.log.length + 1 >= session.couplesTotal;
+
+  /** Who a re-spin would discard right now. */
+  const respinTarget =
+    phase === 'drawn'
+      ? session.drawn[OTHER_POOL[session.currentPool]]
+      : session.drawn[session.currentPool];
 
   function spinDancer(type: 'spin' | 'respin') {
     if (drawPool.length === 0) return;
@@ -94,16 +102,8 @@ export function SessionScreen({
     dispatch({ type, index, rotation: plan.rotation });
   }
 
-  /** Who a re-spin would discard right now. */
-  const respinTarget =
-    phase === 'drawn'
-      ? session.drawn[OTHER_POOL[session.currentPool]]
-      : session.drawn[session.currentPool];
-
   function spinPrompt(type: 'spinPrompt' | 'respinPrompt') {
     if (prompts.length === 0) return;
-    // "Draw a different challenge" has to actually differ, so the current prompt
-    // is excluded — unless it is the only one left to give.
     const excluded =
       type === 'respinPrompt' && session.currentPrompt
         ? prompts.filter((p) => p.id !== session.currentPrompt!.id)
@@ -115,9 +115,10 @@ export function SessionScreen({
     dispatch({ type, index, rotation: plan.rotation });
   }
 
+  // ---------------------------------------------------------------- jamboree
   if (phase === 'jamboree' && session.jamboreeDancers.length > 0) {
     return (
-      <div className="shell">
+      <div className="shell shell--session">
         <header className="screen-head">
           <h1 className="screen-title">
             Couple {coupleNumber} of {session.couplesTotal}
@@ -131,6 +132,7 @@ export function SessionScreen({
     );
   }
 
+  // ---------------------------------------------------------------- complete
   if (phase === 'complete') {
     return (
       <div className="shell">
@@ -174,74 +176,47 @@ export function SessionScreen({
     );
   }
 
+  // ------------------------------------------------------------- the session
   return (
-    <div className="shell">
-      <header className="screen-head">
+    <div className="shell shell--session">
+      <header className="toolbar">
         <button
-          className="back"
+          className="toolbar__back"
           type="button"
           disabled={spinning}
           onClick={() => (session.log.length > 0 ? setConfirmLeave(true) : onLeave())}
         >
-          ← Roster
+          ←<span className="visually-hidden"> Back to the roster</span>
         </button>
-        <div className="progress">
-          <h1 className="screen-title">
-            Couple {coupleNumber} of {session.couplesTotal}
-          </h1>
-          <div className="progress__tools">
-            {/* Undo steps back through draws, prompts and dancer edits alike —
-                the first real event needed exactly this and did not have it. */}
-            <button
-              className="progress__log"
-              type="button"
-              onClick={onUndo}
-              disabled={!canUndo || spinning}
-            >
-              Undo
-            </button>
-            <button className="progress__log" type="button" onClick={() => setLogOpen(true)}>
-              View log · {session.log.length}
-            </button>
-          </div>
-        </div>
+
+        <h1 className="toolbar__title">
+          Couple {coupleNumber} of {session.couplesTotal}
+        </h1>
+
+        {/* Undo and Lock are the only two that earn a permanent place: one is the
+            recovery control, the other is needed the instant the device goes into
+            a pocket. Everything else lives in Tools. */}
+        <button
+          className="toolbar__button"
+          type="button"
+          onClick={() => setConfirmUndo(true)}
+          disabled={!canUndo || spinning}
+        >
+          Undo
+        </button>
+        <button className="toolbar__button" type="button" onClick={() => setLocked(true)}>
+          Lock
+        </button>
+        <button
+          className="toolbar__button"
+          type="button"
+          onClick={() => setToolsOpen(true)}
+          disabled={spinning}
+        >
+          Tools
+        </button>
       </header>
 
-      {/* What the wheel is for, stated at all times — the one fact a second
-          operator picking up the tablet cannot infer from anything else. The
-          wording follows the phase, so it never contradicts what is on the wheel. */}
-      <p className="pool-label" aria-live="polite">
-        {phase === 'couple' ? (
-          <>
-            This couple is <strong>up</strong>
-          </>
-        ) : onPromptWheel ? (
-          <>
-            Now spinning: <strong>The challenge</strong>
-          </>
-        ) : phase === 'drawn' ? (
-          <>
-            Next: <strong>{POOL_LABEL[session.currentPool]}</strong>
-          </>
-        ) : (
-          <>
-            Now spinning: <strong>{POOL_LABEL[session.currentPool]}</strong>
-          </>
-        )}
-      </p>
-
-      <button
-        className="edit-dancers"
-        type="button"
-        onClick={() => setOptionsOpen(true)}
-        disabled={spinning}
-      >
-        Edit dancers
-      </button>
-
-      {/* Say plainly that this is a restored session. Whoever is holding the
-          tablet may not be the person who put it down, and a session appearing
-          from nowhere is exactly the kind of unexplained state principle 1 bans. */}
       {wasResumed && (
         <div className="resumed">
           <p className="resumed__text">
@@ -254,95 +229,103 @@ export function SessionScreen({
         </div>
       )}
 
-      {recyclingNow && (
-        <p className="recycle-note">
-          All {POOL_LABEL[session.currentPool].toLowerCase()} have danced, so they are back on the
-          wheel — nobody sits out.
-        </p>
-      )}
-
-      {/* Deck exhaustion is surfaced before it recycles, never after. */}
-      {deckSpent && (
-        <p className="recycle-note recycle-note--wink">
-          You have used all {session.promptDeck.length} prompts tonight. The deck starts over from
-          here.
-        </p>
-      )}
-
-      {/* D-017: the last name still gets a spin, and the app is in on the joke. */}
-      {foregone && !recyclingNow && (
-        <p className="recycle-note recycle-note--wink">
-          Only {drawPool[0]?.name} left in the {POOL_NOUN[session.currentPool]} pool. Spin it
-          anyway — they have earned the moment.
-        </p>
-      )}
-
-      <Wheel
-        names={wheelNames}
-        rotation={session.rotation}
-        spinning={spinning}
-        onSettled={() => dispatch({ type: 'settled' })}
-        label={onPromptWheel ? 'challenges' : POOL_NOUN[session.currentPool] + 's'}
-        onSpin={
-          phase === 'pair'
-            ? () => spinPrompt('spinPrompt')
-            : phase === 'ready' || phase === 'drawn' || spinning
-              ? () => spinDancer('spin')
-              : undefined
-        }
-        disabled={phase === 'couple'}
-      />
-
-      <div className="result" aria-live="polite">
-        {phase === 'couple' ? (
-          <>
-            <p className="result__label">Dancing now</p>
-            <p className="result__couple">
-              <span className="result__name">{session.drawn.leaders?.name}</span>
-              <span className="result__amp">and</span>
-              <span className="result__name">{session.drawn.followers?.name}</span>
-            </p>
-            {session.currentPrompt && (
-              <div className="challenge">
-                <p className="challenge__name">{session.currentPrompt.name}</p>
-                {/* The description is for the dancers on the floor, not the
-                    operator — so it stays up for the whole dance. */}
-                <p className="challenge__description">{session.currentPrompt.description}</p>
-              </div>
-            )}
-          </>
-        ) : phase === 'pair' ? (
-          <>
-            <p className="result__label">Drawn</p>
-            <p className="result__couple">
-              <span className="result__name">{session.drawn.leaders?.name}</span>
-              <span className="result__amp">and</span>
-              <span className="result__name">{session.drawn.followers?.name}</span>
-            </p>
-            <p className="result__idle">Now draw their challenge.</p>
-          </>
-        ) : phase === 'drawn' ? (
-          <>
-            <p className="result__label">
-              {POOL_LABEL[OTHER_POOL[session.currentPool]].replace(/s$/, '')}
-            </p>
-            <p className="result__name">{session.drawn[OTHER_POOL[session.currentPool]]?.name}</p>
-          </>
-        ) : (
-          <p className="result__idle">
-            {spinning ? 'Spinning…' : `Press spin to draw a ${POOL_NOUN[session.currentPool]}.`}
+      {dancing ? (
+        /* The wheel has done its job and nobody is looking at it. The room — and
+           the TV this is cast to — needs the names and the challenge. */
+        <section className="stage stage--dancing" aria-live="polite">
+          <p className="stage__label">Dancing now</p>
+          <p className="stage__couple">
+            <span className="stage__name">{session.drawn.leaders?.name}</span>
+            <span className="stage__amp">and</span>
+            <span className="stage__name">{session.drawn.followers?.name}</span>
           </p>
-        )}
-      </div>
+          {session.currentPrompt && (
+            <div className="stage__challenge">
+              <p className="challenge__name">{session.currentPrompt.name}</p>
+              <p className="challenge__description">{session.currentPrompt.description}</p>
+            </div>
+          )}
+        </section>
+      ) : (
+        <>
+          <p className="pool-label" aria-live="polite">
+            {onPromptWheel ? (
+              <>
+                Now spinning: <strong>The challenge</strong>
+              </>
+            ) : phase === 'drawn' ? (
+              <>
+                Next: <strong>{POOL_LABEL[session.currentPool]}</strong>
+              </>
+            ) : (
+              <>
+                Now spinning: <strong>{POOL_LABEL[session.currentPool]}</strong>
+              </>
+            )}
+          </p>
 
-      <div className="actions">
-        {phase === 'couple' ? (
+          {recyclingNow && (
+            <p className="note note--info">
+              All {POOL_LABEL[session.currentPool].toLowerCase()} have danced — they are back on the
+              wheel so nobody sits out.
+            </p>
+          )}
+          {deckSpent && (
+            <p className="note note--wink">
+              All {session.promptDeck.length} challenges used. The deck starts over.
+            </p>
+          )}
+          {foregone && !recyclingNow && (
+            <p className="note note--wink">
+              Only {drawPool[0]?.name} left. Spin it anyway — they have earned the moment.
+            </p>
+          )}
+
+          <div className="stage stage--wheel">
+            <Wheel
+              names={wheelNames}
+              rotation={session.rotation}
+              spinning={spinning}
+              onSettled={() => dispatch({ type: 'settled' })}
+              label={onPromptWheel ? 'challenges' : POOL_NOUN[session.currentPool] + 's'}
+              onSpin={onPromptWheel ? () => spinPrompt('spinPrompt') : () => spinDancer('spin')}
+            />
+          </div>
+
+          <div className="result" aria-live="polite">
+            {phase === 'pair' ? (
+              <>
+                <p className="result__label">Drawn</p>
+                <p className="result__pair">
+                  {session.drawn.leaders?.name} <span>and</span> {session.drawn.followers?.name}
+                </p>
+              </>
+            ) : phase === 'drawn' ? (
+              <>
+                <p className="result__label">
+                  {POOL_LABEL[OTHER_POOL[session.currentPool]].replace(/s$/, '')}
+                </p>
+                <p className="result__name">
+                  {session.drawn[OTHER_POOL[session.currentPool]]?.name}
+                </p>
+              </>
+            ) : (
+              <p className="result__idle">
+                {spinning ? 'Spinning…' : `Tap the wheel to draw a ${POOL_NOUN[session.currentPool]}`}
+              </p>
+            )}
+          </div>
+        </>
+      )}
+
+      <div className="actions actions--pinned">
+        {dancing ? (
           <button
             className="actions__primary"
             type="button"
             onClick={() => dispatch({ type: 'nextCouple' })}
           >
-            Next couple
+            {isLastCouple ? 'See results' : 'Next couple'}
           </button>
         ) : phase === 'pair' ? (
           <button
@@ -366,52 +349,55 @@ export function SessionScreen({
                 : `Spin for a ${POOL_NOUN[session.currentPool]}`}
           </button>
         )}
-
-        {phase === 'couple' && session.currentPrompt && (
-          <button
-            className="edit-dancers"
-            type="button"
-            onClick={() => spinPrompt('respinPrompt')}
-            disabled={spinning}
-          >
-            Draw a different challenge
-          </button>
-        )}
-
-        {phase === 'couple' && (
-          <p className="actions__note">
-            They dance now. Press Next couple when the floor is clear.
-          </p>
-        )}
       </div>
 
-      {/* Re-spin lives down here, well clear of the button a thumb reaches for,
-          and asks before it discards anybody. */}
-      {(phase === 'drawn' || phase === 'pair' || phase === 'couple') && respinTarget && (
-        <div className="danger-zone">
-          <button
-            className="danger-zone__button"
-            type="button"
-            onClick={() => setConfirmRespin(true)}
-            disabled={spinning}
-          >
-            Re-spin {respinTarget.name}
-          </button>
-        </div>
+      {showHint && !dancing && (
+        <p className="hint-toast" role="status">
+          Tap the wheel itself to spin. Tap again to hurry it along.
+        </p>
       )}
 
-      <div className="lock-bar">
-        <button className="lock-bar__button" type="button" onClick={() => setLocked(true)}>
-          Lock screen
-        </button>
-        <p className="lock-bar__note">For pocketing the device between couples.</p>
-      </div>
+      {locked && (
+        <LockScreen
+          couple={
+            dancing && session.drawn.leaders && session.drawn.followers
+              ? { leader: session.drawn.leaders, follower: session.drawn.followers }
+              : null
+          }
+          prompt={dancing ? session.currentPrompt : null}
+          onUnlock={() => setLocked(false)}
+        />
+      )}
 
-      {optionsOpen && (
+      {toolsOpen && (
+        <SessionTools
+          session={session}
+          respinTarget={respinTarget}
+          onRespin={() => {
+            setToolsOpen(false);
+            setConfirmRespin(true);
+          }}
+          onRedrawChallenge={() => {
+            setToolsOpen(false);
+            setConfirmRedraw(true);
+          }}
+          onOpenLog={() => {
+            setToolsOpen(false);
+            setLogOpen(true);
+          }}
+          onOpenDancers={() => {
+            setToolsOpen(false);
+            setDancersOpen(true);
+          }}
+          onClose={() => setToolsOpen(false)}
+        />
+      )}
+
+      {dancersOpen && (
         <RosterOptions
           dancers={dancers}
           onChange={onEditDancers}
-          onClose={() => setOptionsOpen(false)}
+          onClose={() => setDancersOpen(false)}
         />
       )}
 
@@ -423,7 +409,25 @@ export function SessionScreen({
         />
       )}
 
-      {locked && <LockScreen onUnlock={() => setLocked(false)} />}
+      {/* Pressing Undo asks first, and says exactly what it would reverse. */}
+      {confirmUndo && (
+        <ConfirmDialog
+          title="Undo this?"
+          body={
+            undoLabel
+              ? undoLabel.toLowerCase().includes('re-spin')
+                ? `${undoLabel} You can re-spin again any time from Tools.`
+                : undoLabel
+              : 'Steps the session back one action.'
+          }
+          confirmLabel="Undo it"
+          onConfirm={() => {
+            setConfirmUndo(false);
+            onUndo();
+          }}
+          onCancel={() => setConfirmUndo(false)}
+        />
+      )}
 
       {confirmRespin && respinTarget && (
         <ConfirmDialog
@@ -436,6 +440,20 @@ export function SessionScreen({
             spinDancer('respin');
           }}
           onCancel={() => setConfirmRespin(false)}
+        />
+      )}
+
+      {confirmRedraw && session.currentPrompt && (
+        <ConfirmDialog
+          title="Draw a different challenge?"
+          body={`"${session.currentPrompt.name}" is replaced by another challenge for this couple.`}
+          confirmLabel="Draw another"
+          destructive
+          onConfirm={() => {
+            setConfirmRedraw(false);
+            spinPrompt('respinPrompt');
+          }}
+          onCancel={() => setConfirmRedraw(false)}
         />
       )}
 

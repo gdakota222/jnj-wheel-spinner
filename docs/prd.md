@@ -151,6 +151,7 @@ less hassle, and it's fun for everyone. Those are not directly measurable, so th
 | **v1.3** | The audience decides | The most complex feature in the product. Built with real-event knowledge. |
 | **v1.4** | Sharing decks | Only matters once decks are worth sharing, which requires v1.1 plus content. |
 | **v1.5** | Delight | Pure polish. Deliberately last; nothing depends on it. |
+| **v1.6** | Event history | Save past events with dates, names and the songs danced. Overturns a permanent non-goal — see D-043. |
 | **v2.0** | Parked | Genuinely undecided. Answered by use, not by planning. |
 
 **Ordering rationale.** v1.1 before v1.2 because a tool you can't edit without a code editor
@@ -289,17 +290,54 @@ or the operator double-tapped. One correction tool: **re-spin the current draw.*
   when changing it is disruptive. Asking costs one tap and makes the feature visible to a second
   organizer who has never seen the app — which a buried toggle would not.
 
+### The session screen never scrolls
+Once a session is running, **everything needed is on one screen**. At the first real event the
+Lock control sat below the fold and had to be hunted for mid-event; anything that needs scrolling
+during a session is effectively hidden.
+
+- **The wheel is front and centre**, sized to whatever space is left rather than a fixed size.
+  Nothing sits beside it that would knock it off centre.
+- **Always visible:** the pool label, the wheel, the result, the primary action, **Undo** and
+  **Lock screen**.
+- **Behind the Tools sheet:** view log, re-spin, edit dancers. Useful, rarely urgent, and each one
+  is a tap away.
+
+### Undo
+**Any action can be stepped back** — a draw, a prompt draw, a dancer added, renamed, removed or
+re-roled. The session and the roster are restored **together**, because a dancer edit changes both.
+
+- **A spin and its landing are one step**, so undo removes a whole draw rather than leaving a wheel
+  mid-turn.
+- **Undo asks first**, naming exactly what it will undo. Pressing Undo a second time confirms.
+- **Undoing a re-spin says where re-spin lives**, so the operator does not think undo is the only
+  way back to it.
+- History is **in memory for the run of the app**. A crash restores the session but not its undo
+  steps — see D-037.
+
+### The wheel is the control
+- **Tap the wheel to spin.** At the event almost everyone did this before reaching for the button;
+  the operator hands the device to the drawn follower so she spins for her own leader.
+- **Tap while spinning to hurry it** — the wheel races to the result it was already going to reach.
+  The showmanship stays; the waiting does not.
+- **Double-tap to skip entirely**, for when the night needs to move.
+- The winner is chosen **before** the animation, so neither shortcut can change what was drawn.
+- The "tap the wheel" hint is a **one-time reminder**, not permanent furniture beside the wheel.
+
 ### While the couple dances
 The longest-lived state in the app: two or three minutes, up to ten times a night, on a screen
 a room may be watching. It must **hold, not perform**.
 
-- Shows **the prompt** (name and description) and nothing competing with it.
+- **The wheel disappears.** It has done its job, nobody is looking at it, and the room needs the
+  names and the challenge — this is also the screen being cast to a TV.
+- Shows the **couple** and **the prompt** (name and description) and nothing competing with them.
 - Background uses the current theme's colors — it should still look like the app.
 - **Must not be distracting.** No looping animation, no attention-seeking motion. The dancers
   are the show; the screen is a reference card. This is the deliberate exception to the app's
   "fun to watch" bias.
 - **A single `Next Couple` button** returns to the wheel. **No timer, no auto-advance** — only
   the operator knows when a dance is over, and anything on a clock punishes a handoff.
+- On the **last couple** the button reads **See results** instead, because there is no next couple
+  and saying so is better than discovering it.
 - `Next Couple` must be the **most obvious control on the screen**. It is the one thing a
   stranger has to find instantly.
 
@@ -324,6 +362,16 @@ A dancer can be marked as **the birthday dancer**, and the session stops to cele
   whichever of them the wheel reaches first and names them all — *"Happy Birthday Dakota G and
   Zoe K!"* Drawing the others later does not stop the night again. Quicker than pausing once per
   person, and better as a moment: everyone is celebrated at once rather than in instalments.
+
+### Lock screen
+A lock that freezes all input, for pocketing the device between couples. At the first real event a
+pocket press re-spun a follower and cost her place in the night.
+
+- **Unlocked by press and hold**, never a tap — a tap is exactly what a pocket produces.
+- **It does not blank the screen.** When a couple is dancing, the locked view still shows their
+  names and their challenge, large and clean. The app is being cast to a TV, and a lock that hid
+  that would ruin the very thing the room is watching. Locked-while-dancing is arguably the *best*
+  cast view: all information, no controls.
 
 ### Session log
 - A running on-screen list of the session's pairings, so the operator can see who has danced.
@@ -654,6 +702,24 @@ See [costs-and-monetization.md](costs-and-monetization.md).
   with no explanation and no visible way out. Acceptable, or does it need an escape?
 
 ---
+
+## v1.6 — Event history
+
+**Goal:** keep a record of past events, so a night can be looked back on.
+
+- **Saved from the session-complete screen.** Saving asks for a **date** and a **name** for the
+  event.
+- Stores the full pairing log: who danced with whom, and what challenge they danced.
+- **A write-in for the song each couple danced to**, filled in as the operator likes.
+- Reachable from a **History** entry on the title screen.
+- Later, once they exist: **voting results**, and any **sudden death** and its outcome.
+
+> **This overturns a permanent non-goal.** [intent.md](intent.md) says the app will never be "a
+> system of record", and that pairing history never persists across sessions. That was written to
+> keep the app light and to avoid it becoming a database. The owner has asked for saved event
+> history, which is a deliberate reversal, not an oversight — see D-043. Everything still stays on
+> the device with no server, so the *architectural* non-goal is untouched; it is the *product*
+> claim that changes.
 
 ## v2.0 — Parked pending real-world use
 

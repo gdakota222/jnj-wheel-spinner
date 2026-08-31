@@ -174,8 +174,10 @@ Permanent non-goals. Not "later" — never, without a change of intent.
   > [costs-and-monetization.md](costs-and-monetization.md).
 - **A tool for official or sanctioned competition.** It produces no record and settles nothing.
 - **A scoring, judging, or results-export system.**
-- **A system of record.** Pairing history never persists across sessions. (In-session state does
-  persist — that is crash recovery, not history.)
+- ~~**A system of record.**~~ **Reversed in v1.6.** This originally said pairing history would
+  never persist across sessions. The owner wants to look back at past events, so saved event
+  history is being built — with dates, names and the songs danced. What has *not* changed: it all
+  stays on the device, with no server and no account. See D-043.
 - **An app dancers use from their own phones.**
 - **Bracket or heat management.**
 - **A large-event tool.** The 10-couple ceiling is a design choice, not a limitation to lift.

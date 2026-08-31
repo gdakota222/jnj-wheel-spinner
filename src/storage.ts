@@ -12,6 +12,7 @@ const ROSTER_KEY = 'jnj:v1:roster';
 const EXCLUDED_PROMPTS_KEY = 'jnj:v1:excluded-prompts';
 const SESSION_KEY = 'jnj:v1:session';
 const PROBE_KEY = 'jnj:v1:probe';
+const WHEEL_HINT_KEY = 'jnj:v1:seen-wheel-hint';
 
 /**
  * The shape of a stored session.
@@ -155,5 +156,27 @@ export function clearSession(): void {
     localStorage.removeItem(SESSION_KEY);
   } catch {
     // Nothing useful to do; a stale session is rejected on load anyway.
+  }
+}
+
+/**
+ * The "tap the wheel" reminder is shown once and then never again.
+ *
+ * It used to sit permanently beside the wheel, which pushed the wheel off centre
+ * — and the wheel being dead centre matters more than a hint nobody needs twice.
+ */
+export function hasSeenWheelHint(): boolean {
+  try {
+    return localStorage.getItem(WHEEL_HINT_KEY) === '1';
+  } catch {
+    return true; // no storage, no nagging
+  }
+}
+
+export function markWheelHintSeen(): void {
+  try {
+    localStorage.setItem(WHEEL_HINT_KEY, '1');
+  } catch {
+    // Nothing to do; the hint simply shows again next time.
   }
 }

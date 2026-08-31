@@ -5,6 +5,7 @@ import { SessionScreen } from './screens/SessionScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import type { Dancer } from './domain/roster';
 import {
+  POOL_NOUN,
   createSession,
   resumeSession,
   sessionReducer,
@@ -39,6 +40,8 @@ type Screen = 'title' | 'roster' | 'session' | 'bank';
 type Snapshot = {
   session: SessionState;
   dancers: Dancer[];
+  /** Plain English for what undoing this would reverse. */
+  label: string;
 };
 
 /**
@@ -114,9 +117,43 @@ export default function App() {
    */
   const CONTINUATIONS: ReadonlySet<SessionAction['type']> = new Set(['settled']);
 
+  /**
+   * Describe an action in the words the operator would use.
+   *
+   * Undo asks before it acts, and a confirmation that cannot say *what* it is
+   * about to reverse is not really a confirmation.
+   */
+  function describe(action: SessionAction, before: SessionState): string {
+    const drawnName = (pool: 'leaders' | 'followers') => before.drawn[pool]?.name ?? 'that dancer';
+    switch (action.type) {
+      case 'spin':
+        return `Undoes the draw for ${POOL_NOUN[before.currentPool]}.`;
+      case 'respin':
+        return `Puts back the re-spin of ${drawnName(before.currentPool)}.`;
+      case 'spinPrompt':
+        return 'Undoes drawing this couple\u2019s challenge.';
+      case 'respinPrompt':
+        return 'Restores the challenge that was swapped out.';
+      case 'nextCouple':
+        return `Un-commits ${before.drawn.leaders?.name ?? 'the leader'} and ${
+          before.drawn.followers?.name ?? 'the follower'
+        }, putting them back on the floor.`;
+      case 'jamOver':
+        return 'Reopens the birthday jam.';
+      case 'syncDancers':
+        return 'Reverses the last change to the dancers.';
+      default:
+        return 'Steps the session back one action.';
+    }
+  }
+
   /** Push one snapshot, dropping the oldest once the limit is reached. */
-  const remember = (prev: Snapshot[], session: SessionState, dancers: Dancer[]): Snapshot[] =>
-    [...prev, { session, dancers }].slice(-UNDO_LIMIT);
+  const remember = (
+    prev: Snapshot[],
+    session: SessionState,
+    dancers: Dancer[],
+    label: string,
+  ): Snapshot[] => [...prev, { session, dancers, label }].slice(-UNDO_LIMIT);
 
   const dispatch = (action: SessionAction) =>
     setState((current) => {
@@ -129,7 +166,12 @@ export default function App() {
         session: next,
         past: CONTINUATIONS.has(action.type)
           ? current.past
-          : remember(current.past, current.session, current.dancers),
+          : remember(
+              current.past,
+              current.session,
+              current.dancers,
+              describe(action, current.session),
+            ),
       };
     });
 
@@ -145,7 +187,12 @@ export default function App() {
         ? sessionReducer(current.session, { type: 'syncDancers', dancers: next })
         : null,
       past: current.session
-        ? remember(current.past, current.session, current.dancers)
+        ? remember(
+            current.past,
+            current.session,
+            current.dancers,
+            'Reverses the last change to the dancers.',
+          )
         : current.past,
     }));
   }
@@ -201,6 +248,7 @@ export default function App() {
         dispatch={dispatch}
         dancers={dancers}
         canUndo={past.length > 0}
+        undoLabel={past[past.length - 1]?.label ?? null}
         onUndo={undo}
         wasResumed={wasResumed}
         onDismissResumed={() => setWasResumed(false)}
