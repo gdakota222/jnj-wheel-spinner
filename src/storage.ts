@@ -14,6 +14,7 @@ const SESSION_KEY = 'jnj:v1:session';
 const PROBE_KEY = 'jnj:v1:probe';
 const WHEEL_HINT_KEY = 'jnj:v1:seen-wheel-hint';
 const ACTIVE_DECK_KEY = 'jnj:v1:active-deck';
+const SEEN_ABOUT_KEY = 'jnj:v1:seen-about';
 
 /**
  * The shape of a stored session.
@@ -179,6 +180,29 @@ export function markWheelHintSeen(): void {
     localStorage.setItem(WHEEL_HINT_KEY, '1');
   } catch {
     // Nothing to do; the hint simply shows again next time.
+  }
+}
+
+/**
+ * Whether the welcome page has already been shown.
+ *
+ * Read once at launch. Storage that cannot be read reports true — an operator on
+ * a device that forgets everything should not be greeted afresh every time they
+ * open the app in front of a room.
+ */
+export function hasSeenAbout(): boolean {
+  try {
+    return localStorage.getItem(SEEN_ABOUT_KEY) === '1';
+  } catch {
+    return true;
+  }
+}
+
+export function markAboutSeen(): void {
+  try {
+    localStorage.setItem(SEEN_ABOUT_KEY, '1');
+  } catch {
+    // Nothing to do; hasSeenAbout already reports true when storage is broken.
   }
 }
 

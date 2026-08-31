@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.9.4 — deployed and live
+**Current version:** 0.9.5 — deployed and live
 **Current phase:** Triaging real-event feedback before 1.0.0
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -77,6 +77,28 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-09 — 0.9.5: an About page, and setup in three steps
+- **An About page**, shown once on the first launch after installing and permanently under
+  **About** on the title screen. Says who made the app, that nothing about an event leaves the
+  device, and where to chip in. See D-045.
+- **Donation links are unset and live in one file** (`src/support.ts`). Ko-fi is the intended
+  destination; until the account exists the page says there is nothing to take yet rather than
+  offering a dead button.
+- **Setting up is three steps** — Dancers, How it runs, Start — with a pinned step bar and a
+  pinned primary button, and a summary before anything is committed. This answers the cold-read
+  finding from the first real event. See D-046.
+- **Pinning the add form as well was tried and undone.** On a 375px phone the form and the counts
+  come to 614px against the 577px the panel has, which left the list of names six pixels tall.
+  Caught in the browser, not by the tests.
+- **`.shell` is now `position: relative`.** `.visually-hidden` is absolutely positioned, so
+  without an anchor its containing block is the page itself: the screen-reader labels buried down
+  a long dancer list escaped the shell's `overflow: hidden` and stretched the document by 635px,
+  which let the "pinned" header be scrolled away. The session screen carried the same latent bug
+  and simply never overflowed far enough to show it.
+- Audited clean — touch targets, accessible names and contrast — on title, About and all three
+  setup steps, at phone and tablet size. 117 tests still passing.
+
 
 ### 2026-09-08 — 0.9.4: redraw actually spins, and bundles say where they are
 - **Redrawing a challenge spins the wheel again** — it did not before. The wheel is unmounted while
@@ -948,6 +970,49 @@ whether the component is new or not.
 list while the reducer resolves against another. An index silently stops meaning the same thing the
 moment either list changes, and that exact mistake hung the wheel in 0.5.0 (D-028). Naming the
 prompt removes the class of bug rather than avoiding one instance of it.
+
+### D-045 — An About page, and a donate link that is allowed to not exist yet
+**Decision:** ship an About page on first launch and from the title screen. Keep every outward
+link in `src/support.ts`, and render nothing where a handle is unset.
+
+**Reasoning:** the ask from the first event was for it to be clear a person made this, and to let
+early adopters donate. Two things follow. First, the same content has to be in both places — a
+welcome that promises more than the About button later delivers is a bait. Second, a donate button
+that 404s reads as either a broken app or a scam, which costs more trust than having no button at
+all. So the page is built now and the link is filled in when the account exists, as a one-line
+change.
+
+**Ko-fi over the alternatives.** A giver needs no account of their own, and one-off tips are not
+cut. Venmo was raised and is supported in the same file but left unset: a Venmo profile is public
+and carries the holder's real name, and the giver needs the app. That is a decision for the owner
+to make deliberately rather than a default to inherit.
+
+**A full screen, not a dialog.** On a phone a first-run modal is a cramped box over a screen the
+operator has not seen yet.
+
+### D-046 — Setting up is staged, and .shell is positioned
+**Decision:** split session setup into Dancers / How it runs / Start, with a pinned step bar and
+primary button. Give `.shell` `position: relative`.
+
+**Reasoning, part one:** the session screen already lives by "nothing needed may sit below the
+fold" (D-039). Setup did not, and at the first real event a newcomer scrolled past the entire
+roster hunting for the button that starts the night. Steps are numbered because a first-timer needs
+telling what setting up involves, and directly tappable because a fifth-time operator should not
+have to walk a wizard to change one answer. Nothing in the step bar is disabled: a step that cannot
+be pressed teaches nothing about why.
+
+**Reasoning, part two:** pinning the add form on top of that was the obvious next move and was
+wrong — on a 375px phone it does not fit, and the dancer list collapsed to six pixels. The panel
+scrolls as one instead. The reported problem was the button below the fold; the step bar and the
+pinned primary button solve it without pinning anything else.
+
+**Reasoning, part three:** `.visually-hidden` is `position: absolute`. With no positioned
+ancestor its containing block is the initial containing block, so it is not clipped by
+`overflow: hidden` on the shell. Down a long dancer list those screen-reader labels stretched the
+document by 635px and made the whole "pinned" layout scrollable — the header could be pushed off
+the top. `position: relative` on `.shell` fixes it everywhere at no cost, since every overlay in
+the app is `position: fixed` and unaffected. The session screen had the same latent bug and had
+only ever been saved by not overflowing far enough.
 
 ## Known issues and in-flight notes
 

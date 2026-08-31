@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AboutScreen } from './screens/AboutScreen';
 import { PromptBankScreen } from './screens/PromptBankScreen';
 import { RosterScreen } from './screens/RosterScreen';
 import { SessionScreen } from './screens/SessionScreen';
@@ -16,6 +17,8 @@ import {
 import { ALL_DECKS_ID, DEFAULT_DECK_ID, findDeck, promptsInPlay } from './domain/prompts';
 import {
   clearSession,
+  hasSeenAbout,
+  markAboutSeen,
   loadActiveDeckId,
   saveActiveDeckId,
   isStorageWritable,
@@ -29,7 +32,7 @@ import {
 import { useExitGuard } from './hooks/useExitGuard';
 import './styles/app.css';
 
-type Screen = 'title' | 'roster' | 'session' | 'bank';
+type Screen = 'title' | 'roster' | 'session' | 'bank' | 'about';
 
 /**
  * One step back: everything a single action could have changed.
@@ -63,8 +66,21 @@ const restored = (() => {
   return resumeSession(saved);
 })();
 
+/**
+ * Whether this launch should open on the welcome page.
+ *
+ * Only on a genuinely fresh install, and never over a session that survived a
+ * crash: an operator whose tablet died mid-event needs their couples back, not
+ * an introduction to an app they are already running.
+ */
+const openOnAbout = restored === null && !hasSeenAbout();
+
 export default function App() {
-  const [screen, setScreen] = useState<Screen>(restored ? 'session' : 'title');
+  const [screen, setScreen] = useState<Screen>(
+    restored ? 'session' : openOnAbout ? 'about' : 'title',
+  );
+  /** True only for the launch that introduces the app, not for later visits. */
+  const [aboutIsWelcome, setAboutIsWelcome] = useState(openOnAbout);
   /** Where "Back" should return to when leaving the Prompt Bank. */
   const [bankReturn, setBankReturn] = useState<Screen>('title');
   const [excludedPrompts, setExcludedPrompts] = useState<string[]>(() => loadExcludedPrompts());
@@ -279,6 +295,17 @@ export default function App() {
         }}
       />
     );
+  } else if (screen === 'about') {
+    view = (
+      <AboutScreen
+        firstRun={aboutIsWelcome}
+        onDone={() => {
+          markAboutSeen();
+          setAboutIsWelcome(false);
+          setScreen('title');
+        }}
+      />
+    );
   } else if (screen === 'bank') {
     view = (
       <PromptBankScreen
@@ -318,6 +345,7 @@ export default function App() {
           setBankReturn('title');
           setScreen('bank');
         }}
+        onOpenAbout={() => setScreen('about')}
       />
     );
   }

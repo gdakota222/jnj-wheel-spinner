@@ -1,6 +1,13 @@
 /* Portrait shell. The app is held vertically and never rotates, so the layout
    is a single centred column with a sane maximum width for tablets. */
 .shell {
+  /* Anchors absolutely positioned descendants — .visually-hidden above all.
+     Without it their containing block is the page itself, so on a shell that
+     clips its own overflow the screen-reader labels buried down a long list
+     escape the clip and stretch the document, and the "pinned" header can be
+     scrolled away. Costs nothing: every overlay in the app is position: fixed,
+     which this does not affect. */
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
@@ -1704,4 +1711,230 @@
   font-size: var(--step--1);
   font-weight: 650;
   cursor: pointer;
+}
+
+/* ---- About / welcome ---------------------------------------------------- */
+
+/* The About page carries the mark for recognition, not as the hero it is on the
+   title screen — the words are what matter here. */
+.mark--small {
+  padding-block: 0;
+}
+
+.card__body--quiet {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+
+.support {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin-top: var(--gap-sm);
+}
+
+/* Built to match .menu__item exactly: a link that leaves the app should not look
+   or feel different from a button that stays in it. */
+.support__link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: var(--touch);
+  padding: var(--gap-sm) var(--gap);
+  background: var(--surface-raised);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   Staged setup.
+
+   The same rule the session screen already lives by: nothing needed to move
+   forward may sit below the fold. Setting up was one long page, and at the
+   first real event a newcomer scrolled past the whole roster hunting for the
+   button that starts the night. The step bar and the primary button are now
+   pinned; only the content between them moves.
+   ========================================================================== */
+
+.shell--setup {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  gap: var(--gap-sm);
+  padding-top: calc(env(safe-area-inset-top) + var(--gap-sm));
+}
+
+.setup-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-sm);
+  flex: none;
+}
+
+.setup-head .back {
+  min-height: 44px;
+  flex: none;
+}
+
+.setup-head .screen-title {
+  font-size: var(--step-1);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ steps */
+
+.steps {
+  display: flex;
+  gap: var(--gap-xs);
+  flex: none;
+}
+
+/* Every step is reachable at any time. Nothing here is disabled: a step that
+   cannot be pressed teaches nothing about why, and the operator who wants to
+   change one answer should not have to walk the sequence again. */
+.steps__tab {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
+  min-height: 44px;
+  padding: var(--gap-xs) 4px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: var(--step--1);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+/* Where you are is marked by border, weight and colour together — never by
+   colour on its own. */
+.steps__tab[aria-current='step'] {
+  background: var(--surface-raised);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.steps__number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text);
+  font-size: var(--step--1);
+  font-weight: 700;
+}
+
+/* A finished step is marked with a tick as well as a colour, so the state
+   survives a colour-blind palette and a washed-out projector. */
+.steps__tab[data-done='true'] .steps__number {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Labels wrap rather than truncate. Three tabs across a 375px phone leaves no
+   room for "How it runs" on one line, and a step called "How it r…" tells an
+   organiser who has never seen this app precisely nothing. */
+.steps__label {
+  line-height: 1.15;
+  text-align: left;
+}
+
+/* ------------------------------------------------------------------ panel */
+
+/* The step's content: whatever height is left over, and the only thing on the
+   screen allowed to scroll. */
+.panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.panel__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Room to scroll past the last row rather than jam it against the button. */
+  padding-bottom: var(--gap-xs);
+  -webkit-overflow-scrolling: touch;
+}
+
+.next--pinned {
+  flex: none;
+}
+
+/* ---------------------------------------------------------------- summary */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin-top: var(--gap-sm);
+}
+
+.summary__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0 var(--gap-sm);
+  padding: var(--gap-sm);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+/* An unanswered row is marked by a word in it as well as by its edge — the
+   detail line already says "Not answered yet". */
+.summary__row[data-ok='false'] {
+  border-left-color: var(--text-faint);
+}
+
+.summary__term {
+  grid-column: 1;
+  font-size: var(--step--1);
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.summary__detail {
+  grid-column: 1;
+  margin: 0;
+  font-size: var(--step-0);
+  font-weight: 650;
+}
+
+.summary__fix {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-height: 44px;
+  padding-inline: var(--gap-sm);
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step--1);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.summary__note {
+  font-size: var(--step--1);
+  color: var(--text-faint);
 }

@@ -285,6 +285,23 @@ or the operator double-tapped. One correction tool: **re-spin the current draw.*
   Prompt Bank itself, with an **In use** badge on the bundle.
 - **Every bundle at once** can be selected from *View all Prompts*, with a caution that mixing the
   rewritten and archived wording makes the comparison unreadable while it is still being run.
+
+### About, and asking for support
+Asked for after the first real event: make it clear a person made this, and let early adopters
+buy that person a coffee if they want to.
+
+- **Shown once, on the first launch after installing**, as a full screen rather than a dialog. On
+  a phone a dialog would be a cramped box over a screen the operator has not seen yet.
+- **Permanently available** from **About** on the title screen, with the same content. The promise
+  made on first launch has to be the promise still there a month later.
+- **Never over a restored session.** An operator whose tablet died mid-event needs their couples
+  back, not an introduction to an app they are already running.
+- **States plainly that nothing leaves the device** — no account, no server, no ads. This is the
+  one screen where that claim is worth making explicitly, and it is true.
+- **Donations are opt-in and unset by default.** Every outward link lives in one file; an unset
+  handle means the page says there is nothing to take yet rather than showing a button that leads
+  nowhere. Ko-fi is the intended destination — chosen because a giver needs no account of their
+  own — and is pending an account.
 - **Redrawing a challenge spins the wheel again, with the replaced one taken off it.** The couple
   sees a genuinely different set rather than a wheel that passes over a segment it cannot land on.
   The replaced challenge returns to circulation once the couple is committed — it was never danced.
@@ -314,6 +331,22 @@ during a session is effectively hidden.
   **Lock screen**.
 - **Behind the Tools sheet:** view log, re-spin, edit dancers. Useful, rarely urgent, and each one
   is a tap away.
+
+### Setting up is staged, and the way on is never below the fold
+The same rule, applied one screen earlier. A colleague meeting the app cold at the first real
+event scrolled past the roster, the counts, the spin order and the challenges question hunting for
+the button that starts the night.
+
+- **Three steps: Dancers, How it runs, Start.** Numbered and ordered, because someone who has
+  never run this needs telling what setting up involves.
+- **Every step is reachable at any time**, by tapping it. Nothing in the step bar is disabled — an
+  organiser on their fifth event should not have to walk a wizard to change one answer.
+- **A step marks itself done with a tick**, not with colour alone.
+- **The step bar and the primary button are pinned.** Only the content between them scrolls, so
+  the thing to press next is always on screen.
+- **The last step is a summary** of everything decided — dancers, spin order, challenges and
+  bundle — each with **Change** beside it. The last chance to catch an answer set two steps ago,
+  before anything is committed.
 
 ### Undo
 **Any action can be stepped back** — a draw, a prompt draw, a dancer added, renamed, removed or
@@ -431,7 +464,8 @@ another person must not cost the night.
 | Screen | Notes |
 |---|---|
 | Title | **Start a Session** and **Prompt Bank** are live. Saved Rosters, Share Bundles and Options arrive later. Also the permanent home of the app title. |
-| Roster setup | Add/remove/role, validation, size guidance, spin-order choice. |
+| Session setup | Three steps — Dancers, How it runs, Start — with a pinned step bar and primary button, and a summary before committing. |
+| About | Who made the app, that it holds nothing off the device, and where to chip in. Shown once on first launch, and permanently on the title screen. |
 | Wheel | Labeled with the pool being spun. Re-spin available. |
 | Couple reveal | Both names, big. |
 | Prompt reveal | Name and description. |

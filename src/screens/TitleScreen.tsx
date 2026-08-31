@@ -6,6 +6,7 @@ const VERSION = __APP_VERSION__;
 type Props = {
   onStartSession: () => void;
   onOpenBank: () => void;
+  onOpenAbout: () => void;
   rosterCount: number;
   promptsInPlay: number;
   promptsTotal: number;
@@ -22,6 +23,7 @@ const UPCOMING = [
 export function TitleScreen({
   onStartSession,
   onOpenBank,
+  onOpenAbout,
   rosterCount,
   promptsInPlay,
   promptsTotal,
@@ -61,6 +63,11 @@ export function TitleScreen({
               ? `${promptsTotal} challenges ready`
               : `${promptsInPlay} of ${promptsTotal} challenges in play`}
           </span>
+        </button>
+
+        <button className="menu__item" type="button" onClick={onOpenAbout}>
+          <span className="menu__label">About</span>
+          <span className="menu__note">Who made this, and where your data lives</span>
         </button>
 
         {UPCOMING.map(({ label, arrives }) => (
