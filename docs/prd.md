@@ -334,10 +334,14 @@ a room may be watching. It must **hold, not perform**.
 - **Must not be distracting.** No looping animation, no attention-seeking motion. The dancers
   are the show; the screen is a reference card. This is the deliberate exception to the app's
   "fun to watch" bias.
-- **A single `Next Couple` button** returns to the wheel. **No timer, no auto-advance** — only
-  the operator knows when a dance is over, and anything on a clock punishes a handoff.
-- On the **last couple** the button reads **See results** instead, because there is no next couple
-  and saying so is better than discovering it.
+- **Advancing is a press and hold**, not a tap — `Hold for next couple`, or `Hold to see results`
+  on the last one. The hold fills as it progresses, so the gesture shows its own state.
+- **There is no lock on this screen, and it does not need one.** The only action is a hold, and a
+  pocket can press but cannot hold. An overlay was built and removed: it looked so much like the
+  dance hold itself that the two were impossible to tell apart, which is worse than useless on a
+  screen being cast to a TV. See D-041.
+- **No timer, no auto-advance** — only the operator knows when a dance is over, and anything on a
+  clock punishes a handoff.
 - `Next Couple` must be the **most obvious control on the screen**. It is the one thing a
   stranger has to find instantly.
 
@@ -368,10 +372,8 @@ A lock that freezes all input, for pocketing the device between couples. At the 
 pocket press re-spun a follower and cost her place in the night.
 
 - **Unlocked by press and hold**, never a tap — a tap is exactly what a pocket produces.
-- **It does not blank the screen.** When a couple is dancing, the locked view still shows their
-  names and their challenge, large and clean. The app is being cast to a TV, and a lock that hid
-  that would ruin the very thing the room is watching. Locked-while-dancing is arguably the *best*
-  cast view: all information, no controls.
+- **Not offered while a couple is dancing.** That screen advances on a hold instead, so there is
+  nothing there for a pocket to trigger, and the cast screen stays clean. See D-041.
 
 ### Session log
 - A running on-screen list of the session's pairings, so the operator can see who has danced.

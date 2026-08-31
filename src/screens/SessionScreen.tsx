@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { HoldButton } from '../components/HoldButton';
 import { Jamboree } from '../components/Jamboree';
 import { LockScreen } from '../components/LockScreen';
 import { RosterOptions } from '../components/RosterOptions';
@@ -204,9 +205,14 @@ export function SessionScreen({
         >
           Undo
         </button>
-        <button className="toolbar__button" type="button" onClick={() => setLocked(true)}>
-          Lock
-        </button>
+        {/* No lock while dancing: the only action there is a hold, so there is
+            nothing a pocket can do, and a lock overlay that looked almost
+            identical to the dance hold was impossible to tell apart. */}
+        {!dancing && (
+          <button className="toolbar__button" type="button" onClick={() => setLocked(true)}>
+            Lock
+          </button>
+        )}
         <button
           className="toolbar__button"
           type="button"
@@ -320,13 +326,10 @@ export function SessionScreen({
 
       <div className="actions actions--pinned">
         {dancing ? (
-          <button
-            className="actions__primary"
-            type="button"
-            onClick={() => dispatch({ type: 'nextCouple' })}
-          >
-            {isLastCouple ? 'See results' : 'Next couple'}
-          </button>
+          <HoldButton
+            label={isLastCouple ? 'Hold to see results' : 'Hold for next couple'}
+            onHold={() => dispatch({ type: 'nextCouple' })}
+          />
         ) : phase === 'pair' ? (
           <button
             className="actions__primary"
@@ -357,17 +360,7 @@ export function SessionScreen({
         </p>
       )}
 
-      {locked && (
-        <LockScreen
-          couple={
-            dancing && session.drawn.leaders && session.drawn.followers
-              ? { leader: session.drawn.leaders, follower: session.drawn.followers }
-              : null
-          }
-          prompt={dancing ? session.currentPrompt : null}
-          onUnlock={() => setLocked(false)}
-        />
-      )}
+      {locked && <LockScreen onUnlock={() => setLocked(false)} />}
 
       {toolsOpen && (
         <SessionTools

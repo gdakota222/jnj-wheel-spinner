@@ -1559,3 +1559,45 @@
   padding-inline: 10px;
   font-size: 0.82rem;
 }
+
+/* A button that must be held, showing the hold's own progress as it fills. */
+.hold-button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  width: 100%;
+  min-height: calc(var(--touch) + 8px);
+  background: var(--surface-raised);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step-2);
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hold-button__fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: var(--accent);
+}
+
+.hold-button--holding .hold-button__fill {
+  transform: scaleX(1);
+  transition: transform var(--hold-ms) linear;
+}
+
+.hold-button--holding {
+  color: var(--accent-ink);
+}
+
+.hold-button__label {
+  position: relative;
+}

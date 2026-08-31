@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.8.3 — deployed and live
+**Current version:** 0.9.2 — deployed and live
 **Current phase:** Triaging real-event feedback before 1.0.0
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
@@ -77,6 +77,26 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-08 — 0.9.0 / 0.9.1 / 0.9.2: everything the first event asked for
+Three versions in one sitting, all driven by [rehearsal.md § Round 2](rehearsal.md).
+
+**0.9.0 — recovery.** Undo through anything, restoring session and roster together (D-037). Add a
+dancer mid-session. Re-spin moved clear of the primary button and confirmed. A screen lock for
+pocketing the device.
+
+**0.9.1 — one screen.** The session no longer scrolls: only Undo and Lock keep a place beside the
+wheel, everything else moved to a Tools sheet. The wheel is front and centre — the "tap to spin"
+hint had been sitting beside it, knocking it off centre, and is now a one-time toast. The dance
+hold drops the wheel entirely and gives the screen to the couple and the challenge. Tapping a
+spinning wheel races it to its result rather than cutting there; double-tap still skips. Undo,
+re-spin and redraw all confirm; Edit dancers gained a Role button.
+
+**0.9.2 — the dance hold protects itself.** The lock overlay looked so much like the dance hold
+that the two were indistinguishable, which is worse than useless on a cast screen. Advancing is now
+a **press and hold**, so nothing there can be triggered by accident, and the lock is not offered on
+that screen at all. See D-041.
+
 
 ### 2026-09-08 — First real event: it worked, and it produced a backlog
 The app ran a real Jack & Jill on 2026-09-02. **The core loop did its job**, the cast to the TV drew
@@ -798,6 +818,52 @@ instantly. The warning worked exactly once per full relaunch.
 browser, the logic was sound, and the failure needs a real installed Android app that has been
 closed and reopened. It is the clearest case yet for the rehearsal existing at all — no amount of
 desktop verification would have reached it.
+
+### D-037 — Undo steps back through anything, session and roster together
+**Decision:** any action can be reversed — draws, prompt draws, dancers added, renamed, re-roled or
+removed. Each step restores the session **and** the roster, since a dancer edit changes both. A spin
+and its landing count as one step. Confirmed before it acts, naming what it will reverse.
+
+**Reasoning:** at the first real event a pocket press re-spun a follower; repairing it removed her
+from the session entirely, and there was no way back. **This overturns the PRD rule that a finished
+pairing stands forever**, which existed to keep the log honest. A real night showed the cost of
+having no way back is higher than the cost of an editable log.
+
+**Held in memory, not storage.** A crash restores the session but not its undo steps. Persisting 25
+snapshots would mean writing a few hundred KB on every action, risking stutter on a tablet
+mid-event — a bad trade for a rare case. Revisit if it ever bites.
+
+### D-038 — The wheel is the control
+**Decision:** tapping the wheel spins it; tapping a spinning wheel races it to its result;
+double-tapping skips outright.
+**Reasoning:** at the event almost everybody tapped the wheel before reaching for the button —
+dancers included, because the operator hands the device over so the drawn follower spins for her
+own leader. A first attempt cut straight to the result, which threw the showmanship away; racing
+keeps the moment and removes only the waiting. The winner is chosen before the animation, so
+neither shortcut can influence what was drawn.
+
+### D-039 — The session screen never scrolls
+**Decision:** only Undo and Lock sit beside the wheel; view log, re-spin, edit dancers and redraw
+live in a Tools sheet. The wheel sizes itself to whatever space is left.
+**Reasoning:** the Lock control sat below the fold at the event and had to be hunted for mid-event.
+Anything requiring a scroll during a session is effectively hidden while the operator is holding the
+device in front of a room. The wheel being dead centre is what the room looks at — and the "tap to
+spin" hint had been rendering beside it, pushing it off centre, so it became a one-time toast.
+
+### D-040 — The dance hold drops the wheel
+**Decision:** while a couple dances, the wheel disappears and the screen belongs to their names and
+their challenge.
+**Reasoning:** the wheel has done its job, nobody is looking at it, and this is the screen being
+cast to a TV. It also removes the worst scrolling case in one move.
+
+### D-041 — No lock while dancing; hold to advance instead
+**Decision:** the dance hold advances on a **press and hold**, and Lock is not offered on that
+screen.
+**Reasoning:** a lock overlay was built for this screen and removed after one look. Because the
+dance hold is already just names and a challenge, the locked view was nearly identical to the
+unlocked one — impossible to tell apart, and actively confusing on a TV. Making the screen's only
+action deliberate achieves the same protection with nothing added: a pocket can press, but it
+cannot hold. Fewer states, less to look at, same safety.
 
 ## Known issues and in-flight notes
 
