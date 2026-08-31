@@ -18,13 +18,25 @@ type Props = {
   onSettled: () => void;
   /** What this wheel is a wheel of, for assistive tech. */
   label?: string;
+  /** Tapping the wheel itself starts a spin. Omit to make the wheel inert. */
+  onSpin?: () => void;
+  /** True when a spin cannot be started right now. */
+  disabled?: boolean;
 };
 
 /** How long a spin takes. Long enough to build suspense, short enough to keep an
  *  event moving. Reduced-motion users get an instant result via the global rule. */
 const SPIN_SECONDS = 4.2;
 
-export function Wheel({ names, rotation, spinning, onSettled, label = 'names' }: Props) {
+export function Wheel({
+  names,
+  rotation,
+  spinning,
+  onSettled,
+  label = 'names',
+  onSpin,
+  disabled = false,
+}: Props) {
   const count = names.length;
   const settled = useRef(false);
 
@@ -61,6 +73,24 @@ export function Wheel({ names, rotation, spinning, onSettled, label = 'names' }:
     onSettled();
   }
 
+  /**
+   * The wheel is the control.
+   *
+   * At the first real event almost everybody tapped the wheel rather than the
+   * button — dancers included, since the operator hands the device over so the
+   * drawn follower spins for her own leader. Tapping mid-spin skips to the
+   * result: the winner was chosen before the animation began, so this shortens
+   * the wait without touching what was drawn.
+   */
+  function handleTap() {
+    if (disabled || !onSpin) return;
+    if (spinning) {
+      handleTransitionEnd();
+      return;
+    }
+    onSpin();
+  }
+
   // Each label is sized for its own name, so one long name does not shrink the
   // whole wheel. Anything that still cannot fit at the legibility floor is
   // truncated — the reveal shows the full name regardless.
@@ -75,6 +105,13 @@ export function Wheel({ names, rotation, spinning, onSettled, label = 'names' }:
 
   return (
     <div className="wheel">
+      <button
+        type="button"
+        className="wheel__tap"
+        onClick={handleTap}
+        disabled={disabled || !onSpin}
+        aria-label={spinning ? 'Skip to the result' : `Spin the wheel of ${count} ${label}`}
+      >
       <svg
         className="wheel__svg"
         viewBox="-50 -50 100 100"
@@ -128,6 +165,10 @@ export function Wheel({ names, rotation, spinning, onSettled, label = 'names' }:
             down at the name it has landed on. */}
         <path className="wheel__pointer" d="M -6 -50 L 6 -50 L 0 -38 Z" />
       </svg>
+      </button>
+      {onSpin && !disabled && (
+        <p className="wheel__hint">{spinning ? 'Tap to skip' : 'Tap the wheel to spin'}</p>
+      )}
     </div>
   );
 }

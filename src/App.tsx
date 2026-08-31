@@ -28,6 +28,29 @@ import './styles/app.css';
 
 type Screen = 'title' | 'roster' | 'session' | 'bank';
 
+/**
+ * One step back: everything a single action could have changed.
+ *
+ * The roster is captured alongside the session because the two move together —
+ * removing a dancer mid-session edits both, and an undo that restored only half
+ * of that would be worse than none. This is exactly the case that cost a dancer
+ * her place at the first real event.
+ */
+type Snapshot = {
+  session: SessionState;
+  dancers: Dancer[];
+};
+
+/**
+ * How many steps back the app can go.
+ *
+ * Deep enough to walk out of a real mistake — the event needed three — and
+ * bounded so a long session cannot grow without limit. Held in memory only: a
+ * crash restores the session itself but not its history, which is a deliberate
+ * trade rather than an oversight (see D-037).
+ */
+const UNDO_LIMIT = 25;
+
 /** A session restored from storage, normalised so an interrupted spin cannot hang. */
 const restored = (() => {
   const saved = loadSession();
@@ -36,14 +59,25 @@ const restored = (() => {
 })();
 
 export default function App() {
-  // Whoever opens the app lands back where it was left — the same mechanism that
-  // covers a crash, a locked tablet, and handing the device to someone else.
   const [screen, setScreen] = useState<Screen>(restored ? 'session' : 'title');
-  const [dancers, setDancers] = useState<Dancer[]>(() => loadRoster());
-  const [session, setSession] = useState<SessionState | null>(restored);
   const [excludedPrompts, setExcludedPrompts] = useState<string[]>(() => loadExcludedPrompts());
   const [storageBroken, setStorageBroken] = useState(() => !isStorageWritable());
   const [wasResumed, setWasResumed] = useState(restored !== null);
+
+  /**
+   * Session, roster and undo history move as one value.
+   *
+   * Keeping them together is what makes undo correct: every change records what
+   * both looked like beforehand, in the same update, with no chance of the two
+   * drifting apart.
+   */
+  const [state, setState] = useState<{
+    session: SessionState | null;
+    dancers: Dancer[];
+    past: Snapshot[];
+  }>(() => ({ session: restored, dancers: loadRoster(), past: [] }));
+
+  const { session, dancers, past } = state;
 
   // A stray back gesture should not close the app out from under an event.
   const { warning: exitWarning } = useExitGuard();
@@ -71,30 +105,85 @@ export default function App() {
   /** What a session would draw from right now, after set-asides. */
   const deckInPlay = promptsInPlay(WCS_STARTER_DECK.prompts, excludedPrompts);
 
+  /**
+   * Actions that do not earn their own step back.
+   *
+   * `settled` is the animation reporting in, not something the operator did — a
+   * spin and its landing are one act, so undo removes the whole draw rather than
+   * stranding the wheel mid-turn.
+   */
+  const CONTINUATIONS: ReadonlySet<SessionAction['type']> = new Set(['settled']);
+
+  /** Push one snapshot, dropping the oldest once the limit is reached. */
+  const remember = (prev: Snapshot[], session: SessionState, dancers: Dancer[]): Snapshot[] =>
+    [...prev, { session, dancers }].slice(-UNDO_LIMIT);
+
   const dispatch = (action: SessionAction) =>
-    setSession((current) => (current ? sessionReducer(current, action) : current));
+    setState((current) => {
+      if (!current.session) return current;
+      const next = sessionReducer(current.session, action);
+      // An action the reducer refused changed nothing, so it is not a step back.
+      if (next === current.session) return current;
+      return {
+        ...current,
+        session: next,
+        past: CONTINUATIONS.has(action.type)
+          ? current.past
+          : remember(current.past, current.session, current.dancers),
+      };
+    });
+
+  /**
+   * v1.0 keeps one list: editing dancers during a session edits the same roster
+   * the session drew from, and the session re-derives its pools. The two become
+   * separate things in v1.1 — see D-023.
+   */
+  function editDancers(next: Dancer[]) {
+    setState((current) => ({
+      dancers: next,
+      session: current.session
+        ? sessionReducer(current.session, { type: 'syncDancers', dancers: next })
+        : null,
+      past: current.session
+        ? remember(current.past, current.session, current.dancers)
+        : current.past,
+    }));
+  }
+
+  /** Roster changes outside a session are free — setup is not a thing to undo. */
+  function setDancers(next: Dancer[]) {
+    setState((current) => ({ ...current, dancers: next }));
+  }
+
+  function undo() {
+    setState((current) => {
+      const previous = current.past[current.past.length - 1];
+      if (!previous) return current;
+      return {
+        // Normalised on the way back for the same reason a restored session is:
+        // a snapshot taken mid-spin would return to a wheel that never lands.
+        session: resumeSession(previous.session),
+        dancers: previous.dancers,
+        past: current.past.slice(0, -1),
+      };
+    });
+  }
 
   function startSession(order: SpinOrder, promptsEnabled: boolean) {
     setWasResumed(false);
-    setSession(createSession(dancers, order, promptsEnabled, deckInPlay));
+    setState((current) => ({
+      ...current,
+      session: createSession(current.dancers, order, promptsEnabled, deckInPlay),
+      past: [],
+    }));
     setScreen('session');
   }
 
   function endSession() {
     setWasResumed(false);
-    setSession(null);
+    setState((current) => ({ ...current, session: null, past: [] }));
     clearSession();
     setScreen('roster');
-  }
-
-  /**
-   * v1.0 keeps one list: editing dancers during a session edits the same roster
-   * the session drew from, and the session is told to re-derive its pools. The
-   * two become separate things in v1.1 — see D-023.
-   */
-  function editDancers(next: Dancer[]) {
-    setDancers(next);
-    dispatch({ type: 'syncDancers', dancers: next });
   }
 
   const banner = storageBroken ? (
@@ -111,13 +200,24 @@ export default function App() {
         session={session}
         dispatch={dispatch}
         dancers={dancers}
+        canUndo={past.length > 0}
+        onUndo={undo}
         wasResumed={wasResumed}
         onDismissResumed={() => setWasResumed(false)}
         onEditDancers={editDancers}
         onLeave={endSession}
         onStartFresh={() => {
           setWasResumed(false);
-          setSession(createSession(dancers, session.spinOrder, session.promptsEnabled, deckInPlay));
+          setState((current) => ({
+            ...current,
+            session: createSession(
+              current.dancers,
+              session.spinOrder,
+              session.promptsEnabled,
+              deckInPlay,
+            ),
+            past: [],
+          }));
         }}
       />
     );

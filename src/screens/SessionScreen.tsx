@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Jamboree } from '../components/Jamboree';
+import { LockScreen } from '../components/LockScreen';
 import { RosterOptions } from '../components/RosterOptions';
 import { SessionLog } from '../components/SessionLog';
 import { Wheel } from '../components/Wheel';
@@ -25,6 +26,8 @@ type Props = {
   session: SessionState;
   dispatch: (action: SessionAction) => void;
   dancers: Dancer[];
+  canUndo: boolean;
+  onUndo: () => void;
   /** True when this session came back from storage rather than being started. */
   wasResumed: boolean;
   onDismissResumed: () => void;
@@ -37,6 +40,8 @@ export function SessionScreen({
   session,
   dispatch,
   dancers,
+  canUndo,
+  onUndo,
   wasResumed,
   onDismissResumed,
   onEditDancers,
@@ -46,6 +51,15 @@ export function SessionScreen({
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [confirmRespin, setConfirmRespin] = useState(false);
+  /**
+   * Locked between couples, for pocketing the device.
+   *
+   * At the first real event a pocket press re-spun a follower and cost her place
+   * in the night. The confirmation on Re-spin catches a mis-tap while the app is
+   * in use; this catches everything while it is not.
+   */
+  const [locked, setLocked] = useState(false);
 
   // Hold the screen awake for the whole session, including the dance hold.
   useWakeLock(session.phase !== 'complete');
@@ -79,6 +93,12 @@ export function SessionScreen({
     const plan = planSpin(index, drawPool.length, session.rotation);
     dispatch({ type, index, rotation: plan.rotation });
   }
+
+  /** Who a re-spin would discard right now. */
+  const respinTarget =
+    phase === 'drawn'
+      ? session.drawn[OTHER_POOL[session.currentPool]]
+      : session.drawn[session.currentPool];
 
   function spinPrompt(type: 'spinPrompt' | 'respinPrompt') {
     if (prompts.length === 0) return;
@@ -169,9 +189,21 @@ export function SessionScreen({
           <h1 className="screen-title">
             Couple {coupleNumber} of {session.couplesTotal}
           </h1>
-          <button className="progress__log" type="button" onClick={() => setLogOpen(true)}>
-            View log · {session.log.length}
-          </button>
+          <div className="progress__tools">
+            {/* Undo steps back through draws, prompts and dancer edits alike —
+                the first real event needed exactly this and did not have it. */}
+            <button
+              className="progress__log"
+              type="button"
+              onClick={onUndo}
+              disabled={!canUndo || spinning}
+            >
+              Undo
+            </button>
+            <button className="progress__log" type="button" onClick={() => setLogOpen(true)}>
+              View log · {session.log.length}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -251,6 +283,14 @@ export function SessionScreen({
         spinning={spinning}
         onSettled={() => dispatch({ type: 'settled' })}
         label={onPromptWheel ? 'challenges' : POOL_NOUN[session.currentPool] + 's'}
+        onSpin={
+          phase === 'pair'
+            ? () => spinPrompt('spinPrompt')
+            : phase === 'ready' || phase === 'drawn' || spinning
+              ? () => spinDancer('spin')
+              : undefined
+        }
+        disabled={phase === 'couple'}
       />
 
       <div className="result" aria-live="polite">
@@ -327,23 +367,6 @@ export function SessionScreen({
           </button>
         )}
 
-        {/* Re-spin stays available right up until Next couple commits the pairing.
-            A dancer who has stepped outside is most often noticed on the second
-            draw, not the first. */}
-        {(phase === 'drawn' || phase === 'pair' || phase === 'couple') && (
-          <button
-            className="edit-dancers"
-            type="button"
-            onClick={() => spinDancer('respin')}
-            disabled={spinning}
-          >
-            Re-spin{' '}
-            {phase === 'drawn'
-              ? session.drawn[OTHER_POOL[session.currentPool]]?.name
-              : session.drawn[session.currentPool]?.name}
-          </button>
-        )}
-
         {phase === 'couple' && session.currentPrompt && (
           <button
             className="edit-dancers"
@@ -362,6 +385,28 @@ export function SessionScreen({
         )}
       </div>
 
+      {/* Re-spin lives down here, well clear of the button a thumb reaches for,
+          and asks before it discards anybody. */}
+      {(phase === 'drawn' || phase === 'pair' || phase === 'couple') && respinTarget && (
+        <div className="danger-zone">
+          <button
+            className="danger-zone__button"
+            type="button"
+            onClick={() => setConfirmRespin(true)}
+            disabled={spinning}
+          >
+            Re-spin {respinTarget.name}
+          </button>
+        </div>
+      )}
+
+      <div className="lock-bar">
+        <button className="lock-bar__button" type="button" onClick={() => setLocked(true)}>
+          Lock screen
+        </button>
+        <p className="lock-bar__note">For pocketing the device between couples.</p>
+      </div>
+
       {optionsOpen && (
         <RosterOptions
           dancers={dancers}
@@ -375,6 +420,22 @@ export function SessionScreen({
           log={session.log}
           couplesTotal={session.couplesTotal}
           onClose={() => setLogOpen(false)}
+        />
+      )}
+
+      {locked && <LockScreen onUnlock={() => setLocked(false)} />}
+
+      {confirmRespin && respinTarget && (
+        <ConfirmDialog
+          title={`Re-spin ${respinTarget.name}?`}
+          body={`${respinTarget.name} goes back into the pool and the wheel draws again. They stay eligible.`}
+          confirmLabel="Re-spin"
+          destructive
+          onConfirm={() => {
+            setConfirmRespin(false);
+            spinDancer('respin');
+          }}
+          onCancel={() => setConfirmRespin(false)}
         />
       )}
 
