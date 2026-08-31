@@ -280,6 +280,14 @@ or the operator double-tapped. One correction tool: **re-spin the current draw.*
 - **The original wording is archived, not deleted**, as a second selectable bundle. A bundle can be
   chosen in the Prompt Bank and the next session draws from it, so the two can be run on different
   nights and the dancers asked which they prefer.
+- **Which bundle is in use is stated where it matters**: on the roster screen beside the challenges
+  question, with the count in play and a way straight into the Prompt Bank; and at the top of the
+  Prompt Bank itself, with an **In use** badge on the bundle.
+- **Every bundle at once** can be selected from *View all Prompts*, with a caution that mixing the
+  rewritten and archived wording makes the comparison unreadable while it is still being run.
+- **Redrawing a challenge spins the wheel again, with the replaced one taken off it.** The couple
+  sees a genuinely different set rather than a wheel that passes over a segment it cannot land on.
+  The replaced challenge returns to circulation once the couple is committed — it was never danced.
 - **The Prompt Bank** (title screen) lists every prompt with its description, grouped by bundle,
   and lets the operator **set prompts aside** so they stay off the wheel until put back. Set-asides
   persist on the device and apply to every future session.

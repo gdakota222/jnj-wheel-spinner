@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.9.3 — deployed and live
+**Current version:** 0.9.4 — deployed and live
 **Current phase:** Triaging real-event feedback before 1.0.0
 **Last updated:** 2026-08-26
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -77,6 +77,26 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-08 — 0.9.4: redraw actually spins, and bundles say where they are
+- **Redrawing a challenge spins the wheel again** — it did not before. The wheel is unmounted while
+  a couple dances, so a spin started from that screen remounted it *already at* the target angle and
+  animated nothing. The wheel now animates from where it was, carried in state, however it got
+  there. See D-044.
+- **The replaced challenge comes off the wheel**, so a redraw visibly offers something else instead
+  of passing over a segment it cannot land on. It returns to circulation when the couple is
+  committed — it was never danced.
+- **Prompt draws are now by id rather than by list position** (D-044). Aiming at one list and
+  resolving against another is precisely what hung the wheel in 0.5.0, and filtering the redraw pool
+  would have set that trap again.
+- **The roster screen says which bundle is in play**, how many challenges are in it, and offers
+  **Edit bundles** straight into the Prompt Bank — returning to the roster rather than the title.
+- **The Prompt Bank leads with what is in use**: a banner, an **In use** badge on the bundle, and a
+  clearer confirmation on the selected one.
+- **"All prompts" is now "View all Prompts"** and can also be selected, drawing from every bundle at
+  once — with a caution that it mixes the rewritten wording with the archived original and would
+  make the comparison unreadable. Using **Use all** there now says plainly that all 40 are in play.
+
 
 ### 2026-09-08 — 0.9.3: the prompts rewritten, the originals archived
 - **All 20 prompts rewritten** to invite rather than demand: *as many as you can* and *as little as
@@ -905,6 +925,29 @@ in the app, either can be selected for a session, and the dancers can be asked w
 **A second problem solved by accident:** shorter names mean a full 20-prompt wheel truncates
 nothing at all. The cold read disliked names being cut off and suggested a vertical reel; that is
 still a better long-term answer, but it is no longer urgent.
+
+### D-043 — Saved event history reverses a permanent non-goal
+**Decision:** v1.6 will save past events — date, name, the pairing log, the songs danced, and later
+voting and sudden-death results.
+**Reasoning:** [intent.md](intent.md) said the app would never be "a system of record" and that
+pairing history would never persist across sessions. The owner wants to look back at past events,
+which is a deliberate reversal rather than an oversight, and it is recorded as one. What has *not*
+changed is the architecture: still on-device, still no server, still no account. The
+*product* claim moved; the *architectural* non-goal did not.
+
+### D-044 — The wheel animates from where it was, and prompts are drawn by id
+**Decision:** the session carries `previousRotation`, and the wheel starts each spin there before
+animating to the target. Prompt draws carry a prompt **id** rather than an index into a list.
+
+**Reasoning, part one:** the wheel is unmounted while a couple dances, so redrawing a challenge
+remounted it *already at* the target angle — the transition had nothing to travel and the wheel sat
+still until the safety timer settled it. Carrying the starting angle in state makes a spin animate
+whether the component is new or not.
+
+**Reasoning, part two:** taking the replaced challenge off the wheel means the screen aims at one
+list while the reducer resolves against another. An index silently stops meaning the same thing the
+moment either list changes, and that exact mistake hung the wheel in 0.5.0 (D-028). Naming the
+prompt removes the class of bug rather than avoiding one instance of it.
 
 ## Known issues and in-flight notes
 

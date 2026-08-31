@@ -60,10 +60,28 @@ export type SessionState = {
    * other pool the instant a name landed.
    */
   wheelPool: PoolName;
-  /** Index the in-flight spin will land on, resolved when it settles. */
+  /** Index the in-flight dancer spin will land on, resolved when it settles. */
   pendingIndex: number | null;
+  /**
+   * The challenge the in-flight prompt spin will land on.
+   *
+   * An id rather than a position: the list the screen aimed at and the list the
+   * reducer resolves against have to be the same one, and an index silently
+   * stops meaning the same thing the moment either list changes. That mistake
+   * cost a hung wheel once already (D-028).
+   */
+  pendingPromptId: string | null;
   drawn: Partial<Record<PoolName, Dancer>>;
   rotation: number;
+  /**
+   * Where the wheel sat before the current spin.
+   *
+   * The wheel component is unmounted while a couple dances, so a spin started
+   * from that screen — redrawing a challenge — would remount the wheel already
+   * sitting at its target and animate nothing at all. Carrying the starting
+   * angle in state lets it animate from the right place however it got there.
+   */
+  previousRotation: number;
   log: Couple[];
   /** How many couples this session will produce in total. */
   couplesTotal: number;
@@ -78,6 +96,15 @@ export type SessionState = {
   currentPrompt: Prompt | null;
   /** True once the deck has been exhausted and started over. */
   promptsRecycled: boolean;
+  /**
+   * A challenge held off the wheel for this couple.
+   *
+   * Set when a challenge is redrawn: the one being replaced comes off the wheel
+   * entirely rather than staying on it unwinnable, so the spin visibly offers
+   * something new. Cleared when the couple is committed, which puts it back in
+   * circulation for everybody else.
+   */
+  promptExcludedId: string | null;
 
   /**
    * Everyone being jammed right now. Empty when no jam is running.
@@ -102,8 +129,8 @@ export type SessionAction =
   | { type: 'spin'; index: number; rotation: number }
   | { type: 'settled' }
   | { type: 'respin'; index: number; rotation: number }
-  | { type: 'spinPrompt'; index: number; rotation: number }
-  | { type: 'respinPrompt'; index: number; rotation: number }
+  | { type: 'spinPrompt'; promptId: string; rotation: number }
+  | { type: 'respinPrompt'; promptId: string; rotation: number }
   | { type: 'jamOver' }
   | { type: 'nextCouple' }
   | { type: 'syncDancers'; dancers: Dancer[] };
@@ -146,8 +173,10 @@ export function createSession(
     currentPool: spinOrder,
     wheelPool: spinOrder,
     pendingIndex: null,
+    pendingPromptId: null,
     drawn: {},
     rotation: 0,
+    previousRotation: 0,
     log: [],
     couplesTotal,
     promptsEnabled,
@@ -155,6 +184,7 @@ export function createSession(
     promptsRemaining: [...deck],
     currentPrompt: null,
     promptsRecycled: false,
+    promptExcludedId: null,
     jamboreeDancers: [],
     phaseAfterJamboree: null,
     jammed: [],
@@ -199,10 +229,16 @@ export function jamboreePrompt(dancers: readonly Dancer[]): Prompt {
  * add prompts or switch decks instead if they would rather.
  */
 function promptEntriesFor(state: SessionState): { entries: Prompt[]; recycledNow: boolean } {
+  const withoutExcluded = (list: Prompt[]) =>
+    state.promptExcludedId ? list.filter((p) => p.id !== state.promptExcludedId) : list;
+
   if (state.promptsRemaining.length > 0) {
-    return { entries: state.promptsRemaining, recycledNow: false };
+    const entries = withoutExcluded(state.promptsRemaining);
+    if (entries.length > 0) return { entries, recycledNow: false };
   }
-  return { entries: [...state.promptDeck], recycledNow: true };
+  // Exhausted, or the only one left is the one being replaced.
+  const recycled = withoutExcluded([...state.promptDeck]);
+  return { entries: recycled.length > 0 ? recycled : [...state.promptDeck], recycledNow: true };
 }
 
 /** What the prompt wheel should be showing. */
@@ -285,7 +321,7 @@ export function resumeSession(state: SessionState): SessionState {
     return { ...state, phase: halfDrawn ? 'drawn' : 'ready', pendingIndex: null };
   }
   if (state.phase === 'prompt-spinning') {
-    return { ...state, phase: 'pair', pendingIndex: null, currentPrompt: null };
+    return { ...state, phase: 'pair', pendingIndex: null, pendingPromptId: null, currentPrompt: null };
   }
   // A jamboree is not a spin — it is a moment in the room, and it survives intact.
   return state;
@@ -308,15 +344,17 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         wheelPool: state.currentPool,
         phase: 'spinning',
         pendingIndex: action.index,
+        previousRotation: state.rotation,
         rotation: action.rotation,
       };
     }
 
     case 'settled': {
-      if (state.pendingIndex === null) return state;
+      if (state.pendingIndex === null && state.pendingPromptId === null) return state;
 
       if (state.phase === 'prompt-spinning') {
-        const prompt = promptEntriesFor(state).entries[state.pendingIndex];
+        const pool = promptEntriesFor(state).entries;
+        const prompt = pool.find((p) => p.id === state.pendingPromptId) ?? pool[0];
         if (!prompt) return state;
         // The prompt stays on the wheel until the couple is committed, exactly
         // like a dancer — otherwise it vanishes from under the pointer the moment
@@ -324,12 +362,12 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         return {
           ...state,
           currentPrompt: prompt,
-          pendingIndex: null,
+          pendingPromptId: null,
           phase: 'couple',
         };
       }
 
-      if (state.phase !== 'spinning') return state;
+      if (state.phase !== 'spinning' || state.pendingIndex === null) return state;
       const pool = state.currentPool;
       const candidates = state.remaining[pool];
       if (candidates.length === 0) return state;
@@ -399,6 +437,7 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         wheelPool: pool,
         phase: 'spinning',
         pendingIndex: action.index,
+        previousRotation: state.rotation,
         rotation: action.rotation,
       };
     }
@@ -415,17 +454,26 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
           : state.phase === 'couple' || state.phase === 'pair';
       if (!allowed || !state.promptsEnabled) return state;
 
-      const { entries, recycledNow } = promptEntriesFor(state);
+      // Redrawing takes the current challenge off the wheel, so the spin plainly
+      // offers something else rather than passing over an unwinnable segment.
+      const excludedId =
+        action.type === 'respinPrompt'
+          ? (state.currentPrompt?.id ?? state.promptExcludedId)
+          : state.promptExcludedId;
+
+      const { entries, recycledNow } = promptEntriesFor({ ...state, promptExcludedId: excludedId });
       if (entries.length === 0) return state;
 
       return {
         ...state,
-        promptsRemaining: recycledNow ? entries : state.promptsRemaining,
+        promptsRemaining: recycledNow ? [...state.promptDeck] : state.promptsRemaining,
         promptsRecycled: recycledNow ? true : state.promptsRecycled,
+        promptExcludedId: excludedId,
         // A re-spun prompt goes back in the deck; it was never danced.
         currentPrompt: null,
         phase: 'prompt-spinning',
-        pendingIndex: action.index,
+        pendingPromptId: action.promptId,
+        previousRotation: state.rotation,
         rotation: action.rotation,
       };
     }
@@ -465,6 +513,7 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         ...state,
         remaining,
         promptsRemaining,
+        promptExcludedId: null,
         log,
         drawn: {},
         currentPrompt: null,

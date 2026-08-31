@@ -140,9 +140,18 @@ directly. Stricter throughout: more rules, fewer invitations.
 
 ---
 
+## Redrawing
+
+If a couple gets a challenge that does not suit them, **Tools → Draw a different challenge** spins
+the wheel again with the current one taken off it, so the draw plainly offers something else. The
+replaced challenge is not spent — it returns to the pool once that couple is committed.
+
 ## Testing the rewrite
 
 Both bundles are in the app. In the **Prompt Bank**, pick a bundle and press **Use this bundle for
-sessions** — the next session draws from it. Run a night on each and ask the dancers which they
+sessions** — the next session draws from it, and the roster screen shows which one is in play before
+you start. **View all Prompts** shows every challenge in one list, and can also be selected to draw
+from both bundles at once — though that mixes the wordings together, so it is best left until the
+comparison is finished. Run a night on each and ask the dancers which they
 preferred. Set-asides are stored per prompt, so hiding one in either bundle does not disturb the
 other.

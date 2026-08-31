@@ -1611,3 +1611,97 @@
 .deck-state--active {
   color: var(--seg-4);
 }
+
+/* ------------------------------------------------------------ bundle status */
+
+/* Which bundle is in use, said before anything else in the bank. */
+.in-use-banner {
+  padding: var(--gap-sm) var(--gap);
+  background: color-mix(in srgb, var(--seg-4) 18%, transparent);
+  border-left: 4px solid var(--seg-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--step-0);
+}
+
+.bundle-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  text-align: left;
+}
+
+.bundle-option__badge {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--seg-4);
+  color: #08130c;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* aria-pressed already fills the button; keep the badge readable on top of it. */
+.roles__option[aria-pressed='true'] .bundle-option__badge {
+  background: var(--accent-ink);
+  color: var(--accent);
+}
+
+.deck-caution {
+  margin-top: var(--gap-sm);
+  padding: var(--gap-sm);
+  background: color-mix(in srgb, var(--seg-3) 16%, transparent);
+  border-left: 4px solid var(--seg-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+  color: var(--text);
+}
+
+/* The bundle a session will draw from, on the roster screen. */
+.bundle-box {
+  margin-top: var(--gap);
+  padding: var(--gap-sm) var(--gap);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--seg-4);
+  border-radius: var(--radius-sm);
+}
+
+.bundle-box__name {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  font-size: var(--step-1);
+  font-weight: 700;
+}
+
+.bundle-box__mixed {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--seg-3);
+  color: #2a2005;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.bundle-box__count {
+  margin-top: 2px;
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+
+.bundle-box__edit {
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--gap-sm);
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step--1);
+  font-weight: 650;
+  cursor: pointer;
+}

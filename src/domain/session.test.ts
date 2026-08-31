@@ -349,7 +349,8 @@ describe('prompts', () => {
       s = apply(s, { type: 'spin', index: 0, rotation: s.rotation + 1800 }, { type: 'settled' });
     }
     expect(s.phase).toBe('pair');
-    s = apply(s, { type: 'spinPrompt', index: promptIndex, rotation: s.rotation + 1800 });
+    const target = promptEntries(s)[promptIndex];
+    s = apply(s, { type: 'spinPrompt', promptId: target.id, rotation: s.rotation + 1800 });
     expect(s.phase).toBe('prompt-spinning');
     return apply(s, { type: 'settled' });
   }
@@ -376,6 +377,7 @@ describe('prompts', () => {
     let s = createSession(roster(3, 3), 'leaders', true, deck);
     s = drawWithPrompt(s, 1);
     expect(s.currentPrompt?.id).toBe(deck[1].id);
+    expect(s.pendingPromptId).toBeNull();
     s = apply(s, { type: 'nextCouple' });
     expect(s.log[0].prompt?.id).toBe(deck[1].id);
     expect(s.currentPrompt).toBeNull();
@@ -432,7 +434,7 @@ describe('prompts', () => {
   it('re-spinning a prompt clears the current one and draws again', () => {
     let s = createSession(roster(3, 3), 'leaders', true, deck);
     s = drawWithPrompt(s, 0);
-    s = apply(s, { type: 'respinPrompt', index: 1, rotation: s.rotation + 1800 });
+    s = apply(s, { type: 'respinPrompt', promptId: deck[1].id, rotation: s.rotation + 1800 });
     expect(s.currentPrompt).toBeNull();
     s = apply(s, { type: 'settled' });
     expect(s.currentPrompt?.id).toBe(deck[1].id);
@@ -502,7 +504,7 @@ describe('resuming an interrupted session', () => {
     let s = createSession(roster(3, 3), 'leaders', true, deck);
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
     s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
-    s = apply(s, { type: 'spinPrompt', index: 1, rotation: 5400 });
+    s = apply(s, { type: 'spinPrompt', promptId: deck[1].id, rotation: 5400 });
 
     const back = resumeSession(s);
     expect(back.phase).toBe('pair');
@@ -523,7 +525,7 @@ describe('resuming an interrupted session', () => {
     let s = createSession(roster(4, 2), 'leaders', true, WESTIE_STARTER_PACK.prompts.slice(0, 4));
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
     s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
-    s = apply(s, { type: 'spinPrompt', index: 0, rotation: 5400 }, { type: 'settled' });
+    s = apply(s, { type: 'spinPrompt', promptId: WESTIE_STARTER_PACK.prompts[0].id, rotation: 5400 }, { type: 'settled' });
     s = apply(s, { type: 'nextCouple' });
     s = apply(s, { type: 'spin', index: 1, rotation: 7200 }, { type: 'settled' });
     expect(s.phase).toBe('drawn');
@@ -667,5 +669,60 @@ describe('the birthday jamboree', () => {
     expect(prompt.name).toBe('Jamboree');
     expect(prompt.description).toContain('Happy Birthday Dakota G!');
     expect(prompt.description).toContain('they get to choose the song');
+  });
+});
+
+describe('redrawing a challenge', () => {
+  const deck = WESTIE_STARTER_PACK.prompts.slice(0, 4);
+
+  function toPair(state: SessionState): SessionState {
+    let s = state;
+    for (let half = 0; half < 2; half++) {
+      s = apply(s, { type: 'spin', index: 0, rotation: s.rotation + 1800 }, { type: 'settled' });
+    }
+    return s;
+  }
+
+  it('takes the replaced challenge off the wheel entirely', () => {
+    let s = toPair(createSession(roster(3, 3), 'leaders', true, deck));
+    s = apply(s, { type: 'spinPrompt', promptId: deck[0].id, rotation: 1800 }, { type: 'settled' });
+    expect(s.currentPrompt?.id).toBe(deck[0].id);
+    // Still on the wheel while they dance it.
+    expect(promptEntries(s).map((p) => p.id)).toContain(deck[0].id);
+
+    s = apply(s, { type: 'respinPrompt', promptId: deck[1].id, rotation: 3600 });
+    // Now it is gone, so the spin visibly offers something else.
+    expect(s.promptExcludedId).toBe(deck[0].id);
+    expect(promptEntries(s).map((p) => p.id)).not.toContain(deck[0].id);
+  });
+
+  it('puts the replaced challenge back once the couple is committed', () => {
+    let s = toPair(createSession(roster(3, 3), 'leaders', true, deck));
+    s = apply(s, { type: 'spinPrompt', promptId: deck[0].id, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'respinPrompt', promptId: deck[1].id, rotation: 3600 }, { type: 'settled' });
+    expect(s.currentPrompt?.id).toBe(deck[1].id);
+
+    s = apply(s, { type: 'nextCouple' });
+    expect(s.promptExcludedId).toBeNull();
+    // deck[0] was never danced, so it is available again.
+    expect(promptEntries(s).map((p) => p.id)).toContain(deck[0].id);
+  });
+
+  it('still has something to draw when only the replaced challenge is left', () => {
+    const tiny = WESTIE_STARTER_PACK.prompts.slice(0, 1);
+    let s = toPair(createSession(roster(3, 3), 'leaders', true, tiny));
+    s = apply(s, { type: 'spinPrompt', promptId: tiny[0].id, rotation: 1800 }, { type: 'settled' });
+    s = apply(s, { type: 'respinPrompt', promptId: tiny[0].id, rotation: 3600 });
+    expect(promptEntries(s).length).toBeGreaterThan(0);
+    s = apply(s, { type: 'settled' });
+    expect(s.currentPrompt).not.toBeNull();
+  });
+
+  it('records the winner by id, so a changing list cannot misaim it', () => {
+    let s = toPair(createSession(roster(3, 3), 'leaders', true, deck));
+    s = apply(s, { type: 'spinPrompt', promptId: deck[2].id, rotation: 1800 });
+    expect(s.pendingPromptId).toBe(deck[2].id);
+    s = apply(s, { type: 'settled' });
+    expect(s.currentPrompt?.id).toBe(deck[2].id);
   });
 });

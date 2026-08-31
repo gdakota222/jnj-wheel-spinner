@@ -13,7 +13,7 @@ import {
   type SessionState,
   type SpinOrder,
 } from './domain/session';
-import { DEFAULT_DECK_ID, findDeck, promptsInPlay } from './domain/prompts';
+import { ALL_DECKS_ID, DEFAULT_DECK_ID, findDeck, promptsInPlay } from './domain/prompts';
 import {
   clearSession,
   loadActiveDeckId,
@@ -65,6 +65,8 @@ const restored = (() => {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>(restored ? 'session' : 'title');
+  /** Where "Back" should return to when leaving the Prompt Bank. */
+  const [bankReturn, setBankReturn] = useState<Screen>('title');
   const [excludedPrompts, setExcludedPrompts] = useState<string[]>(() => loadExcludedPrompts());
   const [activeDeckId, setActiveDeckId] = useState<string>(() => loadActiveDeckId(DEFAULT_DECK_ID));
   const [storageBroken, setStorageBroken] = useState(() => !isStorageWritable());
@@ -284,7 +286,8 @@ export default function App() {
         onChange={setExcludedPrompts}
         activeDeckId={activeDeckId}
         onChooseDeck={setActiveDeckId}
-        onBack={() => setScreen('title')}
+        onBack={() => setScreen(bankReturn)}
+        backLabel={bankReturn === 'roster' ? 'Roster' : 'Title screen'}
       />
     );
   } else if (screen === 'roster') {
@@ -295,6 +298,13 @@ export default function App() {
         onBack={() => setScreen('title')}
         onStartSession={startSession}
         promptsInPlay={deckInPlay.length}
+        deckName={activeDeck.name}
+        deckTotal={activeDeck.prompts.length}
+        mixedBundles={activeDeckId === ALL_DECKS_ID}
+        onEditBundles={() => {
+          setBankReturn('roster');
+          setScreen('bank');
+        }}
       />
     );
   } else {
@@ -304,7 +314,10 @@ export default function App() {
         promptsInPlay={deckInPlay.length}
         promptsTotal={activeDeck.prompts.length}
         onStartSession={() => setScreen('roster')}
-        onOpenBank={() => setScreen('bank')}
+        onOpenBank={() => {
+          setBankReturn('title');
+          setScreen('bank');
+        }}
       />
     );
   }

@@ -19,6 +19,12 @@ type Props = {
   onStartSession: (order: SpinOrder, promptsEnabled: boolean) => void;
   /** How many challenges are left in play after Prompt Bank set-asides. */
   promptsInPlay: number;
+  /** The bundle a session would draw from. */
+  deckName: string;
+  deckTotal: number;
+  /** True when every bundle is being drawn from at once. */
+  mixedBundles: boolean;
+  onEditBundles: () => void;
 };
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
@@ -31,6 +37,10 @@ export function RosterScreen({
   onBack,
   onStartSession,
   promptsInPlay,
+  deckName,
+  deckTotal,
+  mixedBundles,
+  onEditBundles,
 }: Props) {
   const [orderChoice, setOrderChoice] = useState<OrderChoice>('leaders');
   const [promptsEnabled, setPromptsEnabled] = useState<boolean | null>(null);
@@ -256,11 +266,24 @@ export function RosterScreen({
           Each couple can draw a challenge to dance — a named constraint like{' '}
           <em>A Whole New Level</em>. Or run it as a plain pairing wheel.
         </p>
-        <p className="card__body">
-          {promptsInPlay === 0
-            ? 'Every challenge is set aside in the Prompt Bank, so there is nothing to draw. Put some back to use them.'
-            : `${promptsInPlay} ${promptsInPlay === 1 ? 'challenge is' : 'challenges are'} in play.`}
-        </p>
+        {/* What a session would actually draw from, said here rather than left
+            to be discovered in the Prompt Bank. */}
+        <div className="bundle-box">
+          <p className="bundle-box__name">
+            {deckName}
+            {mixedBundles && <span className="bundle-box__mixed">mixed</span>}
+          </p>
+          <p className="bundle-box__count">
+            {promptsInPlay === 0
+              ? 'Everything here is set aside — nothing left to draw.'
+              : promptsInPlay === deckTotal
+                ? `All ${deckTotal} challenges in play.`
+                : `${promptsInPlay} of ${deckTotal} challenges in play.`}
+          </p>
+          <button className="bundle-box__edit" type="button" onClick={onEditBundles}>
+            Edit bundles
+          </button>
+        </div>
         <fieldset className="roles roles--stacked">
           <legend className="visually-hidden">Prompts on or off</legend>
           <button

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   LABEL_INNER,
   WHEEL_RADIUS,
@@ -14,6 +14,8 @@ import {
 type Props = {
   names: string[];
   rotation: number;
+  /** Where the wheel was before this spin, so it animates from the right place. */
+  fromRotation?: number;
   spinning: boolean;
   onSettled: () => void;
   /** What this wheel is a wheel of, for assistive tech. */
@@ -34,6 +36,7 @@ const DOUBLE_TAP_MS = 320;
 export function Wheel({
   names,
   rotation,
+  fromRotation,
   spinning,
   onSettled,
   label = 'names',
@@ -42,6 +45,36 @@ export function Wheel({
 }: Props) {
   const count = names.length;
   const settled = useRef(false);
+
+  /**
+   * The angle actually applied, and whether it is animating there.
+   *
+   * A spin cannot simply set the target rotation: the wheel is unmounted while a
+   * couple dances, so redrawing a challenge remounts it *already at* the target
+   * and nothing moves. Instead it is placed at the starting angle first, without
+   * a transition, and sent to the target on the next frame — which animates
+   * whether the component is new or not.
+   */
+  const [turn, setTurn] = useState<{ angle: number; animating: boolean }>(() => ({
+    angle: rotation,
+    animating: false,
+  }));
+
+  useLayoutEffect(() => {
+    if (!spinning) {
+      setTurn({ angle: rotation, animating: false });
+      return;
+    }
+    setTurn({ angle: fromRotation ?? rotation, animating: false });
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setTurn({ angle: rotation, animating: true }));
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, [spinning, rotation, fromRotation]);
   const rotor = useRef<SVGGElement>(null);
   const lastTapAt = useRef(0);
   const hurried = useRef(false);
@@ -141,8 +174,8 @@ export function Wheel({
             ref={rotor}
             className="wheel__rotor"
             style={{
-              transform: `rotate(${rotation}deg)`,
-              transition: spinning
+              transform: `rotate(${turn.angle}deg)`,
+              transition: turn.animating
                 ? `transform ${SPIN_SECONDS}s cubic-bezier(0.16, 0.84, 0.22, 1)`
                 : 'none',
             }}

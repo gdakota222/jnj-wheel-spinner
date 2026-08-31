@@ -305,9 +305,28 @@ export const WESTIE_STARTER_PACK_V1: Deck = {
 /** The deck a session uses unless another is chosen. */
 export const DEFAULT_DECK_ID = WESTIE_STARTER_PACK.id;
 
+/**
+ * Selecting this draws from every bundle at once.
+ *
+ * Allowed, but it mixes the rewritten wording with the archived original, so
+ * while the rewrite is being compared the app says so rather than quietly
+ * muddying the result.
+ */
+export const ALL_DECKS_ID = 'all';
+
 export const BUILT_IN_DECKS: Deck[] = [WESTIE_STARTER_PACK, WESTIE_STARTER_PACK_V1];
 
+/** The bundle behind an id, including the every-bundle pseudo-deck. */
 export function findDeck(id: string): Deck {
+  if (id === ALL_DECKS_ID) {
+    return {
+      id: ALL_DECKS_ID,
+      name: 'Every bundle',
+      style: 'Mixed',
+      note: 'Draws from all bundles at once.',
+      prompts: allPrompts(),
+    };
+  }
   return BUILT_IN_DECKS.find((d) => d.id === id) ?? WESTIE_STARTER_PACK;
 }
 

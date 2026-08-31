@@ -104,16 +104,17 @@ export function SessionScreen({
   }
 
   function spinPrompt(type: 'spinPrompt' | 'respinPrompt') {
-    if (prompts.length === 0) return;
-    const excluded =
+    // A redraw takes the current challenge off the wheel, so the pool aimed at
+    // here is the same one the wheel will show once the spin starts.
+    const pool =
       type === 'respinPrompt' && session.currentPrompt
         ? prompts.filter((p) => p.id !== session.currentPrompt!.id)
         : prompts;
-    const pool = excluded.length > 0 ? excluded : prompts;
+    if (pool.length === 0) return;
+
     const chosen = pool[pickIndex(pool.length)];
-    const index = prompts.findIndex((p) => p.id === chosen.id);
-    const plan = planSpin(index, prompts.length, session.rotation);
-    dispatch({ type, index, rotation: plan.rotation });
+    const plan = planSpin(pool.indexOf(chosen), pool.length, session.rotation);
+    dispatch({ type, promptId: chosen.id, rotation: plan.rotation });
   }
 
   // ---------------------------------------------------------------- jamboree
@@ -291,6 +292,7 @@ export function SessionScreen({
             <Wheel
               names={wheelNames}
               rotation={session.rotation}
+              fromRotation={session.previousRotation}
               spinning={spinning}
               onSettled={() => dispatch({ type: 'settled' })}
               label={onPromptWheel ? 'challenges' : POOL_NOUN[session.currentPool] + 's'}

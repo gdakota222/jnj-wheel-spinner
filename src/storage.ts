@@ -19,11 +19,11 @@ const ACTIVE_DECK_KEY = 'jnj:v1:active-deck';
  * The shape of a stored session.
  *
  * Bumped whenever SessionState changes in a way that would break a session saved
- * by an older build. v2 added the jamboree fields; v3 made the jam cover every birthday dancer at once. A mismatch discards the saved session rather than restoring
+ * by an older build. v2 added the jamboree fields; v3 made the jam cover every birthday dancer at once; v4 added previousRotation; v5 made prompt draws id-based. A mismatch discards the saved session rather than restoring
  * something the current code cannot read — losing an in-flight session is bad,
  * but crashing on launch in front of a room is worse.
  */
-const SESSION_SCHEMA = 3;
+const SESSION_SCHEMA = 5;
 
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
 
