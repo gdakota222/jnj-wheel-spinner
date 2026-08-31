@@ -13,6 +13,7 @@ const EXCLUDED_PROMPTS_KEY = 'jnj:v1:excluded-prompts';
 const SESSION_KEY = 'jnj:v1:session';
 const PROBE_KEY = 'jnj:v1:probe';
 const WHEEL_HINT_KEY = 'jnj:v1:seen-wheel-hint';
+const ACTIVE_DECK_KEY = 'jnj:v1:active-deck';
 
 /**
  * The shape of a stored session.
@@ -178,5 +179,27 @@ export function markWheelHintSeen(): void {
     localStorage.setItem(WHEEL_HINT_KEY, '1');
   } catch {
     // Nothing to do; the hint simply shows again next time.
+  }
+}
+
+/**
+ * Which prompt bundle a session draws from.
+ *
+ * Stored as an id so a bundle can be rewritten without the choice going stale,
+ * and so the archived original can be selected for a side-by-side comparison.
+ */
+export function loadActiveDeckId(fallback: string): string {
+  try {
+    return localStorage.getItem(ACTIVE_DECK_KEY) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function saveActiveDeckId(id: string): void {
+  try {
+    localStorage.setItem(ACTIVE_DECK_KEY, id);
+  } catch {
+    // The choice simply resets to the default next time.
   }
 }

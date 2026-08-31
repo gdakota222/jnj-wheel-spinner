@@ -275,6 +275,11 @@ or the operator double-tapped. One correction tool: **re-spin the current draw.*
 - **On the reveal: both**, name large and bold, description beneath, sized for the room.
 - **The Westie Starter Pack** ships built in: 20 West Coast Swing prompts, each a constraint on
   *how* to dance rather than a demand for a specific move, so mixed levels can all take part.
+  Rewritten after the first event to invite rather than demand — see [prompts.md](prompts.md) for
+  every deck, the writing rules, and what changed.
+- **The original wording is archived, not deleted**, as a second selectable bundle. A bundle can be
+  chosen in the Prompt Bank and the next session draws from it, so the two can be run on different
+  nights and the dancers asked which they prefer.
 - **The Prompt Bank** (title screen) lists every prompt with its description, grouped by bundle,
   and lets the operator **set prompts aside** so they stay off the wheel until put back. Set-asides
   persist on the device and apply to every future session.
@@ -425,7 +430,7 @@ another person must not cost the night.
 | Dance hold | Prompt + `Next Couple`. |
 | Session log | Reachable during the session. |
 | Session complete | End of the pass. No winner in v1.0. |
-| Prompt Bank | Every prompt with its description, by bundle, with set-aside toggles. |
+| Prompt Bank | Every prompt with its description, by bundle, with set-aside toggles and a bundle picker. |
 
 ### Explicitly not in v1.0
 The winner feature in any form, deck authoring, deck sharing, the all-skate, sloth mode, audio,

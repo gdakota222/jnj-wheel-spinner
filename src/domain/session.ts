@@ -10,7 +10,7 @@
  * deterministic and testable.
  */
 import { buildPools, type Dancer } from './roster';
-import { WCS_STARTER_DECK, type Prompt } from './prompts';
+import { WESTIE_STARTER_PACK, type Prompt } from './prompts';
 
 export type PoolName = 'leaders' | 'followers';
 
@@ -128,7 +128,7 @@ export function createSession(
   dancers: readonly Dancer[],
   spinOrder: SpinOrder,
   promptsEnabled = false,
-  deck: readonly Prompt[] = WCS_STARTER_DECK.prompts,
+  deck: readonly Prompt[] = WESTIE_STARTER_PACK.prompts,
 ): SessionState {
   const pools = buildPools(dancers);
   const originals = { leaders: pools.leaders, followers: pools.followers };

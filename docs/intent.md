@@ -2,7 +2,8 @@
 
 **Status:** Stable. This document changes rarely.
 **Last updated:** 2026-08-26
-**Companion doc:** [prd.md](prd.md) — what actually gets built, version by version.
+**Companion docs:** [prd.md](prd.md) — what gets built, version by version ·
+[prompts.md](prompts.md) — every challenge, current and archived.
 
 This is the **why**. It holds the things that stay true across every version: what the app is,
 who it serves, the principles every screen must meet, and what it will never become. Feature

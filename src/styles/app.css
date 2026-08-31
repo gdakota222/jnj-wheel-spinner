@@ -1601,3 +1601,13 @@
 .hold-button__label {
   position: relative;
 }
+
+.deck-state {
+  margin-top: var(--gap-sm);
+  font-size: var(--step--1);
+  font-weight: 650;
+}
+
+.deck-state--active {
+  color: var(--seg-4);
+}

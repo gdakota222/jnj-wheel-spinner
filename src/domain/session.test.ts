@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Dancer, Role } from './roster';
-import { WCS_STARTER_DECK } from './prompts';
+import { WESTIE_STARTER_PACK } from './prompts';
 import {
   createSession,
   drawEntries,
@@ -340,7 +340,7 @@ describe('a pool down to its last name', () => {
 });
 
 describe('prompts', () => {
-  const deck = WCS_STARTER_DECK.prompts.slice(0, 3);
+  const deck = WESTIE_STARTER_PACK.prompts.slice(0, 3);
 
   /** Draw a couple and its prompt. */
   function drawWithPrompt(state: SessionState, promptIndex = 0): SessionState {
@@ -498,7 +498,7 @@ describe('resuming an interrupted session', () => {
   });
 
   it('rolls an interrupted prompt spin back to the waiting pair', () => {
-    const deck = WCS_STARTER_DECK.prompts.slice(0, 3);
+    const deck = WESTIE_STARTER_PACK.prompts.slice(0, 3);
     let s = createSession(roster(3, 3), 'leaders', true, deck);
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
     s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
@@ -520,7 +520,7 @@ describe('resuming an interrupted session', () => {
   it('survives a round trip through JSON, as storage does it', () => {
     // A session mid-flight with prompts on: pools part drained, a couple logged
     // with its challenge, and the next draw half done.
-    let s = createSession(roster(4, 2), 'leaders', true, WCS_STARTER_DECK.prompts.slice(0, 4));
+    let s = createSession(roster(4, 2), 'leaders', true, WESTIE_STARTER_PACK.prompts.slice(0, 4));
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
     s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });
     s = apply(s, { type: 'spinPrompt', index: 0, rotation: 5400 }, { type: 'settled' });
@@ -579,7 +579,7 @@ describe('the birthday jamboree', () => {
   });
 
   it('returns to the prompt step when challenges are on', () => {
-    const deck = WCS_STARTER_DECK.prompts.slice(0, 3);
+    const deck = WESTIE_STARTER_PACK.prompts.slice(0, 3);
     let s = createSession(withBirthday('F0', roster(3, 3)), 'leaders', true, deck);
     s = apply(s, { type: 'spin', index: 0, rotation: 1800 }, { type: 'settled' });
     s = apply(s, { type: 'spin', index: 0, rotation: 3600 }, { type: 'settled' });

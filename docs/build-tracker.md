@@ -1,9 +1,9 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.9.2 — deployed and live
+**Current version:** 0.9.3 — deployed and live
 **Current phase:** Triaging real-event feedback before 1.0.0
 **Last updated:** 2026-08-26
-**Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md)
+**Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
 
 ---
 
@@ -77,6 +77,25 @@ code drop — something that can be opened on the tablet and looked at.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-08 — 0.9.3: the prompts rewritten, the originals archived
+- **All 20 prompts rewritten** to invite rather than demand: *as many as you can* and *as little as
+  you can* in place of *every* and *must*. The event proved the originals too strict —
+  **Anchor Detective** demanded every anchor differ and was softened out loud mid-dance; it is now
+  **Anchor Hunt**.
+- **Guards only where a prompt is exploitable**, which was the owner's own rule. Three needed one:
+  *Small World* (standing still is very small), *One Hand* (never connecting is not one-handed), and
+  *Slow Motion* (stopping is not slow). Everything else left open.
+- **Names shortened**, and this fixed a second complaint for free: a full 20-prompt wheel now shows
+  **zero truncated names**, which is what the cold read disliked. The vertical reel is no longer
+  urgent.
+- **The original deck is archived, not deleted** — selectable in the Prompt Bank as *Westie Pack
+  (original)*. Choosing a bundle sets what the next session draws from, so the rewrite can be tested
+  against the original on real nights rather than taken on faith.
+- **[prompts.md](prompts.md) created**: every deck in full, the three writing rules, a
+  prompt-by-prompt account of what changed and why, and a deck history. Nothing is ever deleted
+  from it.
+
 
 ### 2026-09-08 — 0.9.0 / 0.9.1 / 0.9.2: everything the first event asked for
 Three versions in one sitting, all driven by [rehearsal.md § Round 2](rehearsal.md).
@@ -864,6 +883,28 @@ dance hold is already just names and a challenge, the locked view was nearly ide
 unlocked one — impossible to tell apart, and actively confusing on a TV. Making the screen's only
 action deliberate achieves the same protection with nothing added: a pocket can press, but it
 cannot hold. Fewer states, less to look at, same safety.
+
+### D-042 — Prompts invite rather than demand, and old wording is archived
+**Decision:** every prompt rewritten toward creative expression — *as many as you can*, *as little
+as you can* — with a hard limit **only** where a lazy reading would satisfy the prompt with no
+effort. Names shortened for the wheel. The original deck kept as a selectable bundle.
+
+**Reasoning:** at the first event the prompts read as tests to pass rather than directions to
+explore, and the operator softened one out loud mid-dance. A social has mixed levels; a prompt that
+only strong dancers can attempt excludes the people it is meant to include.
+
+The exception matters as much as the rule. The owner's example: a prompt about covering distance is
+trivially won by tandem-walking the whole song, so it needs a cap on consecutive walks. **Write the
+guard against the specific cheat, not as a general rule** — three prompts needed one, seventeen did
+not.
+
+**Archiving rather than replacing** turns a wording change into something testable. Both bundles are
+in the app, either can be selected for a session, and the dancers can be asked which they preferred
+— which is worth more than either the old wording or my judgement about the new one.
+
+**A second problem solved by accident:** shorter names mean a full 20-prompt wheel truncates
+nothing at all. The cold read disliked names being cut off and suggested a vertical reel; that is
+still a better long-term answer, but it is no longer urgent.
 
 ## Known issues and in-flight notes
 

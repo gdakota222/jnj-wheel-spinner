@@ -13,9 +13,11 @@ import {
   type SessionState,
   type SpinOrder,
 } from './domain/session';
-import { WCS_STARTER_DECK, promptsInPlay } from './domain/prompts';
+import { DEFAULT_DECK_ID, findDeck, promptsInPlay } from './domain/prompts';
 import {
   clearSession,
+  loadActiveDeckId,
+  saveActiveDeckId,
   isStorageWritable,
   loadExcludedPrompts,
   loadRoster,
@@ -64,6 +66,7 @@ const restored = (() => {
 export default function App() {
   const [screen, setScreen] = useState<Screen>(restored ? 'session' : 'title');
   const [excludedPrompts, setExcludedPrompts] = useState<string[]>(() => loadExcludedPrompts());
+  const [activeDeckId, setActiveDeckId] = useState<string>(() => loadActiveDeckId(DEFAULT_DECK_ID));
   const [storageBroken, setStorageBroken] = useState(() => !isStorageWritable());
   const [wasResumed, setWasResumed] = useState(restored !== null);
 
@@ -96,6 +99,10 @@ export default function App() {
   }, [excludedPrompts]);
 
   useEffect(() => {
+    saveActiveDeckId(activeDeckId);
+  }, [activeDeckId]);
+
+  useEffect(() => {
     if (!session) {
       clearSession();
       return;
@@ -105,8 +112,9 @@ export default function App() {
     if (!saveSession(session)) setStorageBroken(true);
   }, [session]);
 
-  /** What a session would draw from right now, after set-asides. */
-  const deckInPlay = promptsInPlay(WCS_STARTER_DECK.prompts, excludedPrompts);
+  /** The bundle a session would use right now, and what is left of it. */
+  const activeDeck = findDeck(activeDeckId);
+  const deckInPlay = promptsInPlay(activeDeck.prompts, excludedPrompts);
 
   /**
    * Actions that do not earn their own step back.
@@ -274,6 +282,8 @@ export default function App() {
       <PromptBankScreen
         excludedIds={excludedPrompts}
         onChange={setExcludedPrompts}
+        activeDeckId={activeDeckId}
+        onChooseDeck={setActiveDeckId}
         onBack={() => setScreen('title')}
       />
     );
@@ -292,7 +302,7 @@ export default function App() {
       <TitleScreen
         rosterCount={dancers.length}
         promptsInPlay={deckInPlay.length}
-        promptsTotal={WCS_STARTER_DECK.prompts.length}
+        promptsTotal={activeDeck.prompts.length}
         onStartSession={() => setScreen('roster')}
         onOpenBank={() => setScreen('bank')}
       />

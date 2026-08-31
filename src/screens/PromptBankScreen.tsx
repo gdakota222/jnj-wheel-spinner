@@ -1,25 +1,36 @@
 import { useMemo, useState } from 'react';
-import { BUILT_IN_DECKS, allPrompts, promptsInPlay, type Prompt } from '../domain/prompts';
+import { BUILT_IN_DECKS, allPrompts, findDeck, promptsInPlay, type Prompt } from '../domain/prompts';
 
 type Props = {
   excludedIds: string[];
   onChange: (next: string[]) => void;
+  /** The bundle sessions currently draw from. */
+  activeDeckId: string;
+  onChooseDeck: (id: string) => void;
   onBack: () => void;
 };
 
 /** "All prompts" is a view across every bundle, not a bundle itself. */
 const ALL = 'all';
 
-export function PromptBankScreen({ excludedIds, onChange, onBack }: Props) {
-  const [bundleId, setBundleId] = useState<string>(BUILT_IN_DECKS[0]?.id ?? ALL);
+export function PromptBankScreen({
+  excludedIds,
+  onChange,
+  activeDeckId,
+  onChooseDeck,
+  onBack,
+}: Props) {
+  const [viewing, setViewing] = useState<string>(activeDeckId);
 
   const visible: Prompt[] = useMemo(() => {
-    if (bundleId === ALL) return allPrompts();
-    return BUILT_IN_DECKS.find((d) => d.id === bundleId)?.prompts ?? [];
-  }, [bundleId]);
+    if (viewing === ALL) return allPrompts();
+    return BUILT_IN_DECKS.find((d) => d.id === viewing)?.prompts ?? [];
+  }, [viewing]);
 
+  const deck = viewing === ALL ? null : findDeck(viewing);
   const inPlay = promptsInPlay(visible, excludedIds);
   const excluded = new Set(excludedIds);
+  const isActive = viewing === activeDeckId;
 
   function toggle(id: string) {
     onChange(excluded.has(id) ? excludedIds.filter((x) => x !== id) : [...excludedIds, id]);
@@ -49,26 +60,44 @@ export function PromptBankScreen({ excludedIds, onChange, onBack }: Props) {
 
       <fieldset className="roles roles--stacked">
         <legend className="add__label">Bundle</legend>
-        {BUILT_IN_DECKS.map((deck) => (
+        {BUILT_IN_DECKS.map((d) => (
           <button
-            key={deck.id}
+            key={d.id}
             type="button"
             className="roles__option"
-            aria-pressed={bundleId === deck.id}
-            onClick={() => setBundleId(deck.id)}
+            aria-pressed={viewing === d.id}
+            onClick={() => setViewing(d.id)}
           >
-            {deck.name} ({deck.prompts.length})
+            {d.name} ({d.prompts.length}){d.id === activeDeckId ? ' · in use' : ''}
           </button>
         ))}
         <button
           type="button"
           className="roles__option"
-          aria-pressed={bundleId === ALL}
-          onClick={() => setBundleId(ALL)}
+          aria-pressed={viewing === ALL}
+          onClick={() => setViewing(ALL)}
         >
           All prompts ({allPrompts().length})
         </button>
       </fieldset>
+
+      {deck && (
+        <section className="card">
+          <h2 className="card__title">{deck.name}</h2>
+          {deck.note && <p className="card__body">{deck.note}</p>}
+          {isActive ? (
+            <p className="deck-state deck-state--active">Sessions draw from this bundle.</p>
+          ) : (
+            <>
+              {/* Choosing a bundle is what makes the archived wording testable:
+                  run a night on each and ask the dancers which they preferred. */}
+              <button className="add__submit" type="button" onClick={() => onChooseDeck(deck.id)}>
+                Use this bundle for sessions
+              </button>
+            </>
+          )}
+        </section>
+      )}
 
       <section className="advice" data-level={inPlay.length === 0 ? 'unpairable' : 'good'}>
         <h2 className="advice__headline">
@@ -77,7 +106,9 @@ export function PromptBankScreen({ excludedIds, onChange, onBack }: Props) {
         <p className="advice__detail">
           {inPlay.length === 0
             ? 'Everything here is set aside, so there is nothing left to draw. Put some back before running a session with challenges.'
-            : 'These are the challenges your next session will draw from.'}
+            : isActive || viewing === ALL
+              ? 'These are the challenges your next session will draw from.'
+              : 'Set-asides are remembered per prompt, whether or not this bundle is the one in use.'}
         </p>
         <div className="bank__bulk">
           <button className="dancer__remove" type="button" onClick={() => setAll(true)}>
@@ -115,7 +146,7 @@ export function PromptBankScreen({ excludedIds, onChange, onBack }: Props) {
       </ul>
 
       <p className="bank__note">
-        Building your own bundles arrives in v1.1, alongside writing your own prompts.
+        Writing your own prompts and building your own bundles arrives in v1.1.
       </p>
     </div>
   );
