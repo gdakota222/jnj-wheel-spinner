@@ -1,8 +1,8 @@
 # Build Tracker — v1.0
 
 **Current version:** 0.9.5 — deployed and live
-**Current phase:** Triaging real-event feedback before 1.0.0
-**Last updated:** 2026-08-26
+**Current phase:** Event feedback cleared; holding for the handoff rehearsal before 1.0.0
+**Last updated:** 2026-08-31
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
 
 ---
@@ -30,11 +30,11 @@ so the history of *why* stays intact.
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
 | **Versions shipped** | 7 of 9 |
-| **Blocked on** | Owner decisions on what ships in v1.0 (see 2026-09-08 entry) |
+| **Blocked on** | Owner decisions on what ships in v1.0 (see the first-real-event entry) |
 | **Next up** | 0.8.0 — Device rehearsal |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
-| **First real event** | Ran 2026-09-02 — it worked; findings being triaged |
+| **First real event** | Ran 2026-08-26 — it worked; findings being triaged |
 
 ---
 
@@ -52,8 +52,14 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.5.0** | Prompts | Built-in deck (read-only), prompt spin, name + description reveal, no-repeat within session, exhaustion message, prompts on/off toggle | ✅ Shipped 2026-08-25 |
 | **0.6.0** | Persistence | Reducer serialization on every dispatch, resume after close/crash, tablet handoff verified | ✅ Shipped 2026-08-26 |
 | **0.7.0** | Principles pass | Self-describing audit of every screen, label review, contrast and touch targets, no-color-alone check | ✅ Shipped 2026-08-26 |
-| **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | 🔄 In progress |
-| **1.0.0** | **Live** | Run a real event | ☐ Not started |
+| **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | ✅ Shipped 2026-08-26 |
+| **0.9.x** | Event response | Everything the first real event asked for: undo, add mid-session, guarded re-spin, one no-scroll session screen, rewritten prompts, staged setup, About page | ✅ Shipped 2026-08-30 → 08-31 |
+| **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | ⏳ Waiting on the handoff rehearsal |
+
+**Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
+been in a room. The first real event produced a backlog large enough that shipping 1.0.0 on top of
+it would have meant calling the app finished while the findings were still open. 0.9.x is that
+backlog, worked through in order of what actually broke the night.
 
 ### Why this order
 - **Deployment first (0.1.0), before any feature.** Getting a PWA built, served over HTTPS,
@@ -78,7 +84,30 @@ code drop — something that can be opened on the tablet and looked at.
 
 Newest first. Every entry dated.
 
-### 2026-09-09 — 0.9.5: an About page, and setup in three steps
+### 2026-08-31 — Documentation sweep, and the dates were wrong
+- **Corrected five build-log dates.** Everything from the first real event onward was dated around
+  2026-09-08; git says those commits landed 2026-08-30 and 08-31. The log had drifted about nine
+  days into the future. Git is the authoritative record of when a version shipped and the log now
+  matches it.
+- **The date of the event itself was wrong too, and was asked rather than guessed.** Three docs
+  said it ran 2026-09-02, which was impossible: its findings were committed on 2026-08-30. The
+  owner confirms **2026-08-26** — the same evening 0.8.x shipped, which is very likely how the
+  drift started. Corrected everywhere. A fabricated date in the record would have been worse than
+  a known gap in it.
+- **Version ladder brought up to date.** 0.8.0 marked shipped, the unplanned 0.9.x series recorded
+  with why it exists, and 1.0.0 marked as waiting on the handoff rehearsal rather than not started.
+- **Both first-event blockers are closed** — B1 (no undo) by 0.9.0's undo stack, B2 (no way to add
+  a late arrival) by mid-session add. Recorded here because the ladder previously implied 1.0.0 was
+  blocked on them.
+- **Second cold read, same colleague** (see rehearsal Round 3): the staged setup and the
+  no-scrolling session screen both landed. One new finding — the About page reads as wordy — logged
+  as a watch item rather than acted on, at the owner's direction.
+- **The handoff rehearsal is scoped**: a dancer, on the owner's tablet, with a roster already
+  loaded. That choice takes **roster transfer (F3) off the path to 1.0.0** — it stays a real
+  finding from the event, but it is workflow convenience, not a blocker.
+
+
+### 2026-08-31 — 0.9.5: an About page, and setup in three steps
 - **An About page**, shown once on the first launch after installing and permanently under
   **About** on the title screen. Says who made the app, that nothing about an event leaves the
   device, and where to chip in. See D-045.
@@ -100,7 +129,7 @@ Newest first. Every entry dated.
   setup steps, at phone and tablet size. 117 tests still passing.
 
 
-### 2026-09-08 — 0.9.4: redraw actually spins, and bundles say where they are
+### 2026-08-30 — 0.9.4: redraw actually spins, and bundles say where they are
 - **Redrawing a challenge spins the wheel again** — it did not before. The wheel is unmounted while
   a couple dances, so a spin started from that screen remounted it *already at* the target angle and
   animated nothing. The wheel now animates from where it was, carried in state, however it got
@@ -120,7 +149,7 @@ Newest first. Every entry dated.
   make the comparison unreadable. Using **Use all** there now says plainly that all 40 are in play.
 
 
-### 2026-09-08 — 0.9.3: the prompts rewritten, the originals archived
+### 2026-08-30 — 0.9.3: the prompts rewritten, the originals archived
 - **All 20 prompts rewritten** to invite rather than demand: *as many as you can* and *as little as
   you can* in place of *every* and *must*. The event proved the originals too strict —
   **Anchor Detective** demanded every anchor differ and was softened out loud mid-dance; it is now
@@ -139,7 +168,7 @@ Newest first. Every entry dated.
   from it.
 
 
-### 2026-09-08 — 0.9.0 / 0.9.1 / 0.9.2: everything the first event asked for
+### 2026-08-30 — 0.9.0 / 0.9.1 / 0.9.2: everything the first event asked for
 Three versions in one sitting, all driven by [rehearsal.md § Round 2](rehearsal.md).
 
 **0.9.0 — recovery.** Undo through anything, restoring session and roster together (D-037). Add a
@@ -159,8 +188,8 @@ a **press and hold**, so nothing there can be triggered by accident, and the loc
 that screen at all. See D-041.
 
 
-### 2026-09-08 — First real event: it worked, and it produced a backlog
-The app ran a real Jack & Jill on 2026-09-02. **The core loop did its job**, the cast to the TV drew
+### 2026-08-30 — First real event: it worked, and it produced a backlog
+The app ran a real Jack & Jill on 2026-08-26. **The core loop did its job**, the cast to the TV drew
 good reactions, and the birthday jamboree landed. Full findings in
 [rehearsal.md § Round 2](rehearsal.md).
 
@@ -1022,6 +1051,8 @@ disappears between checkpoints.
 ### Open — needs an answer from the owner
 
 ### Closed
+- ~~Spin-order choice is not on the roster screen~~ — resolved in 0.9.5. Setup is staged now, and
+  the choice sits on step 2, *How it runs*, exactly where the PRD's screen table always put it.
 - ~~Storage failure is silent~~ — resolved in 0.6.0 by D-031; a failed write raises a banner.
 - ~~No way to correct a typo in a dancer's name~~ — resolved in 0.3.1; renaming is available from
   Options and is confirmed before it applies.
@@ -1030,17 +1061,19 @@ disappears between checkpoints.
 - ~~`projectPools` must be the code the session uses~~ — resolved in 0.3.0 by extracting `buildPools`.
 
 ### Open — flagged, resolvable without input
-- **Spin-order choice is not on the roster screen.** The PRD's v1.0 screen table puts it there;
-  it was deferred to 0.4.0 instead, because the choice is locked *at session start* and no session
-  exists before then. A deliberate deviation, recorded so it is not mistaken for an omission.
-  *Build in 0.4.0.* (found 0.2.0)
+- **The About page reads as wordy.** Raised by the same colleague who did the original cold read,
+  on the second look. Deliberately **not** acted on: one person's reaction to a page they will read
+  once is thin evidence for a rewrite, and the owner's call is to wait and see whether it comes back
+  from anyone else. If a second reader says it, trim it — the two cards that carry weight are who
+  made it and what it does with your data. (found 2026-08-31)
 
 ### Testing gaps
-- **Real touch interaction is untested.** The browser pane's click handling timed out repeatedly,
-  so the roster was driven programmatically. Logic, rendering, validation and persistence are all
-  verified; what is *not* verified is that a finger on a real screen hits what it means to. This
-  is what 0.8.0's device rehearsal exists for, but it means UI confidence is currently lower than
-  the green test count suggests. (found 0.2.0)
+- **Real touch interaction is verified on devices, not in the harness.** The rehearsal and a full
+  real event both put fingers on real screens, which is the confidence that matters. What remains
+  true is that the browser pane's click handling times out often enough that screens are usually
+  driven programmatically during a build — same code paths, but not the same proof. Anything that
+  depends on hit targets or gestures is worth a pass on the tablet before it ships.
+  (found 0.2.0, narrowed 2026-08-31)
 - **No component or end-to-end tests.** By design (D-007) — but it means screen-level regressions
   would be caught by eye, not by the suite.
 

@@ -1,7 +1,7 @@
 # Prompts
 
 **Every challenge the app can draw, current and archived.**
-**Last updated:** 2026-09-08
+**Last updated:** 2026-08-31
 **Source of truth:** `src/domain/prompts.ts` — this document mirrors it, and both change together.
 
 Nothing here is ever deleted. When a deck is rewritten the old wording is archived, kept in the
@@ -12,7 +12,7 @@ taken on faith — run a night on each and ask the dancers which they preferred.
 
 ## How prompts are written
 
-Three rules, all of which came out of the first real event (2026-09-02), where the originals played
+Three rules, all of which came out of the first real event (2026-08-26), where the originals played
 as too strict and the operator softened one out loud mid-dance.
 
 ### 1. Invite, do not demand
@@ -136,7 +136,7 @@ directly. Stricter throughout: more rules, fewer invitations.
 |---|---|---|
 | 2026-08-25 | Westie Starter Pack v1 | 20 prompts written for 0.5.0, before the app had run an event. |
 | 2026-08-26 | — | Renamed from "West Coast Swing starter" to **Westie Starter Pack** at the owner's request (0.5.1). |
-| 2026-09-08 | Westie Starter Pack (current) | Rewritten after the first real event: softer framing, shorter names, guards on the three exploitable prompts. v1 archived as a selectable bundle rather than deleted. See D-042. |
+| 2026-08-30 | Westie Starter Pack (current) | Rewritten after the first real event: softer framing, shorter names, guards on the three exploitable prompts. v1 archived as a selectable bundle rather than deleted. See D-042. |
 
 ---
 

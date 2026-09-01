@@ -2,7 +2,9 @@
 
 **Devices:** Samsung Android phone and Samsung Android tablet
 **App:** https://gdakota222.github.io/jnj-wheel-spinner/
-**Status:** Rehearsal passed. **Ran at a real event on 2026-09-02.** Section 7 (handoff) still outstanding.
+**Status:** Rehearsal passed, and the app has run a real event. Section 7 — the handoff test — is
+the last item outstanding, planned for roughly the week of 2026-09-07 with a dancer rather than a
+second organiser.
 
 This is the first version the owner runs rather than Claude verifies. Everything up to now has
 been checked in a desktop browser pane, which can prove logic, layout, wording and contrast — and
@@ -128,7 +130,7 @@ swiped away, held the screen awake, and cast acceptably.
 
 ---
 
-## Round 2 — the real event, 2026-09-02
+## Round 2 — the real event, 2026-08-26
 
 **It worked.** The session ran, the room reacted, the cast to the TV got great reactions, and the
 birthday jamboree landed — everyone laughed. The core loop did its job. What follows is everything
@@ -169,17 +171,54 @@ general spinner, something for gamers, a decision-maker.
 
 | # | What she said |
 |---|---|
-| C1 | **Too much scrolling**, especially on the session setup screen. She did not scroll at first, so the options below the fold were not obviously there. Suggested **tabs along the bottom** to move around the app, and breaking session setup into **stages** rather than one long screen. |
-| C2 | **Disliked names being cut off on the challenge wheel.** Suggested a **vertical, Price-is-Right style reel** for prompts so full names are readable. |
-| C3 | **Pressed the spinning wheel expecting it to stop.** Wanted a way to stop it, or to get to the result faster. |
-| C4 | Wanted an **About page** — who made this — with a way for early adopters to **donate or buy a coffee**. Suggested it appear on first open after install, with an **About button on the title screen** to find it again later. |
+| C1 | **Too much scrolling**, especially on the session setup screen. She did not scroll at first, so the options below the fold were not obviously there. Suggested **tabs along the bottom** to move around the app, and breaking session setup into **stages** rather than one long screen. ✅ *Fixed in 0.9.1 (session screen) and 0.9.5 (staged setup).* |
+| C2 | **Disliked names being cut off on the challenge wheel.** Suggested a **vertical, Price-is-Right style reel** for prompts so full names are readable. ⏳ *Partly addressed in 0.9.3 — the rewritten prompt names are short enough that a full 20-challenge wheel truncates nothing. The reel itself is still open, and is now polish rather than a fix.* |
+| C3 | **Pressed the spinning wheel expecting it to stop.** Wanted a way to stop it, or to get to the result faster. ✅ *Fixed in 0.9.1 — a tap spins fast to the result rather than cutting to it, so the showmanship survives.* |
+| C4 | Wanted an **About page** — who made this — with a way for early adopters to **donate or buy a coffee**. Suggested it appear on first open after install, with an **About button on the title screen** to find it again later. ✅ *Fixed in 0.9.5. The donate link is unset until a Ko-fi account exists.* |
 
 ### Still to run
 - **Section 7 — the handoff test.** Still outstanding: the operator ran the whole event alone, so
   no second organiser ever took over. Dancers *did* hold the device to spin, which is a partial
-  signal, but not the test.
+  signal, but not the test. **Planned for roughly the week of 2026-09-07**, and deliberately
+  harder than the original checklist item: the device goes to **a dancer**, not a second organiser.
+  An organiser who has watched the app run all night is not a cold start; a dancer is. See
+  Round 3 below for what that run needs to answer.
 - ~~Section 9 — a realistic full run~~ — done, at the event itself.
-- ~~A real event~~ — done 2026-09-02.
+- ~~A real event~~ — done 2026-08-26.
+
+## Round 3 — second cold read, 2026-08-31
+
+The same colleague, shown the app again after the 0.9.x work. Not a fresh cold read — she has seen
+it before — so this is a check on whether the fixes landed, not new first-contact evidence.
+
+| # | What she said | Standing |
+|---|---|---|
+| D1 | **The staged setup worked.** The tabs on session setup were called out specifically. | ✅ Confirms C1 |
+| D2 | **Less scrolling overall**, and the session screen not scrolling at all. | ✅ Confirms C1 |
+| D3 | **The About page is wordy.** | ⏸ Logged, not acted on. One reader on a page they see once is thin evidence for a rewrite; the owner's call is to wait and see whether it comes back from anyone else. If it does, the two cards worth keeping are who made it and what it does with your data. |
+
+## The handoff rehearsal — planned, roughly the week of 2026-09-07
+
+The last outstanding item on the original checklist, and the last thing between here and 1.0.0.
+
+**Who:** a dancer, not a second organiser. Someone who has never run the app and was not watching
+over the operator's shoulder while it ran.
+
+**On what:** the owner's tablet, with a roster already on it. Chosen deliberately over handing them
+a blank device. This is a test of whether the app explains itself, and making them install a PWA
+and type forty names first would spend the whole session on setup and tell us nothing about the
+part that matters. It also means **roster transfer (F3) is not on the path to 1.0.0** — it stays a
+real finding, but it is workflow convenience rather than a blocker.
+
+**What it has to answer:**
+1. Can they get from a cold title screen to a running session without being told anything?
+2. Do the three setup steps read as a sequence, or does step 1 look like the whole job?
+3. When something goes wrong mid-session, do they find **Undo** and **Tools** on their own?
+4. Does the wheel invite a tap, or do they wait to be told they can touch it?
+5. Does anything on the screen need a human standing next to it to explain?
+
+**What must not happen:** the operator narrating. The value of this test is entirely in what the
+app fails to say for itself, and a helpful voice erases the finding.
 
 **Severity:** *blocker* (cannot run an event), *annoying* (would irritate mid-event),
 *polish* (noticed it, would not stop anything).
