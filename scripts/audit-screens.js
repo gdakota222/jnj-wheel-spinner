@@ -108,4 +108,15 @@ window.audit = function audit(label = 'screen') {
  * The worst case is indigo at 4.62:1, so every name on the wheel clears AA.
  * Re-check these if the palette changes, and again when the colour-blind
  * palettes land in v1.1.
+ *
+ * The curtain is the same kind of blind spot: its text sits on a gradient panel
+ * the sweep walks straight past, landing on the page background instead. Measured
+ * by hand at 0.10.0, against the lightest end of the panel:
+ *
+ *   "And the winner is…"  gold on rose   3.61:1  (large text, needs 3:1)  ✓
+ *   countdown digits      gold on rose   3.61:1  (very large)             ✓
+ *   "Not yet — go back"   white on rose  4.63:1  → backed to ~9:1         ✓
+ *
+ * Against the deep end of the gradient every one of these roughly doubles. The
+ * lightest end is the case that matters, so that is what is recorded.
  */

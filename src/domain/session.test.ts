@@ -726,3 +726,55 @@ describe('redrawing a challenge', () => {
     expect(s.currentPrompt?.id).toBe(deck[2].id);
   });
 });
+
+describe('crowning a winner', () => {
+  it('crowns a couple that actually danced', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders'));
+    expect(done.winner).toBeNull();
+
+    const s = apply(done, { type: 'crownWinner', index: 1 });
+    expect(s.winner).toBe(1);
+    expect(done.log[1]).toBeDefined();
+  });
+
+  it('refuses to crown before everyone has danced', () => {
+    let s = createSession(roster(3, 3), 'leaders');
+    s = drawCouple(s);
+    expect(s.phase).not.toBe('complete');
+    expect(apply(s, { type: 'crownWinner', index: 0 }).winner).toBeNull();
+  });
+
+  it('refuses an index that is not a couple in the log', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders'));
+    expect(apply(done, { type: 'crownWinner', index: done.log.length }).winner).toBeNull();
+    expect(apply(done, { type: 'crownWinner', index: -1 }).winner).toBeNull();
+  });
+
+  it('lets a crown be taken back', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders'));
+    const crowned = apply(done, { type: 'crownWinner', index: 0 });
+    expect(apply(crowned, { type: 'uncrown' }).winner).toBeNull();
+  });
+
+  it('replaces the crown rather than accumulating winners', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders'));
+    const s = apply(
+      done,
+      { type: 'crownWinner', index: 0 },
+      { type: 'crownWinner', index: 2 },
+    );
+    expect(s.winner).toBe(2);
+  });
+
+  it('keeps the crown through a resume', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders'));
+    const crowned = apply(done, { type: 'crownWinner', index: 1 });
+    expect(resumeSession(crowned).winner).toBe(1);
+  });
+
+  it('starts a fresh session with nobody crowned', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders'));
+    apply(done, { type: 'crownWinner', index: 1 });
+    expect(createSession(roster(3, 3), 'leaders').winner).toBeNull();
+  });
+});

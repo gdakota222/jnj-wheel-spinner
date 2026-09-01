@@ -123,6 +123,18 @@ export type SessionState = {
   phaseAfterJamboree: SessionPhase | null;
   /** Birthday dancers already jammed tonight — nobody gets two. */
   jammed: string[];
+  /**
+   * The crowned couple, as a position in `log`.
+   *
+   * An index rather than a copy of the couple: the log is the record of who
+   * actually danced, and a winner that could disagree with it is a winner the
+   * app made up. Null until the operator crowns one, and null is a real answer —
+   * a night can end without a winner and often should.
+   *
+   * How the operator arrived at the choice is entirely off-app: their judgment,
+   * a panel, the volume of the room. The app records and reveals it.
+   */
+  winner: number | null;
 };
 
 export type SessionAction =
@@ -133,7 +145,9 @@ export type SessionAction =
   | { type: 'respinPrompt'; promptId: string; rotation: number }
   | { type: 'jamOver' }
   | { type: 'nextCouple' }
-  | { type: 'syncDancers'; dancers: Dancer[] };
+  | { type: 'syncDancers'; dancers: Dancer[] }
+  | { type: 'crownWinner'; index: number }
+  | { type: 'uncrown' };
 
 export const OTHER_POOL: Record<PoolName, PoolName> = {
   leaders: 'followers',
@@ -185,6 +199,7 @@ export function createSession(
     currentPrompt: null,
     promptsRecycled: false,
     promptExcludedId: null,
+    winner: null,
     jamboreeDancers: [],
     phaseAfterJamboree: null,
     jammed: [],
@@ -531,6 +546,23 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
      * through everywhere, including into the log, since a dance that happened
      * still happened — it just happened to a differently-spelled person.
      */
+    /**
+     * Crown a couple. Only once everyone has danced, and only a couple that
+     * actually took the floor — a crown handed to someone who never danced is
+     * the one result nobody in the room could argue with, and it would be wrong.
+     */
+    case 'crownWinner': {
+      if (state.phase !== 'complete') return state;
+      if (!Number.isInteger(action.index)) return state;
+      if (action.index < 0 || action.index >= state.log.length) return state;
+      return { ...state, winner: action.index };
+    }
+
+    case 'uncrown': {
+      if (state.winner === null) return state;
+      return { ...state, winner: null };
+    }
+
     case 'syncDancers': {
       const byId = new Map(action.dancers.map((d) => [d.id, d]));
       const pools = buildPools(action.dancers);

@@ -7,6 +7,7 @@ import { RosterOptions } from '../components/RosterOptions';
 import { SessionLog } from '../components/SessionLog';
 import { SessionTools } from '../components/SessionTools';
 import { Wheel } from '../components/Wheel';
+import { WinnerReveal } from '../components/WinnerReveal';
 import type { Dancer } from '../domain/roster';
 import {
   OTHER_POOL,
@@ -62,6 +63,15 @@ export function SessionScreen({
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [locked, setLocked] = useState(false);
   const [showHint, setShowHint] = useState(() => !hasSeenWheelHint());
+  /**
+   * Where the end-of-night flow has got to.
+   *
+   * Screen-local rather than session state: which panel is showing is not a fact
+   * about the night, and a crash should put the operator back on the completed
+   * session with its crown intact, not halfway through a curtain.
+   */
+  const [ending, setEnding] = useState<'log' | 'picking' | 'reveal'>('log');
+  const [pick, setPick] = useState<number | null>(null);
 
   useWakeLock(session.phase !== 'complete');
 
@@ -136,6 +146,79 @@ export function SessionScreen({
 
   // ---------------------------------------------------------------- complete
   if (phase === 'complete') {
+    const crowned = session.winner === null ? null : (session.log[session.winner] ?? null);
+
+    // The curtain. Runs over the whole screen, and the pick is not committed
+    // until it parts — backing out here leaves the night uncrowned.
+    if (ending === 'reveal' && pick !== null && session.log[pick]) {
+      return (
+        <WinnerReveal
+          couple={session.log[pick]}
+          onBack={() => setEnding('picking')}
+          onDone={() => {
+            // Replaying a reveal for the same couple changes nothing, and
+            // dispatching anyway would leave an Undo that appears to do nothing
+            // when pressed.
+            if (session.winner !== pick) dispatch({ type: 'crownWinner', index: pick });
+            setEnding('log');
+          }}
+        />
+      );
+    }
+
+    if (ending === 'picking') {
+      return (
+        <div className="shell shell--setup">
+          <header className="setup-head">
+            <button className="back" type="button" onClick={() => setEnding('log')}>
+              ← Session
+            </button>
+            <h1 className="screen-title">Crown a winner</h1>
+          </header>
+
+          <p className="pick__hint">
+            How you decided is yours — your call, a panel, the noise of the room. The app just
+            holds the result until you are ready to show it.
+          </p>
+
+          <ol className="log log--full panel__scroll">
+            {session.log.map((couple, i) => (
+              <li key={`${couple.leader.id}-${couple.follower.id}-${i}`}>
+                <button
+                  type="button"
+                  className="pick__row"
+                  aria-pressed={pick === i}
+                  onClick={() => setPick(i)}
+                >
+                  <span className="log__number">{i + 1}</span>
+                  <span className="pick__names">
+                    {couple.leader.name} &amp; {couple.follower.name}
+                  </span>
+                  {couple.prompt && <span className="log__prompt">{couple.prompt.name}</span>}
+                </button>
+              </li>
+            ))}
+          </ol>
+
+          <div className="next next--pinned">
+            <button
+              className="next__button"
+              type="button"
+              disabled={pick === null}
+              onClick={() => setEnding('reveal')}
+            >
+              <span className="menu__label">Bring down the curtain</span>
+              <span className="menu__note">
+                {pick === null
+                  ? 'Choose the couple first'
+                  : `${session.log[pick].leader.name} & ${session.log[pick].follower.name} — you reveal when you are ready`}
+              </span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="shell">
         <header className="screen-head">
@@ -145,6 +228,37 @@ export function SessionScreen({
             {session.log.length === 1 ? 'couple' : 'couples'} took the floor.
           </p>
         </header>
+
+        {crowned && (
+          <section className="crowned">
+            <p className="crowned__label">Winning couple</p>
+            <p className="crowned__names">
+              {crowned.leader.name} &amp; {crowned.follower.name}
+            </p>
+            <div className="crowned__actions">
+              <button
+                className="crowned__button"
+                type="button"
+                onClick={() => {
+                  setPick(session.winner);
+                  setEnding('reveal');
+                }}
+              >
+                Show the reveal again
+              </button>
+              <button
+                className="crowned__button"
+                type="button"
+                onClick={() => {
+                  setPick(session.winner);
+                  setEnding('picking');
+                }}
+              >
+                Choose someone else
+              </button>
+            </div>
+          </section>
+        )}
 
         <ol className="log log--full">
           {session.log.map((couple, i) => (
@@ -164,7 +278,32 @@ export function SessionScreen({
         </ol>
 
         <div className="actions">
-          <button className="actions__primary" type="button" onClick={onStartFresh}>
+          {/* Offered, never automatic. Some nights end better with no winner at
+              all, and the app should not imply one is owed. */}
+          {!crowned && session.log.length > 0 && (
+            <>
+              <button
+                className="actions__primary"
+                type="button"
+                onClick={() => {
+                  setPick(null);
+                  setEnding('picking');
+                }}
+              >
+                Crown a winner
+              </button>
+              <p className="actions__note">
+                Optional. A night can finish without one, and this list is the whole record either
+                way.
+              </p>
+            </>
+          )}
+
+          <button
+            className={crowned || session.log.length === 0 ? 'actions__primary' : 'edit-dancers'}
+            type="button"
+            onClick={onStartFresh}
+          >
             Start a fresh session
           </button>
           <p className="actions__note">

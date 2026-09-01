@@ -466,6 +466,8 @@ another person must not cost the night.
 | Title | **Start a Session** and **Prompt Bank** are live. Saved Rosters, Share Bundles and Options arrive later. Also the permanent home of the app title. |
 | Session setup | Three steps — Dancers, How it runs, Start — with a pinned step bar and primary button, and a summary before committing. |
 | About | Who made the app, that it holds nothing off the device, and where to chip in. Shown once on first launch, and permanently on the title screen. |
+| Crown a winner | The session's couples, one chosen, nothing committed yet. *(v1.2, shipped early in 0.10.0.)* |
+| Curtain and reveal | The drumroll, the countdown, and the names. *(v1.2, shipped early in 0.10.0.)* |
 | Wheel | Labeled with the pool being spun. Re-spin available. |
 | Couple reveal | Both names, big. |
 | Prompt reveal | Name and description. |
@@ -542,14 +544,30 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
 
 - **Winner — Mode A (operator's choice).** The operator picks. How they decided is entirely
   off-app: their own judgment, a panel, applause. The app records and reveals it.
-- **The curtain.** The winner must stay secret on a device the room may be watching.
-  1. Operator triggers the winner step; the display immediately drops a **full-screen illustrated
-     curtain**.
-  2. The curtain is **softly animated** — a gentle sway, never static. This is functional, not
-     decorative: a frozen screen in front of a room reads as a crashed app.
-  3. Behind it, the winner is decided.
-  4. The operator triggers the reveal: **curtains part with a countdown**, then the winning
-     couple's names land big with celebration effects.
+  - **Offered, never owed.** Crowning is one option on a finished session, not a step in it. A
+    night can end with no winner and the app must not imply otherwise.
+  - **Only a couple that actually danced** can be crowned. The winner is stored as a position in
+    the session log, so it can never disagree with the record of the night.
+  - **Reversible**, like everything else: the crown can be taken back or moved, and Undo reaches it.
+- **The curtain, and why it comes *after* the choice here.** The original design dropped the
+  curtain first and decided the winner behind it. That is right for the audience vote in v1.3,
+  where there is genuinely something to hide — but it is theatre with nothing behind it in Mode A.
+  The operator picks, the picking panel sits on top of the curtain, and the tablet is mirrored to a
+  TV, so the room watches the choice being made through the very thing meant to conceal it.
+  "VOTING IN SESSION" would also be a flat lie. So in Mode A:
+  1. The operator **chooses the couple** from the session's list.
+  2. The **curtain comes down** — full-screen, softly animated. Static is not an option: a frozen
+     screen in front of a room reads as a crashed app.
+  3. It says **"And the winner is…"**, which is the one thing that is certainly true, and it stays
+     down until the operator **presses and holds to reveal**. There is no timer. The drumroll lasts
+     exactly as long as they want it to, which is also the answer to whether a curtain is worth
+     anything when nothing is being cast: its length is theirs.
+  4. **A countdown**, then the curtains part on the winning couple's names, large, with
+     celebration.
+  - **The choice is not committed until the curtain parts.** There is a way back out right up to
+    the last moment.
+  - **v1.3 will sequence Mode B differently** — curtain first, because a vote genuinely must be
+    hidden. That inconsistency is deliberate and is recorded rather than discovered later.
 - **A landscape layout, built for the TV.** Android tablets rotate whatever the manifest asks, and
   the owner *prefers* landscape on a tablet: it has the room for everything and it fits a TV far
   better than a portrait layout letterboxed into a widescreen. v1.0 tolerates landscape; this is
@@ -572,10 +590,15 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
     being judged.
 
 ### Open questions — v1.2
-- **What does the curtain say in Mode A?** "VOTING IN SESSION" is written for the audience vote
-  and would be a lie here.
-- Does the curtain make sense **when not casting to a TV** — is it theatre, or just a delay
-  between the operator and their own screen?
+**Both original questions are answered**, by the same decision — see D-047.
+- ~~What does the curtain say in Mode A?~~ **"And the winner is…"**, which is true because the
+  winner has already been chosen by the time it drops.
+- ~~Does the curtain make sense when not casting?~~ **Yes**, because it has no timer. It is held
+  open by the operator and parts when they hold the button, so it is never dead time imposed on
+  them.
+
+Still open:
+- Does the **all-skate finale** belong before or after the reveal? Currently specified as after.
 
 ---
 

@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.9.5 — deployed and live
-**Current phase:** Event feedback cleared; holding for the handoff rehearsal before 1.0.0
+**Current version:** 0.10.0 — deployed and live
+**Current phase:** Building ahead of the handoff rehearsal; 1.0.0 waits on that test, not on code
 **Last updated:** 2026-08-31
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
 
@@ -54,6 +54,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.7.0** | Principles pass | Self-describing audit of every screen, label review, contrast and touch targets, no-color-alone check | ✅ Shipped 2026-08-26 |
 | **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | ✅ Shipped 2026-08-26 |
 | **0.9.x** | Event response | Everything the first real event asked for: undo, add mid-session, guarded re-spin, one no-scroll session screen, rewritten prompts, staged setup, About page | ✅ Shipped 2026-08-30 → 08-31 |
+| **0.10.0** | An ending | Crown a winner: pick the couple, the curtain, hold to reveal, celebration. v1.2's headline, shipped early — see D-048 | ✅ Shipped 2026-08-31 |
 | **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | ⏳ Waiting on the handoff rehearsal |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
@@ -83,6 +84,28 @@ backlog, worked through in order of what actually broke the night.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-08-31 — 0.10.0: the night gets an ending
+- **A winner can be crowned**, and the night finally finishes rather than just stopping. The
+  operator picks a couple from the session's own list, brings down a curtain, and reveals when the
+  room is ready. This is v1.2's headline feature arriving before 1.0.0 is declared — see D-048.
+- **The curtain comes after the choice, not before it**, which answers both of v1.2's open
+  questions at once. See D-047.
+- **Crowning is offered, never owed.** It is one option on a finished session, and a night that
+  ends with no winner is a complete night, not an incomplete one.
+- **Only a couple that actually danced can win.** The crown is stored as a position in the session
+  log, so it cannot disagree with the record. Crowning before everyone has danced is refused by the
+  reducer, not just hidden by the screen.
+- **Reversible everywhere.** The crown can be moved or taken back, Undo reaches it, and backing out
+  of the curtain commits nothing. Replaying a reveal for the couple already crowned dispatches
+  nothing, so Undo never offers a step that would appear to do nothing.
+- **Curtain contrast measured by hand** and recorded in the audit script. The sweep walks straight
+  past a gradient panel and lands on the page background, so it would have passed the curtain
+  without ever looking at it: gold on the lightest fold is 3.61:1 (large text, needs 3:1), and the
+  escape link was 4.63:1 — over the line but not by enough to survive the highlight stripes, so it
+  is backed and now measures about 9:1.
+- Session schema 6. 124 tests. Audited clean on the crowned session, the picker and the curtain.
+
 
 ### 2026-08-31 — Documentation sweep, and the dates were wrong
 - **Corrected five build-log dates.** Everything from the first real event onward was dated around
@@ -1042,6 +1065,48 @@ document by 635px and made the whole "pinned" layout scrollable — the header c
 the top. `position: relative` on `.shell` fixes it everywhere at no cost, since every overlay in
 the app is `position: fixed` and unaffected. The session screen had the same latent bug and had
 only ever been saved by not overflowing far enough.
+
+### D-047 — In Mode A the curtain is a drumroll, not a screen
+**Decision:** the operator chooses the winner first; *then* the curtain comes down, says
+**"And the winner is…"**, and parts on a press-and-hold. No timer.
+
+**Reasoning:** the PRD carried two open questions here — what the curtain should say in Mode A, and
+whether it is worth anything when nothing is being cast — and they turned out to be the same
+question. The curtain was specified to drop *first*, with the winner decided behind it. That works
+for the audience vote in v1.3, where there is genuinely something to hide. In Mode A there is not:
+the operator picks, the picking panel renders on top of the curtain, and the tablet is mirrored to
+a TV, so the room watches the choice being made through the thing meant to conceal it.
+[intent.md](intent.md) admits this limitation openly. A curtain that conceals nothing while
+claiming "VOTING IN SESSION" is worse than no curtain.
+
+Moving it after the choice makes the copy honest and turns the curtain into what it was actually
+for: a held moment. And because it has no timer — it parts when the operator holds the button — it
+is never dead time. That is the second question answered. Someone alone with a phone holds it
+immediately and loses nothing; someone in front of a room holds it until the room is quiet.
+
+**The cost, named rather than discovered:** v1.3's Mode B will sequence the other way, curtain
+first, because a vote must genuinely be hidden. Mode A and Mode B will not match. That is a real
+inconsistency and it is the right one — the sequence follows what is actually being concealed.
+
+### D-048 — v1.2's ending ships before 1.0.0 is declared
+**Decision:** build the winner flow now, as 0.10.0, while 1.0.0 waits.
+
+**Reasoning:** 1.0.0 is gated on the **handoff rehearsal** — a test, not a line of code — and that
+is a week out. Holding the roadmap in the meantime would spend the week on nothing. The roadmap's
+ordering was always an argument about *cost and dependency*, not a queue: v1.2 sits after v1.1
+because authoring is cheaper than the winner flow, not because the winner flow needs authoring.
+
+**Why this feature and not another.** Two things ruled: the PRD names the missing ending as the
+largest experiential hole in v1.0, and everything built between now and the handoff is more surface
+for a stranger to navigate. The ending sits at the *end* of a session, so a first-time operator
+meets it after the app has already worked, not on their way in. Roster transfer was the alternative
+and was declined for the opposite reason: its unknowns are platform unknowns — camera permission
+inside an installed PWA, QR capacity — that could have eaten the week, and the handoff test was
+scoped to the owner's tablet, which takes it off the critical path entirely.
+
+**What is deliberately not in it:** the all-skate finale and the landscape TV layout, both of which
+v1.2 also specifies. Landscape especially — it is a rewrite of every screen's layout, and doing it
+before the winner screens existed would have meant doing it twice.
 
 ## Known issues and in-flight notes
 

@@ -168,6 +168,14 @@ export default function App() {
         return 'Reopens the birthday jam.';
       case 'syncDancers':
         return 'Reverses the last change to the dancers.';
+      case 'crownWinner': {
+        const couple = before.log[action.index];
+        return couple
+          ? `Takes the crown back from ${couple.leader.name} and ${couple.follower.name}.`
+          : 'Takes back the crown.';
+      }
+      case 'uncrown':
+        return 'Puts the crown back where it was.';
       default:
         return 'Steps the session back one action.';
     }
