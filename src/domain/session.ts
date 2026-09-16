@@ -135,6 +135,14 @@ export type SessionState = {
    * a panel, the volume of the room. The app records and reveals it.
    */
   winner: number | null;
+  /**
+   * The challenge everybody danced at the end, if the operator called one.
+   *
+   * Kept apart from `log`, which is a record of couples — the all-skate has no
+   * couple and no judging. Null is the normal case: some nights end better on
+   * the crown, so the finale is offered and never automatic.
+   */
+  allSkate: Prompt | null;
 };
 
 export type SessionAction =
@@ -147,7 +155,8 @@ export type SessionAction =
   | { type: 'nextCouple' }
   | { type: 'syncDancers'; dancers: Dancer[] }
   | { type: 'crownWinner'; index: number }
-  | { type: 'uncrown' };
+  | { type: 'uncrown' }
+  | { type: 'allSkate'; promptId: string };
 
 export const OTHER_POOL: Record<PoolName, PoolName> = {
   leaders: 'followers',
@@ -200,6 +209,7 @@ export function createSession(
     promptsRecycled: false,
     promptExcludedId: null,
     winner: null,
+    allSkate: null,
     jamboreeDancers: [],
     phaseAfterJamboree: null,
     jammed: [],
@@ -561,6 +571,21 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case 'uncrown': {
       if (state.winner === null) return state;
       return { ...state, winner: null };
+    }
+
+    /**
+     * The last dance of the night: one challenge, everybody on the floor.
+     *
+     * Drawn from the whole deck rather than what is left, because how it was
+     * landed on is the operator's business — a favourite coming back is often
+     * the better ending. Prompts being switched off for the session does not
+     * stop it: nobody is being judged, and the operator opted in deliberately.
+     */
+    case 'allSkate': {
+      if (state.phase !== 'complete') return state;
+      const prompt = state.promptDeck.find((p) => p.id === action.promptId);
+      if (!prompt) return state;
+      return { ...state, allSkate: prompt };
     }
 
     case 'syncDancers': {

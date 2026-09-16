@@ -176,6 +176,8 @@ export default function App() {
       }
       case 'uncrown':
         return 'Puts the crown back where it was.';
+      case 'allSkate':
+        return 'Undoes the last dance of the night.';
       default:
         return 'Steps the session back one action.';
     }

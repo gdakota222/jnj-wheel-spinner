@@ -40,13 +40,31 @@ function drawCouple(state: SessionState, pick: (max: number) => number = () => 0
   return apply(s, { type: 'nextCouple' });
 }
 
-/** Run a whole session to completion. */
+/**
+ * Run a whole session to completion.
+ *
+ * Draws a challenge when the session is using them: without that, `nextCouple`
+ * is refused at the 'pair' phase and the loop spins out against its guard,
+ * quietly handing back a session that never finished. That made a test pass
+ * vacuously once, so the helper now asserts it actually got there.
+ */
 function runSession(state: SessionState, pick?: (max: number) => number): SessionState {
   let s = state;
   let guard = 0;
   while (s.phase !== 'complete' && guard++ < 500) {
-    s = drawCouple(s, pick);
+    for (let half = 0; half < 2; half++) {
+      const entries = wheelEntries(s);
+      s = apply(s, { type: 'spin', index: pick ? pick(entries.length) : 0, rotation: s.rotation + 1800 });
+      s = apply(s, { type: 'settled' });
+    }
+    if (s.phase === 'pair') {
+      const target = promptEntries(s)[0];
+      s = apply(s, { type: 'spinPrompt', promptId: target.id, rotation: s.rotation + 1800 });
+      s = apply(s, { type: 'settled' });
+    }
+    s = apply(s, { type: 'nextCouple' });
   }
+  expect(s.phase).toBe('complete');
   return s;
 }
 
@@ -776,5 +794,55 @@ describe('crowning a winner', () => {
     const done = runSession(createSession(roster(3, 3), 'leaders'));
     apply(done, { type: 'crownWinner', index: 1 });
     expect(createSession(roster(3, 3), 'leaders').winner).toBeNull();
+  });
+});
+
+describe('the all-skate finale', () => {
+  const deck = WESTIE_STARTER_PACK.prompts.slice(0, 4);
+
+  it('draws from the whole deck, including challenges already danced', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders', true, deck));
+    // Three couples danced, so some of the four challenges are spent.
+    expect(done.promptsRemaining.length).toBeLessThan(done.promptDeck.length);
+
+    const danced = done.promptDeck.find(
+      (p) => !done.promptsRemaining.some((r) => r.id === p.id),
+    )!;
+    expect(danced).toBeDefined();
+    const s = apply(done, { type: 'allSkate', promptId: danced.id });
+    expect(s.allSkate?.id).toBe(danced.id);
+  });
+
+  it('works on a night that ran with prompts switched off', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders', false, deck));
+    expect(done.promptsEnabled).toBe(false);
+    const s = apply(done, { type: 'allSkate', promptId: deck[2].id });
+    expect(s.allSkate?.id).toBe(deck[2].id);
+  });
+
+  it('refuses a finale before everyone has danced', () => {
+    let s = createSession(roster(3, 3), 'leaders', true, deck);
+    s = drawCouple(s);
+    expect(apply(s, { type: 'allSkate', promptId: deck[0].id }).allSkate).toBeNull();
+  });
+
+  it('refuses a challenge the session does not hold', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders', true, deck));
+    expect(apply(done, { type: 'allSkate', promptId: 'not-a-prompt' }).allSkate).toBeNull();
+  });
+
+  it('is kept apart from the log of couples', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders', true, deck));
+    expect(done.log.length).toBeGreaterThan(0);
+    const s = apply(done, { type: 'allSkate', promptId: deck[0].id });
+    expect(s.allSkate?.id).toBe(deck[0].id);
+    expect(s.log.length).toBe(done.log.length);
+  });
+
+  it('survives a resume, and a fresh session starts without one', () => {
+    const done = runSession(createSession(roster(3, 3), 'leaders', true, deck));
+    const s = apply(done, { type: 'allSkate', promptId: deck[1].id });
+    expect(resumeSession(s).allSkate?.id).toBe(deck[1].id);
+    expect(createSession(roster(3, 3), 'leaders', true, deck).allSkate).toBeNull();
   });
 });

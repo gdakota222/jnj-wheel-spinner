@@ -1,8 +1,8 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.10.0 — deployed and live
+**Current version:** 0.11.0 — deployed and live
 **Current phase:** Building ahead of the handoff rehearsal; 1.0.0 waits on that test, not on code
-**Last updated:** 2026-08-31
+**Last updated:** 2026-09-16
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
 
 ---
@@ -55,6 +55,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.8.0** | Device rehearsal | Real tablet install, full dry run with a fake roster, cast-to-TV check | ✅ Shipped 2026-08-26 |
 | **0.9.x** | Event response | Everything the first real event asked for: undo, add mid-session, guarded re-spin, one no-scroll session screen, rewritten prompts, staged setup, About page | ✅ Shipped 2026-08-30 → 08-31 |
 | **0.10.0** | An ending | Crown a winner: pick the couple, the curtain, hold to reveal, celebration. v1.2's headline, shipped early — see D-048 | ✅ Shipped 2026-08-31 |
+| **0.11.0** | One last dance | The all-skate finale: three ways to land on one challenge, revealed identically | ✅ Shipped 2026-09-16 |
 | **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | ⏳ Waiting on the handoff rehearsal |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
@@ -84,6 +85,41 @@ backlog, worked through in order of what actually broke the night.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-16 — 0.11.0: one last dance
+- **The all-skate finale.** One challenge, everybody on the floor, nobody judged. Three ways to
+  land on it — **Full Random** across the whole bundle, **Surprise Me** across what is left, and
+  **Choose**, which is the only place in the app where a prompt is picked rather than drawn.
+- **The reveal is identical however it was landed on**, which is the whole point of offering
+  *Choose*. Verified by comparing the rendered markup of a hand-picked finale against a spun one
+  with the text stripped out: structurally byte-identical.
+- **Offered independently of the crown**, which answers the open question about whether the finale
+  comes before or after the reveal — neither is imposed. See D-049.
+- **A finale can be redrawn.** *Choose* commits on a single tap, and a mis-tap would otherwise lock
+  in the wrong ending with no way back. The curtain already had this escape for the same reason.
+- **Exhaustion is handled and says so.** With every challenge danced, *Surprise Me* is disabled and
+  the note names the mode that still works rather than leaving a grey button with no explanation.
+  Reached in the browser by setting nineteen challenges aside, not just reasoned about.
+- **The copy was wrong at the boundaries** — a one-challenge bundle read "Spins across all 1".
+  Fixed for both the deck and the unused pool.
+- **The spin lives in the component, not the reducer.** A finale is not a phase of the night: the
+  session is already complete, and threading a new phase through would change what "complete" means
+  for the wake lock, for restoring a session, and for every screen that asks. Only the result is
+  session state.
+- Session schema 7. 130 tests. Audited clean on all three finale screens.
+
+#### A test that was passing without testing anything
+`runSession`, the helper that runs a session to completion, never drew a challenge. With prompts
+**off** that is correct and every existing test using it was fine. With prompts **on**,
+`nextCouple` is refused at the 'pair' phase, so the loop spun out against its guard and quietly
+handed back a session that had never finished — and a new test asserting "the finale is kept apart
+from the log" passed while doing nothing at all.
+
+The helper now draws a challenge when the session uses them, and **asserts it reached 'complete'**
+before returning. A helper that silently hands back the wrong thing is worse than one that throws;
+this is the same lesson as [verifying in the browser](rehearsal.md), arriving from the other
+direction — the suite was green and one of its tests was empty.
+
 
 ### 2026-08-31 — 0.10.0: the night gets an ending
 - **A winner can be crowned**, and the night finally finishes rather than just stopping. The
@@ -1108,6 +1144,28 @@ scoped to the owner's tablet, which takes it off the critical path entirely.
 v1.2 also specifies. Landscape especially — it is a rewrite of every screen's layout, and doing it
 before the winner screens existed would have meant doing it twice.
 
+### D-049 — The finale is offered beside the crown, not after it
+**Decision:** the all-skate is a second, independent option on a finished session. It does not
+require a winner, does not follow one, and either can happen without the other.
+
+**Reasoning:** the PRD specified the finale as coming "after the reveal", and carried an open
+question about whether that was right. Making it *follow* the crown would mean a night that ends
+on everybody dancing has to crown someone first to get there — which contradicts the rule, one
+paragraph earlier, that crowning is optional. Two optional endings that each depend on the other
+is not a sequence, it is a knot.
+
+So both sit on the completed session and the operator picks the order, or picks one, or picks
+neither. That is the same principle the crown already follows: the app offers an ending and never
+insists on one. The question resolves by not answering it — neither order is imposed, because
+neither is the app's to decide.
+
+**On *Choose* being in the product at all.** It is the one place where a prompt is selected rather
+than drawn, which everywhere else in this app would be steering the wheel and is forbidden. It is
+safe here for a specific reason: nothing is at stake. No couple is being matched, no winner is
+being decided, nobody is being judged. The operator can put a thumb on the scale to end the night
+on the right note, and because the reveal is byte-identical to a spun one, the room cannot tell —
+which is what makes it useful rather than merely permitted.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
@@ -1141,6 +1199,10 @@ disappears between checkpoints.
   (found 0.2.0, narrowed 2026-08-31)
 - **No component or end-to-end tests.** By design (D-007) — but it means screen-level regressions
   would be caught by eye, not by the suite.
+- **Test helpers can hand back the wrong thing silently.** `runSession` returned a session that had
+  never completed whenever prompts were switched on, which made a new test pass while asserting
+  nothing. Fixed, and the helper now asserts it got where it claims. Worth remembering that a green
+  suite proves the assertions ran, not that they meant anything. (found 0.11.0)
 
 ## Open questions carried into the build
 

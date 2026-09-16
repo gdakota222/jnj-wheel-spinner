@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AllSkate } from '../components/AllSkate';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { HoldButton } from '../components/HoldButton';
 import { Jamboree } from '../components/Jamboree';
@@ -70,7 +71,7 @@ export function SessionScreen({
    * about the night, and a crash should put the operator back on the completed
    * session with its crown intact, not halfway through a curtain.
    */
-  const [ending, setEnding] = useState<'log' | 'picking' | 'reveal'>('log');
+  const [ending, setEnding] = useState<'log' | 'picking' | 'reveal' | 'finale'>('log');
   const [pick, setPick] = useState<number | null>(null);
 
   useWakeLock(session.phase !== 'complete');
@@ -162,6 +163,23 @@ export function SessionScreen({
             if (session.winner !== pick) dispatch({ type: 'crownWinner', index: pick });
             setEnding('log');
           }}
+        />
+      );
+    }
+
+    if (ending === 'finale') {
+      return (
+        <AllSkate
+          deck={session.promptDeck}
+          unused={session.promptsRemaining}
+          chosen={session.allSkate}
+          onChoose={(prompt) => {
+            if (session.allSkate?.id !== prompt.id) {
+              dispatch({ type: 'allSkate', promptId: prompt.id });
+            }
+          }}
+          onBack={() => setEnding('log')}
+          onDone={() => setEnding('log')}
         />
       );
     }
@@ -260,6 +278,13 @@ export function SessionScreen({
           </section>
         )}
 
+        {session.allSkate && (
+          <section className="finale-note">
+            <p className="finale-note__label">The last dance</p>
+            <p className="finale-note__name">{session.allSkate.name}</p>
+          </section>
+        )}
+
         <ol className="log log--full">
           {session.log.map((couple, i) => (
             <li key={`${couple.leader.id}-${couple.follower.id}-${i}`} className="log__row">
@@ -297,6 +322,19 @@ export function SessionScreen({
                 way.
               </p>
             </>
+          )}
+
+          {/* Offered whether or not anyone was crowned — some nights end on the
+              crown, some on everybody dancing, and that is the operator's read
+              of the room rather than the app's. */}
+          {session.promptDeck.length > 0 && (
+            <button
+              className="edit-dancers"
+              type="button"
+              onClick={() => setEnding('finale')}
+            >
+              {session.allSkate ? 'Show the last dance again' : 'One last dance — everybody'}
+            </button>
           )}
 
           <button

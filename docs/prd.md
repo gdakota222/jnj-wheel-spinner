@@ -468,6 +468,7 @@ another person must not cost the night.
 | About | Who made the app, that it holds nothing off the device, and where to chip in. Shown once on first launch, and permanently on the title screen. |
 | Crown a winner | The session's couples, one chosen, nothing committed yet. *(v1.2, shipped early in 0.10.0.)* |
 | Curtain and reveal | The drumroll, the countdown, and the names. *(v1.2, shipped early in 0.10.0.)* |
+| All-skate finale | Three ways to land on one last challenge, revealed identically. *(v1.2, shipped early in 0.11.0.)* |
 | Wheel | Labeled with the pool being spun. Re-spin available. |
 | Couple reveal | Both names, big. |
 | Prompt reveal | Name and description. |
@@ -575,10 +576,18 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
   wheel and the controls sharing the space instead of stacking. It belongs in this version because
   v1.2 is the first one whose whole purpose is what the *room* sees.
 
-- **All-skate finale (optional).** After the reveal, the operator can trigger one last spin:
-  everyone dances one prompt together. No pairs, no spotlight, no judging, no winner.
+- **All-skate finale (optional).** One last challenge, everybody on the floor together. No pairs,
+  no spotlight, no judging, no winner.
   - **Operator-triggered, never automatic.** Some nights end better on the crown.
-  - **Source:** the session's prompt pool, or the built-in **All Skate** deck.
+  - **Offered independently of the crown**, not after it. A night can end on the finale with
+    nobody crowned, on the crown with no finale, or on both in either order — which is the
+    operator's read of the room rather than the app's. *(This answers the question the PRD carried
+    about whether the finale comes before or after the reveal: neither is imposed.)*
+  - **Source:** the session's own prompt bundle, danced or not. The built-in **All Skate** deck the
+    PRD also names does not exist yet — it arrives with the three built-in decks in v1.1, and the
+    finale will draw from it then.
+  - **A finale can be redrawn.** *Choose* commits on a single tap, so the reveal offers a way back
+    to the three modes, for the same reason the curtain does.
   - **Three draw modes:** **Full Random** (spins across everything, including prompts already
     danced — a crowd favorite can come back, which is often the better ending); **Surprise Me**
     (only prompts not yet used); **Choose** (no spin — the operator picks any prompt directly
@@ -598,7 +607,10 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
   them.
 
 Still open:
-- Does the **all-skate finale** belong before or after the reveal? Currently specified as after.
+- **Nothing on a finished night survives a relaunch.** The crown and the finale are written to
+  storage but can never be read back: a completed session is discarded on launch, which is what
+  the screen has always promised ("Nothing here is saved"). v1.6's event history is where that
+  changes, and the fields are already in place for it.
 
 ---
 
