@@ -94,7 +94,7 @@ export function AllSkate({ deck, unused, chosen, onChoose, onBack, onDone }: Pro
     return (
       <div className="shell shell--session">
         <p className="pool-label">
-          The last dance: <strong>everybody</strong>
+          The AllSkate: <strong>everybody</strong>
         </p>
         <div className="stage stage--wheel">
           <Wheel
@@ -107,7 +107,7 @@ export function AllSkate({ deck, unused, chosen, onChoose, onBack, onDone }: Pro
           />
         </div>
         <div className="actions">
-          <p className="actions__note">Landing on the last dance…</p>
+          <p className="actions__note">Landing on the AllSkate…</p>
         </div>
       </div>
     );
@@ -120,7 +120,7 @@ export function AllSkate({ deck, unused, chosen, onChoose, onBack, onDone }: Pro
           <button className="back" type="button" onClick={() => setStage('mode')}>
             ← Back
           </button>
-          <h1 className="screen-title">Pick the last dance</h1>
+          <h1 className="screen-title">Pick the AllSkate</h1>
         </header>
 
         <p className="pick__hint">
@@ -161,9 +161,10 @@ export function AllSkate({ deck, unused, chosen, onChoose, onBack, onDone }: Pro
         <button className="back" type="button" onClick={onBack}>
           ← Session complete
         </button>
-        <h1 className="screen-title">One last dance</h1>
+        <h1 className="screen-title">AllSkate</h1>
         <p className="subtitle">
-          Everybody on the floor for one challenge. No pairs, no spotlight, nobody judged.
+          Everybody on the floor for one challenge together — no pairs, no spotlight, nobody
+          judged. Pick how to land on it.
         </p>
       </header>
 

@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.11.0 — deployed and live
+**Current version:** 0.12.0 — deployed and live
 **Current phase:** Building ahead of the handoff rehearsal; 1.0.0 waits on that test, not on code
 **Last updated:** 2026-09-16
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -56,6 +56,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.9.x** | Event response | Everything the first real event asked for: undo, add mid-session, guarded re-spin, one no-scroll session screen, rewritten prompts, staged setup, About page | ✅ Shipped 2026-08-30 → 08-31 |
 | **0.10.0** | An ending | Crown a winner: pick the couple, the curtain, hold to reveal, celebration. v1.2's headline, shipped early — see D-048 | ✅ Shipped 2026-08-31 |
 | **0.11.0** | One last dance | The all-skate finale: three ways to land on one challenge, revealed identically | ✅ Shipped 2026-09-16 |
+| **0.12.0** | The ending, tidied | Two ending cards on a finished session, leaving behind one sheet, the AllSkate named as dancers name it | ✅ Shipped 2026-09-16 |
 | **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | ⏳ Waiting on the handoff rehearsal |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
@@ -85,6 +86,28 @@ backlog, worked through in order of what actually broke the night.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-16 — 0.12.0: the end of the night, tidied
+- **The completed session is split by kind**: the two endings are cards that stay on screen, and
+  leaving goes behind one quiet *Session options* sheet. Four buttons and two paragraphs became two
+  cards and one link. See D-050.
+- **Crown a Winner is gold, AllSkate is cyan.** Two colours and two words, so they never read as
+  the same control twice, and nothing depends on colour alone.
+- **The AllSkate is called what dancers call it.** The button says *AllSkate* and no more; the
+  options screen explains what one is, for anyone who needs telling. Owner's note: the room already
+  owns the word, so explaining it on the button was explaining their own language back to them.
+- **The crowned banner is gone**, absorbed into the card, which now reads *"Winning couple — … —
+  show it again"*. That removed a section and two buttons while keeping every path: the card
+  replays the curtain, and the curtain's existing way back lands on the picker.
+- **Both layouts were built and compared before choosing.** Putting the endings behind the sheet as
+  well makes a tidier screen and teaches a first-time operator nothing — a log and one button do
+  not say the night has an ending worth reaching for. The rejected one was deleted, not left behind
+  a flag.
+- **Dead CSS removed** with it: the crowned banner and finale note blocks, orphaned the moment the
+  cards took over.
+- Contrast measured on the new cyan card, which is a background the palette had not used for text
+  before: worst case 7.09:1 against a 4.5 requirement. 130 tests.
+
 
 ### 2026-09-16 — 0.11.0: one last dance
 - **The all-skate finale.** One challenge, everybody on the floor, nobody judged. Three ways to
@@ -1165,6 +1188,28 @@ safe here for a specific reason: nothing is at stake. No couple is being matched
 being decided, nobody is being judged. The operator can put a thumb on the scale to end the night
 on the right note, and because the reveal is byte-identical to a spun one, the room cannot tell —
 which is what makes it useful rather than merely permitted.
+
+### D-050 — The completed session is split by kind, not swept into one place
+**Decision:** the two endings stay on screen as coloured cards; only leaving goes behind the sheet.
+
+**Reasoning:** the screen was cluttered because it rendered two different kinds of thing
+identically. *Crown a Winner* and *AllSkate* end the night; *Start a fresh session* and *Back to
+the roster* leave it. Four look-alike buttons and two explanatory paragraphs, all competing.
+
+The owner's instinct was to sweep all four into one endgame container, and that was built and
+looked at before being turned down. It does make the tidier screen. It also leaves a first-time
+operator with a log and a single button, and nothing on screen saying the night has an ending worth
+reaching for — which matters precisely because the handoff rehearsal is a stranger meeting this
+screen for the first time.
+
+**The sheet earns its contents by risk, not by tidiness.** *Start a fresh session* wipes the log.
+Being one step removed is a safety property, and putting the warning inside the sheet places it
+under the button it is warning about rather than on the screen behind it.
+
+**A card carrying its own result** is what paid for the reduction: once crowned, the card says so,
+which deleted the separate banner and its two buttons. "Choose someone else" survives as a path
+rather than a control — the card replays the curtain, and the curtain already had a way back to the
+picker. One less thing on screen, nothing less reachable.
 
 ## Known issues and in-flight notes
 

@@ -1988,50 +1988,6 @@
   grid-column: 2;
 }
 
-/* --------------------------------------------------------- crowned banner */
-
-.crowned {
-  padding: var(--gap);
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
-  border: 2px solid var(--accent);
-  border-radius: var(--radius);
-  text-align: center;
-}
-
-.crowned__label {
-  font-size: var(--step--1);
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.crowned__names {
-  margin-top: var(--gap-xs);
-  font-size: var(--step-2);
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.crowned__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--gap-sm);
-  margin-top: var(--gap-sm);
-}
-
-.crowned__button {
-  min-height: 44px;
-  padding-inline: var(--gap-sm);
-  background: transparent;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: var(--step--1);
-  font-weight: 650;
-  cursor: pointer;
-}
-
 /* ----------------------------------------------------------- the reveal */
 
 .reveal {
@@ -2315,28 +2271,6 @@
   color: var(--text-dim);
 }
 
-/* The finale on the completed session: part of the record, sized like a note
-   rather than competing with the crown above it. */
-.finale-note {
-  padding: var(--gap-sm) var(--gap);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--seg-5);
-  border-radius: var(--radius-sm);
-}
-
-.finale-note__label {
-  font-size: var(--step--1);
-  color: var(--text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.finale-note__name {
-  font-size: var(--step-1);
-  font-weight: 700;
-}
-
 /* Choosing the last dance by hand: the rows carry a description too, so they
    stack rather than sitting on one line like the couples do. */
 .pick__row--prompt {
@@ -2366,4 +2300,90 @@
   grid-column: 1 / -1;
   font-size: var(--step--1);
   color: var(--text-dim);
+}
+
+/* ==========================================================================
+   The end of the night.
+
+   The completed session holds two different kinds of thing: ways to *end* the
+   night, and ways to *leave* it. Rendering them as four identical buttons is
+   what made the screen feel cluttered. The endings are cards and look like
+   events; leaving lives behind one quiet control, alongside the warning that
+   belongs with it.
+   ========================================================================== */
+
+.endgame {
+  display: grid;
+  /* Side by side where there is room, stacked on a phone, with no breakpoint
+     to keep in step with anything else. */
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--gap-sm);
+}
+
+.endgame__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 5.5rem;
+  padding: var(--gap);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+}
+
+.endgame__title {
+  font-size: var(--step-1);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.endgame__sub {
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+
+/* Two colours, not one. The crown keeps the gold it has always had; the
+   AllSkate takes a cyan from the wheel palette, so across a room the two never
+   read as the same control pressed twice. Both carry their own word as well,
+   so nothing here depends on colour alone. */
+.endgame__card--crown {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.endgame__card--crown .endgame__sub {
+  color: color-mix(in srgb, var(--accent-ink) 78%, transparent);
+}
+
+.endgame__card--skate {
+  background: var(--seg-5);
+  color: var(--bg);
+}
+
+.endgame__card--skate .endgame__sub {
+  color: color-mix(in srgb, var(--bg) 82%, transparent);
+}
+
+.endgame__hint {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+  text-align: center;
+}
+
+/* Quiet on purpose. Everything behind it is either reversible or warned about,
+   and none of it is what the screen is for. */
+.endgame__more {
+  align-self: center;
+  min-height: 44px;
+  padding-inline: var(--gap);
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  font-size: var(--step--1);
+  font-weight: 650;
+  text-decoration: underline;
+  cursor: pointer;
 }

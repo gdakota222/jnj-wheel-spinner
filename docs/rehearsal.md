@@ -197,12 +197,17 @@ it before — so this is a check on whether the fixes landed, not new first-cont
 | D2 | **Less scrolling overall**, and the session screen not scrolling at all. | ✅ Confirms C1 |
 | D3 | **The About page is wordy.** | ⏸ Logged, not acted on. One reader on a page they see once is thin evidence for a rewrite; the owner's call is to wait and see whether it comes back from anyone else. If it does, the two cards worth keeping are who made it and what it does with your data. |
 
-## The handoff rehearsal — planned, roughly the week of 2026-09-07
+## The handoff rehearsal — planned for the evening of 2026-09-16
 
 The last outstanding item on the original checklist, and the last thing between here and 1.0.0.
 
 **Who:** a dancer, not a second organiser. Someone who has never run the app and was not watching
 over the operator's shoulder while it ran.
+
+**What they will meet that nobody has tested cold:** the end-of-night screen changed the same day
+(0.12.0), so the two ending cards get their first stranger on the night they ship. That is
+deliberate — better to learn whether *Crown a Winner* and *AllSkate* read as invitations from
+someone who has never seen either.
 
 **On what:** the owner's tablet, with a roster already on it. Chosen deliberately over handing them
 a blank device. This is a test of whether the app explains itself, and making them install a PWA

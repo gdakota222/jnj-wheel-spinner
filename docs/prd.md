@@ -332,6 +332,23 @@ during a session is effectively hidden.
 - **Behind the Tools sheet:** view log, re-spin, edit dancers. Useful, rarely urgent, and each one
   is a tap away.
 
+### The completed session is split by kind
+A finished night holds two different sorts of thing, and rendering them as four identical buttons
+with a paragraph under each is what made the screen feel cluttered.
+
+- **Ways to end the night stay on screen**, as two cards that look like events rather than menu
+  items: **Crown a Winner** in the app's gold, **AllSkate** in a cyan from the wheel palette. Two
+  colours and two words, so neither depends on colour alone and they never read as the same control
+  pressed twice.
+- **Ways to leave live behind one quiet control**, in the same slide-up sheet the session uses for
+  Tools — *Start a fresh session* and *Back to the roster*. That sheet is where the warning belongs
+  too: starting fresh wipes the log, so it is a step removed and carries its own caution rather
+  than shouting it from the screen behind.
+- **A card carries its own result.** Once crowned, the card reads *"Winning couple — Sarah M &
+  Priya N — show it again"*, which removed a separate banner and its two buttons. Changing the
+  winner is still reachable: the card replays the curtain, and the curtain's own way back lands on
+  the picker.
+
 ### Setting up is staged, and the way on is never below the fold
 The same rule, applied one screen earlier. A colleague meeting the app cold at the first real
 event scrolled past the roster, the counts, the spin order and the challenges question hunting for
@@ -468,7 +485,7 @@ another person must not cost the night.
 | About | Who made the app, that it holds nothing off the device, and where to chip in. Shown once on first launch, and permanently on the title screen. |
 | Crown a winner | The session's couples, one chosen, nothing committed yet. *(v1.2, shipped early in 0.10.0.)* |
 | Curtain and reveal | The drumroll, the countdown, and the names. *(v1.2, shipped early in 0.10.0.)* |
-| All-skate finale | Three ways to land on one last challenge, revealed identically. *(v1.2, shipped early in 0.11.0.)* |
+| AllSkate | Three ways to land on one last challenge, revealed identically. *(v1.2, shipped early in 0.11.0.)* |
 | Wheel | Labeled with the pool being spun. Re-spin available. |
 | Couple reveal | Both names, big. |
 | Prompt reveal | Name and description. |
@@ -576,8 +593,11 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
   wheel and the controls sharing the space instead of stacking. It belongs in this version because
   v1.2 is the first one whose whole purpose is what the *room* sees.
 
-- **All-skate finale (optional).** One last challenge, everybody on the floor together. No pairs,
-  no spotlight, no judging, no winner.
+- **The AllSkate (optional).** One last challenge, everybody on the floor together. No pairs, no
+  spotlight, no judging, no winner.
+  - **Called what dancers call it.** The button says *AllSkate* and nothing else — the room already
+    owns the word. What an AllSkate *is* gets explained on the options screen, where someone who
+    does not know it is about to need it.
   - **Operator-triggered, never automatic.** Some nights end better on the crown.
   - **Offered independently of the crown**, not after it. A night can end on the finale with
     nobody crowned, on the crown with no finale, or on both in either order — which is the

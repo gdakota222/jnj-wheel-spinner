@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AllSkate } from '../components/AllSkate';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { EndgameSheet } from '../components/EndgameSheet';
 import { HoldButton } from '../components/HoldButton';
 import { Jamboree } from '../components/Jamboree';
 import { LockScreen } from '../components/LockScreen';
@@ -73,6 +74,7 @@ export function SessionScreen({
    */
   const [ending, setEnding] = useState<'log' | 'picking' | 'reveal' | 'finale'>('log');
   const [pick, setPick] = useState<number | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useWakeLock(session.phase !== 'complete');
 
@@ -237,120 +239,118 @@ export function SessionScreen({
       );
     }
 
+    /**
+     * The end of the night, split by kind rather than piled up.
+     *
+     * A finished session holds two different sorts of thing: ways to **end** the
+     * night, and ways to **leave** it. Rendering them as four identical buttons
+     * with a paragraph under each is what made this screen feel cluttered.
+     *
+     * So the two endings are cards, and they stay on screen. Putting them behind
+     * the sheet as well was built and compared, and it makes a tidier screen that
+     * teaches a first-time operator nothing: a log and one button do not say the
+     * night has an ending worth reaching for. Leaving goes in the sheet, where
+     * "Start a fresh session" — which wipes the log — is a step removed and
+     * carries its warning with it rather than shouting it from the screen behind.
+     */
+    const endgameActions = [
+      {
+        label: 'Start a fresh session',
+        note: 'Clears this list and starts everyone over. Nothing here is saved.',
+        onSelect: onStartFresh,
+      },
+      {
+        label: 'Back to the roster',
+        note: 'Leaves this session where it is and goes back to the dancers.',
+        onSelect: onLeave,
+      },
+    ];
+
+    const crownCard = (
+      <button
+        className="endgame__card endgame__card--crown"
+        type="button"
+        onClick={() => {
+          setPick(session.winner);
+          setEnding(crowned ? 'reveal' : 'picking');
+        }}
+      >
+        <span className="endgame__title">{crowned ? 'Winning couple' : 'Crown a Winner'}</span>
+        <span className="endgame__sub">
+          {crowned
+            ? `${crowned.leader.name} & ${crowned.follower.name} — show it again`
+            : 'Pick the couple, then reveal it'}
+        </span>
+      </button>
+    );
+
+    const skateCard = (
+      <button
+        className="endgame__card endgame__card--skate"
+        type="button"
+        onClick={() => setEnding('finale')}
+      >
+        <span className="endgame__title">AllSkate</span>
+        {/* No explanation here on purpose: the room already knows the word, and
+            the options screen explains it to anyone who does not. */}
+        <span className="endgame__sub">
+          {session.allSkate ? `${session.allSkate.name} — show it again` : 'One last challenge'}
+        </span>
+      </button>
+    );
+
+    const record = (
+      <ol className="log log--full">
+        {session.log.map((couple, i) => (
+          <li key={`${couple.leader.id}-${couple.follower.id}-${i}`} className="log__row">
+            <span className="log__number">{i + 1}</span>
+            <span className="log__names">
+              <span className="log__name">{couple.leader.name}</span>
+              <span className="log__role">Leader</span>
+            </span>
+            <span className="log__names">
+              <span className="log__name">{couple.follower.name}</span>
+              <span className="log__role">Follower</span>
+            </span>
+            {couple.prompt && <span className="log__prompt">{couple.prompt.name}</span>}
+          </li>
+        ))}
+      </ol>
+    );
+
+    const head = (
+      <header className="screen-head">
+        <h1 className="screen-title">Session complete</h1>
+        <p className="subtitle">
+          Everyone has danced. {session.log.length}{' '}
+          {session.log.length === 1 ? 'couple' : 'couples'} took the floor.
+        </p>
+      </header>
+    );
+
     return (
       <div className="shell">
-        <header className="screen-head">
-          <h1 className="screen-title">Session complete</h1>
-          <p className="subtitle">
-            Everyone has danced. {session.log.length}{' '}
-            {session.log.length === 1 ? 'couple' : 'couples'} took the floor.
-          </p>
-        </header>
+        {head}
 
-        {crowned && (
-          <section className="crowned">
-            <p className="crowned__label">Winning couple</p>
-            <p className="crowned__names">
-              {crowned.leader.name} &amp; {crowned.follower.name}
-            </p>
-            <div className="crowned__actions">
-              <button
-                className="crowned__button"
-                type="button"
-                onClick={() => {
-                  setPick(session.winner);
-                  setEnding('reveal');
-                }}
-              >
-                Show the reveal again
-              </button>
-              <button
-                className="crowned__button"
-                type="button"
-                onClick={() => {
-                  setPick(session.winner);
-                  setEnding('picking');
-                }}
-              >
-                Choose someone else
-              </button>
-            </div>
-          </section>
-        )}
+        {record}
 
-        {session.allSkate && (
-          <section className="finale-note">
-            <p className="finale-note__label">The last dance</p>
-            <p className="finale-note__name">{session.allSkate.name}</p>
-          </section>
-        )}
+        {/* Said once, above both, rather than as a paragraph under each. */}
+        <p className="endgame__hint">
+          Optional, both of them — a night can end on either, on both, or on neither.
+        </p>
 
-        <ol className="log log--full">
-          {session.log.map((couple, i) => (
-            <li key={`${couple.leader.id}-${couple.follower.id}-${i}`} className="log__row">
-              <span className="log__number">{i + 1}</span>
-              <span className="log__names">
-                <span className="log__name">{couple.leader.name}</span>
-                <span className="log__role">Leader</span>
-              </span>
-              <span className="log__names">
-                <span className="log__name">{couple.follower.name}</span>
-                <span className="log__role">Follower</span>
-              </span>
-              {couple.prompt && <span className="log__prompt">{couple.prompt.name}</span>}
-            </li>
-          ))}
-        </ol>
-
-        <div className="actions">
-          {/* Offered, never automatic. Some nights end better with no winner at
-              all, and the app should not imply one is owed. */}
-          {!crowned && session.log.length > 0 && (
-            <>
-              <button
-                className="actions__primary"
-                type="button"
-                onClick={() => {
-                  setPick(null);
-                  setEnding('picking');
-                }}
-              >
-                Crown a winner
-              </button>
-              <p className="actions__note">
-                Optional. A night can finish without one, and this list is the whole record either
-                way.
-              </p>
-            </>
-          )}
-
-          {/* Offered whether or not anyone was crowned — some nights end on the
-              crown, some on everybody dancing, and that is the operator's read
-              of the room rather than the app's. */}
-          {session.promptDeck.length > 0 && (
-            <button
-              className="edit-dancers"
-              type="button"
-              onClick={() => setEnding('finale')}
-            >
-              {session.allSkate ? 'Show the last dance again' : 'One last dance — everybody'}
-            </button>
-          )}
-
-          <button
-            className={crowned || session.log.length === 0 ? 'actions__primary' : 'edit-dancers'}
-            type="button"
-            onClick={onStartFresh}
-          >
-            Start a fresh session
-          </button>
-          <p className="actions__note">
-            A fresh session clears this list and starts everyone over. Nothing here is saved.
-          </p>
-          <button className="edit-dancers" type="button" onClick={onLeave}>
-            Back to the roster
-          </button>
+        <div className="endgame">
+          {session.log.length > 0 && crownCard}
+          {session.promptDeck.length > 0 && skateCard}
         </div>
+
+        <button className="endgame__more" type="button" onClick={() => setSheetOpen(true)}>
+          Session options
+        </button>
+
+        {sheetOpen && (
+          <EndgameSheet onClose={() => setSheetOpen(false)} actions={endgameActions} />
+        )}
       </div>
     );
   }
