@@ -2146,40 +2146,176 @@
   padding-bottom: calc(env(safe-area-inset-bottom) + var(--gap));
 }
 
-.reveal__burst {
+/* ---------------------------------------------------------- the party */
+
+/* Everything celebratory, in one layer behind the names. */
+.reveal__party {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  overflow: hidden;
   pointer-events: none;
+}
+
+.reveal__winner {
+  z-index: 1;
 }
 
 .reveal__confetti {
   position: absolute;
   width: 0.7rem;
   height: 1rem;
+  margin: -0.5rem 0 0 -0.35rem;
   border-radius: 2px;
   background: var(--piece);
-  animation: reveal-fly 1200ms cubic-bezier(0.16, 0.9, 0.3, 1) var(--delay) both;
-  transform: rotate(var(--angle)) translateY(0);
+  opacity: 0;
+  animation: reveal-fly 1300ms cubic-bezier(0.16, 0.9, 0.3, 1) var(--delay) both;
 }
 
 @keyframes reveal-fly {
-  from {
+  0% {
     opacity: 1;
     transform: rotate(var(--angle)) translateY(0) scale(0.4);
   }
-  to {
+  70% {
+    opacity: 1;
+  }
+  100% {
     opacity: 0;
-    transform: rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(1);
+    transform: rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(1) rotate(260deg);
+  }
+}
+
+/* A rain across the whole screen once the bursts are under way. Runs its
+   course and stops — endless confetti gets tiresome, and costs battery on a
+   tablet that has the rest of a night to run. */
+.reveal__rain {
+  position: absolute;
+  top: -6vh;
+  width: 0.55rem;
+  height: 0.9rem;
+  border-radius: 2px;
+  background: var(--piece);
+  opacity: 0;
+  animation: reveal-rain var(--fall) linear var(--delay) both;
+}
+
+.reveal__rain--round {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}
+
+@keyframes reveal-rain {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sway), 112vh) rotate(540deg);
+  }
+}
+
+/* A gold glow behind the names, breathing a few times and then settling. */
+.reveal__glow {
+  position: absolute;
+  inset: -30% -20%;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--accent) 34%, transparent),
+    transparent
+  );
+  opacity: 0;
+}
+
+.reveal__winner[data-open='true'] .reveal__glow {
+  animation: reveal-glow 1600ms ease-in-out 200ms 3 alternate both;
+}
+
+@keyframes reveal-glow {
+  from {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+/* The names land one after the other, with a little overshoot. */
+.reveal__winner[data-open='true'] .reveal__label,
+.reveal__winner[data-open='true'] .reveal__name,
+.reveal__winner[data-open='true'] .reveal__amp,
+.reveal__winner[data-open='true'] .reveal__prompt {
+  animation: reveal-pop 650ms cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.reveal__winner[data-open='true'] .reveal__label {
+  animation-delay: 0.05s;
+}
+
+.reveal__winner[data-open='true'] .reveal__name:first-child {
+  animation-delay: 0.25s;
+}
+
+.reveal__winner[data-open='true'] .reveal__amp {
+  animation-delay: 0.45s;
+}
+
+.reveal__winner[data-open='true'] .reveal__name:last-child {
+  animation-delay: 0.6s;
+}
+
+.reveal__winner[data-open='true'] .reveal__prompt {
+  animation-delay: 0.85s;
+}
+
+@keyframes reveal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.55) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.reveal__crown {
+  display: inline-block;
+}
+
+.reveal__winner[data-open='true'] .reveal__crown {
+  animation: reveal-crown 900ms ease-in-out 0.5s 2;
+}
+
+@keyframes reveal-crown {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  35% {
+    transform: translateY(-6px) rotate(-10deg);
+  }
+  70% {
+    transform: translateY(0) rotate(8deg);
   }
 }
 
 /* ------------------------------------------------------------- the curtain */
 
+/* Above the names, always. The names sit at z-index 1 so the confetti falls
+   behind them; without a layer of its own the closed curtain would sit *below*
+   them, and the winner would show through it before the reveal. */
 .curtain {
   position: absolute;
   inset: 0;
+  z-index: 2;
 }
 
 /* Two panels that part. Kept as one gradient plus a fold pattern rather than
@@ -2322,9 +2458,21 @@
     transition-duration: 200ms;
   }
 
-  .reveal__confetti {
+  .reveal__party {
+    display: none;
+  }
+
+  .reveal__winner[data-open='true'] .reveal__label,
+  .reveal__winner[data-open='true'] .reveal__name,
+  .reveal__winner[data-open='true'] .reveal__amp,
+  .reveal__winner[data-open='true'] .reveal__prompt,
+  .reveal__winner[data-open='true'] .reveal__crown,
+  .reveal__winner[data-open='true'] .reveal__glow {
     animation: none;
-    opacity: 0;
+  }
+
+  .reveal__glow {
+    opacity: 0.6;
   }
 
   .curtain__count {
@@ -2506,4 +2654,141 @@
   font-weight: 650;
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* ==========================================================================
+   The title screen, on one screen.
+
+   Same rule as everywhere a session happens: nothing scrolls. The wheel mark
+   is the flexible part — it takes whatever height the rest leaves.
+   ========================================================================== */
+
+.shell--title {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  gap: var(--gap-sm);
+  padding-top: calc(env(safe-area-inset-top) + var(--gap-sm));
+}
+
+.shell--title .shell__head,
+.shell--title .menu,
+.shell--title .coming,
+.shell--title .shell__foot {
+  flex: none;
+}
+
+.shell--title .shell__foot {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.mark--fill {
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+}
+
+/* Sized by the space it is given rather than a number: large on a tablet,
+   smaller on a small phone, never the thing that pushes the menu off-screen. */
+.mark--fill .wheel-mark {
+  width: auto;
+  height: 100%;
+  max-height: 17rem;
+  max-width: 100%;
+}
+
+/* Three places visited now and then, side by side. Two across on the
+   narrowest phones, where three would squeeze the labels. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.25rem, 1fr));
+  gap: var(--gap-xs);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--touch);
+  padding: var(--gap-sm) var(--gap-xs);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-align: center;
+  cursor: pointer;
+}
+
+.tile__label {
+  font-size: var(--step-0);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.tile__note {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+
+.coming {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+  text-align: center;
+}
+
+/* ----------------------------------------------------------- how it works */
+
+/* Topics are tabs, not steps: no numbers, no order, no ticks. They borrow the
+   step bar's look so the app has one kind of tab strip, not two. */
+.steps__tab--plain {
+  flex-direction: column;
+}
+
+.steps__tab[aria-selected='true'] {
+  background: var(--surface-raised);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.how {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin: 0;
+}
+
+/* A little tighter than a card: the longest topic has seven entries, and they
+   should all fit on a standard phone without the panel scrolling. */
+.how__item {
+  padding: 0.55rem var(--gap);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.how__name {
+  font-size: var(--step-0);
+  font-weight: 700;
+}
+
+.how__what {
+  margin: 2px 0 0;
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+
+.how__tips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin-top: var(--gap);
+}
+
+.how__note {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+  text-align: center;
 }

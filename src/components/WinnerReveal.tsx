@@ -9,8 +9,25 @@ type Props = {
   onDone: () => void;
 };
 
-/** Enough pieces to read as a burst, few enough to stay smooth on a tablet. */
-const CONFETTI = Array.from({ length: 36 }, (_, i) => i);
+/**
+ * The celebration, in three layers: bursts from three points, a rain of confetti
+ * across the whole screen, and the names popping in over a gold glow.
+ *
+ * Asked for by both people in the handoff rehearsal, independently: the single
+ * burst was noticed, and more was wanted. This is the moment the whole night
+ * builds to. Everything here is transform and opacity only, so it stays smooth
+ * on a tablet, and it all sits *behind* the names so they stay readable.
+ *
+ * Deterministic rather than random — spread by multiplying the index by primes —
+ * so every reveal looks equally good and a re-render cannot reshuffle it.
+ */
+const PER_BURST = 28;
+const BURSTS = [
+  { x: '50%', y: '46%', delay: 0 },
+  { x: '20%', y: '30%', delay: 0.45 },
+  { x: '80%', y: '30%', delay: 0.9 },
+];
+const RAIN = Array.from({ length: 44 }, (_, i) => i);
 
 /** Long enough for a room to join in, short enough not to sag. */
 const COUNT_FROM = 3;
@@ -58,33 +75,58 @@ export function WinnerReveal({ couple, onBack, onDone }: Props) {
   return (
     <section className="reveal">
       <div className="reveal__stage">
-        {/* Behind the curtain the whole time, so parting reveals something that
-            was already there rather than something that arrives. */}
-        <div className="reveal__winner" aria-hidden={!open}>
-          {open && (
-            <div className="reveal__burst" aria-hidden="true">
-              {CONFETTI.map((i) => {
-                const angle = (i / CONFETTI.length) * 360 + (i % 3) * 6;
-                const distance = 46 + ((i * 31) % 44);
-                const delay = ((i * 47) % 260) / 1000;
+        {open && (
+          <div className="reveal__party" aria-hidden="true">
+            {BURSTS.map((burst, b) =>
+              Array.from({ length: PER_BURST }, (_, i) => {
+                const angle = (i / PER_BURST) * 360 + b * 11 + (i % 3) * 6;
+                const distance = 34 + ((i * 31 + b * 17) % 40);
                 return (
                   <span
-                    key={i}
+                    key={`b${b}-${i}`}
                     className="reveal__confetti"
                     style={
                       {
+                        left: burst.x,
+                        top: burst.y,
                         '--angle': `${angle}deg`,
-                        '--distance': `${distance}%`,
-                        '--delay': `${delay}s`,
-                        '--piece': `var(--seg-${(i % 8) + 1})`,
+                        '--distance': `${distance}vmin`,
+                        '--delay': `${burst.delay + ((i * 47) % 200) / 1000}s`,
+                        '--piece': `var(--seg-${((i + b * 3) % 8) + 1})`,
                       } as React.CSSProperties
                     }
                   />
                 );
-              })}
-            </div>
-          )}
-          <p className="reveal__label">Winning couple</p>
+              }),
+            )}
+            {RAIN.map((i) => (
+              <span
+                key={`r${i}`}
+                className={i % 4 === 0 ? 'reveal__rain reveal__rain--round' : 'reveal__rain'}
+                style={
+                  {
+                    left: `${(i * 37) % 100}%`,
+                    '--delay': `${0.6 + ((i * 83) % 2600) / 1000}s`,
+                    '--fall': `${2.6 + ((i * 29) % 13) / 10}s`,
+                    '--sway': `${((i * 53) % 9) - 4}vw`,
+                    '--piece': `var(--seg-${(i % 8) + 1})`,
+                  } as React.CSSProperties
+                }
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Behind the curtain the whole time, so parting reveals something that
+            was already there rather than something that arrives. */}
+        <div className="reveal__winner" aria-hidden={!open} data-open={open}>
+          <span className="reveal__glow" aria-hidden="true" />
+          <p className="reveal__label">
+            <span className="reveal__crown" aria-hidden="true">
+              👑
+            </span>{' '}
+            Winning couple
+          </p>
           <p className="reveal__names">
             <span className="reveal__name">{couple.leader.name}</span>
             <span className="reveal__amp">&amp;</span>

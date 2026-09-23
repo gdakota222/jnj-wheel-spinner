@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.13.0 — deployed and live
+**Current version:** 0.14.0 — deployed and live
 **Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
 **Last updated:** 2026-09-23
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -58,6 +58,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.11.0** | One last dance | The all-skate finale: three ways to land on one challenge, revealed identically | ✅ Shipped 2026-09-16 |
 | **0.12.0** | The ending, tidied | Two ending cards on a finished session, leaving behind one sheet, the AllSkate named as dancers name it | ✅ Shipped 2026-09-16 |
 | **0.13.0** | Handoff fixes | Lock owns the back gesture, back steps back to Undo, rename in setup, visible edges, the night's record, no-scroll end screen | ✅ Shipped 2026-09-23 |
+| **0.14.0** | Explains itself | How it works, one-time tips that can be reset, a one-screen title, and a reveal that celebrates | ✅ Shipped 2026-09-23 |
 | **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | 🟢 **Bar met** in rehearsal Round 4 — declaring it is the owner's call |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
@@ -87,6 +88,34 @@ backlog, worked through in order of what actually broke the night.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-23 — 0.14.0: the app explains itself, and the reveal celebrates
+- **How it works**, from the title screen: every feature in one line each, in four tabs. Fits a
+  standard phone with no scrolling on every tab — the longest overflowed by 11px until its items
+  were tightened. The easter eggs are deliberately absent; the birthday jam is listed at the
+  owner's choice.
+- **One-time tips at the moment they matter.** "Tap the wheel to spin it" before the first spin,
+  and "tap to hurry it — double-tap to skip" *during* it. The old tip said "tap again to hurry"
+  and disappeared after six seconds, likely before anyone spun, and never mentioned double-tap.
+- **Tips can be brought back** — and this is the finding that matters most. Tips are remembered
+  per device, and the rehearsal's newcomer used the owner's tablet, which had seen every tip weeks
+  earlier. They were very likely shown none, which is why the double-tap stayed a secret. *Show
+  the tips again* resets them before a handoff, and touches nothing else. See D-054.
+- **The title screen fits one screen.** It overflowed a phone by 203px. Now: one big button, three
+  tiles in a row, one line for what is coming, and a wheel mark that takes whatever height is
+  left. Checked on a 375×812 phone, a small 360×640 phone and a tablet — no scroll on any.
+- **The winner reveal celebrates.** Three staggered bursts, confetti raining across the screen,
+  a gold glow, the names popping in one after the other. All behind the names, all finite, all
+  off under reduced motion. See D-055.
+- Audited clean on the title, every How it works tab, and the open reveal. 130 tests.
+
+#### A bug caught before it shipped: the winner showing through the curtain
+To keep confetti behind the names, the names were lifted to `z-index: 1`. The closed curtain had
+no layer of its own — so the names would have painted **above** it, and the room would have read
+the winner before the reveal. Spotted by reading the change before running it, then confirmed in
+the browser both ways: with the fix, the curtain is on top at every point over the names; with it
+removed, the names are on top. The curtain now has its own layer above the names, always.
+
 
 ### 2026-09-23 — 0.13.0: the handoff rehearsal's fixes
 The handoff rehearsal passed — a friend ran a whole session without being steered, and found both
@@ -1300,6 +1329,37 @@ never scroll, so they carry the result as well as the list marking it in place.
 
 **This walks back part of 0.13.0's own first draft**, which had the cards say only "show it
 again". The list is still the record; the cards are the part of it that is always visible.
+
+### D-054 — Help is a reference page and one-time tips, and the tips can be reset
+**Decision:** a *How it works* page on the title screen, one-time tips for the gestures a screen
+cannot say for itself, and a way to bring the tips back. No guided tutorial.
+
+**Reasoning:** the cold read wanted pop-ups explaining how things worked, and wanted to skip a
+spin without knowing a double-tap already did. A tutorial *before* use would have told them, and
+they would have forgotten by the time a wheel was spinning; a tip *during* the first spin catches
+them at the one moment it is useful. The reference page covers everything else and is always
+there. A coach-mark tutorial was offered and set aside: expensive to build, broken by every
+screen change, and skipped by most people.
+
+**Why tips need a reset.** Tips are remembered per device. The handoff put a newcomer on the
+owner's tablet — the one device guaranteed to have seen every tip already. That is almost
+certainly why the double-tap was never discovered. A handoff is precisely the moment tips matter,
+so the owner can reset them first.
+
+**Easter eggs are never listed**, now or when more are added. The birthday jam is, because using
+it requires knowing the press-and-hold exists — the owner's call.
+
+### D-055 — The celebration: behind the names, finite, and deterministic
+**Decision:** three bursts, a confetti rain and a pulsing glow, all layered behind the names; it
+runs its course and stops; the spread is fixed by the index rather than random; reduced motion
+removes it entirely.
+
+**Reasoning:** both rehearsal testers asked for more, independently, and it is the moment the
+night builds to. *Behind the names*, because a celebration that hides the winner has failed at
+the one thing it is for. *Finite*, because endless confetti gets tiresome and costs battery on a
+tablet with the rest of a night to run. *Deterministic*, so every reveal looks equally good and a
+re-render cannot reshuffle it mid-animation. Transforms and opacity only, so it stays smooth on a
+tablet. Sound is still v1.5.
 
 ## Known issues and in-flight notes
 

@@ -215,9 +215,9 @@ the bet behind keeping the endings on screen rather than behind a sheet (D-050),
 | # | Who | What happened | Standing |
 |---|---|---|---|
 | E1 | Cold read | **A misspelled name could not be fixed during setup** — only mid-session. The first thing they hit. | ✅ Fixed in 0.13.0 |
-| E2 | Cold read | **Wanted pop-ups explaining how things work.** Liked the UI; wished it said more about itself. | ⏳ 0.14.0 — a *How it works* page and one-time tips |
-| E3 | Cold read | **Wished they could skip the spin** — which already exists as a double-tap. They were never told, and nothing on screen says so. | ⏳ 0.14.0 — a tip on the first spin, at the moment it is useful |
-| E4 | Both | **The winner reveal was not celebratory enough.** The burst was noticed; more was wanted. | ⏳ 0.14.0 |
+| E2 | Cold read | **Wanted pop-ups explaining how things work.** Liked the UI; wished it said more about itself. | ✅ Fixed in 0.14.0 — a *How it works* page and one-time tips |
+| E3 | Cold read | **Wished they could skip the spin** — which already exists as a double-tap. They were never told, and nothing on screen says so. | ✅ Fixed in 0.14.0 — a tip during the first spin. And the likely reason they were never told: tips are per device, and the owner's tablet had seen them all. They can now be brought back before a handoff. |
+| E4 | Both | **The winner reveal was not celebratory enough.** The burst was noticed; more was wanted. | ✅ Fixed in 0.14.0 — three bursts, confetti rain, a gold glow, the names popping in |
 | E5 | Both | **Boxes were hard to see**; things did not stand out. | ✅ Fixed in 0.13.0 — and it was measurable, not taste: see below |
 | E6 | Handoff | **The end-of-night record was hard to read** — who danced with whom, who won. | ✅ Fixed in 0.13.0 |
 | E7 | Handoff | **Did not love the look overall** — not fun or engaging enough. An artist's eye. | ⏸ Recorded, not acted on. The owner prefers sleek over decorated. Kept separate from E5, which *was* a defect. |

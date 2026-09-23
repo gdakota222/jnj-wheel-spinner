@@ -6,23 +6,28 @@ const VERSION = __APP_VERSION__;
 type Props = {
   onStartSession: () => void;
   onOpenBank: () => void;
+  onOpenHow: () => void;
   onOpenAbout: () => void;
   rosterCount: number;
   promptsInPlay: number;
   promptsTotal: number;
 };
 
-/** Destinations that do not exist yet say when they arrive, rather than being
- *  greyed out with no explanation. Principle 1: the screen explains itself. */
-const UPCOMING = [
-  { label: 'Saved Rosters', arrives: 'v1.1' },
-  { label: 'Share Bundles', arrives: 'v1.4' },
-  { label: 'Options', arrives: 'v1.1' },
-] as const;
-
+/**
+ * The front door, on one screen.
+ *
+ * It used to scroll by about two hundred pixels on a phone — three greyed-out
+ * "arrives later" buttons below the fold — and the owner asked for no scrolling
+ * anywhere it is not needed. Starting a session stays the one big button; the
+ * three places you visit now and then share a row; and what is coming later is
+ * said in one line rather than as three dead buttons. The wheel mark takes
+ * whatever height is left, so it is generous on a tablet and simply smaller on
+ * a small phone, instead of pushing everything else down.
+ */
 export function TitleScreen({
   onStartSession,
   onOpenBank,
+  onOpenHow,
   onOpenAbout,
   rosterCount,
   promptsInPlay,
@@ -32,7 +37,7 @@ export function TitleScreen({
   const [isOfflineReady] = offlineReady;
 
   return (
-    <div className="shell">
+    <div className="shell shell--title">
       <header className="shell__head">
         {/* The app title's permanent home — also where the seven taps that
             unlock sloth mode will land in v1.5. */}
@@ -42,7 +47,7 @@ export function TitleScreen({
         <p className="subtitle">Pair dancers. Draw prompts. Watch the room react.</p>
       </header>
 
-      <div className="mark">
+      <div className="mark mark--fill">
         <WheelMark size={200} />
       </div>
 
@@ -56,27 +61,31 @@ export function TitleScreen({
           </span>
         </button>
 
-        <button className="menu__item" type="button" onClick={onOpenBank}>
-          <span className="menu__label">Prompt Bank</span>
-          <span className="menu__note">
-            {promptsInPlay === promptsTotal
-              ? `${promptsTotal} challenges ready`
-              : `${promptsInPlay} of ${promptsTotal} challenges in play`}
-          </span>
-        </button>
-
-        <button className="menu__item" type="button" onClick={onOpenAbout}>
-          <span className="menu__label">About</span>
-          <span className="menu__note">Who made this, and where your data lives</span>
-        </button>
-
-        {UPCOMING.map(({ label, arrives }) => (
-          <button key={label} className="menu__item" type="button" disabled>
-            <span className="menu__label">{label}</span>
-            <span className="menu__note">Arrives in {arrives}</span>
+        <div className="tiles">
+          <button className="tile" type="button" onClick={onOpenBank}>
+            <span className="tile__label">Prompt Bank</span>
+            <span className="tile__note">
+              {promptsInPlay === promptsTotal
+                ? `${promptsTotal} ready`
+                : `${promptsInPlay} of ${promptsTotal}`}
+            </span>
           </button>
-        ))}
+          <button className="tile" type="button" onClick={onOpenHow}>
+            <span className="tile__label">How it works</span>
+            <span className="tile__note">Every feature</span>
+          </button>
+          <button className="tile" type="button" onClick={onOpenAbout}>
+            <span className="tile__label">About</span>
+            <span className="tile__note">Who made it</span>
+          </button>
+        </div>
       </nav>
+
+      {/* What is not here yet, said plainly — principle 1 — in one line rather
+          than three buttons that cannot be pressed. */}
+      <p className="coming">
+        Coming: Saved Rosters and Options in v1.1 · Share Bundles in v1.4
+      </p>
 
       <footer className="shell__foot">
         {/* The service worker only runs in a real build, so in dev this status

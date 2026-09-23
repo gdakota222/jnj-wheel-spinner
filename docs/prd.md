@@ -359,6 +359,31 @@ with a paragraph under each is what made the screen feel cluttered.
   winner is still reachable: the card replays the curtain, and the curtain's own way back lands on
   the picker.
 
+### The app explains itself — a reference page and tips, not a tutorial
+Asked for after the handoff rehearsal: a newcomer liked the app but wished it said more about how
+it worked, and wished they could skip a spin — which a double-tap already does, and nothing had
+told them.
+
+- **How it works**, from the title screen: every feature in one line, grouped the way a night
+  runs. Always there to come back to. Terse on purpose; a reference page is scanned, not read.
+- **One-time tips at the moment they matter.** "Tap the wheel to spin it" before the first spin;
+  "tap to hurry it — double-tap to skip" *during* the first spin, the only moment that tip means
+  anything. Each shows once.
+- **Tips can be brought back.** They are remembered per device, and the device is exactly what
+  gets handed over: in the rehearsal, a newcomer on the owner's tablet was shown no tips at all,
+  because that tablet had seen them all weeks before. *How it works → The app → Show the tips
+  again* resets them before handing it over.
+- **What it does not do:** a guided tutorial with arrows pointing at each control. Considered and
+  set aside — expensive to build, broken by every screen change, and skipped by most people.
+- **Easter eggs stay secret.** Sloth mode, and any egg added later, is never listed. The birthday
+  jam *is* listed, because an operator cannot use it without knowing the press-and-hold exists.
+
+### The title screen fits one screen
+Same rule as everywhere a session happens. *Start a Session* stays the one big button; *Prompt
+Bank, How it works* and *About* share a row; what is coming later is one line of text instead of
+three buttons that cannot be pressed. The wheel mark takes whatever height is left — large on a
+tablet, smaller on a small phone — so it is never the thing that pushes the menu off the screen.
+
 ### Names can be corrected while setting up
 The first thing a stranger hit in the handoff rehearsal. Renaming works exactly as it does
 mid-session — **Rename** beside the name, a field, *Cancel* or *Save name*, the same duplicate
@@ -518,7 +543,8 @@ another person must not cost the night.
 ### Screens in v1.0
 | Screen | Notes |
 |---|---|
-| Title | **Start a Session** and **Prompt Bank** are live. Saved Rosters, Share Bundles and Options arrive later. Also the permanent home of the app title. |
+| Title | One screen, no scrolling. **Start a Session**, then **Prompt Bank · How it works · About** in a row, and one line saying what arrives later. The permanent home of the app title. |
+| How it works | Every feature in one line each, in four tabs — *Setting up, Running, The end, The app* — and a button to bring the one-time tips back. Easter eggs deliberately absent. |
 | Session setup | Three steps — Dancers, How it runs, Start — with a pinned step bar and primary button, and a summary before committing. |
 | About | Who made the app, that it holds nothing off the device, and where to chip in. Shown once on first launch, and permanently on the title screen. |
 | Crown a winner | The session's couples, one chosen, nothing committed yet. *(v1.2, shipped early in 0.10.0.)* |
@@ -619,7 +645,10 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
      exactly as long as they want it to, which is also the answer to whether a curtain is worth
      anything when nothing is being cast: its length is theirs.
   4. **A countdown**, then the curtains part on the winning couple's names, large, with
-     celebration.
+     celebration: bursts from three points, confetti raining across the whole screen, a gold glow
+     behind the names, and the names popping in one after the other. All of it falls *behind* the
+     names so they stay readable; it runs its course and stops; and it is switched off entirely
+     for anyone whose device asks for reduced motion. Sound stays in v1.5.
   - **The choice is not committed until the curtain parts.** There is a way back out right up to
     the last moment.
   - **v1.3 will sequence Mode B differently** — curtain first, because a vote genuinely must be

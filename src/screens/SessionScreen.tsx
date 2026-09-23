@@ -26,7 +26,7 @@ import {
 } from '../domain/session';
 import { pickIndex, planSpin } from '../domain/spin';
 import { useWakeLock } from '../hooks/useWakeLock';
-import { hasSeenWheelHint, markWheelHintSeen } from '../storage';
+import { hasSeenTip, hasSeenWheelHint, markTipSeen, markWheelHintSeen } from '../storage';
 
 type Props = {
   session: SessionState;
@@ -75,6 +75,14 @@ export function SessionScreen({
   const [confirmRedraw, setConfirmRedraw] = useState(false);
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [showHint, setShowHint] = useState(() => !hasSeenWheelHint());
+  /**
+   * The skip tip, shown for the whole of the first spin and never again.
+   *
+   * Taught during a spin rather than before one, because that is the only moment
+   * it means anything: the cold read in the handoff rehearsal wished they could
+   * skip the spin, and the gesture that does it was right under their finger.
+   */
+  const [spinTip, setSpinTip] = useState(() => !hasSeenTip('spin-skip'));
   /**
    * Where the end-of-night flow has got to.
    *
@@ -608,7 +616,13 @@ export function SessionScreen({
               rotation={session.rotation}
               fromRotation={session.previousRotation}
               spinning={spinning}
-              onSettled={() => dispatch({ type: 'settled' })}
+              onSettled={() => {
+                if (spinTip) {
+                  markTipSeen('spin-skip');
+                  setSpinTip(false);
+                }
+                dispatch({ type: 'settled' });
+              }}
               label={onPromptWheel ? 'challenges' : POOL_NOUN[session.currentPool] + 's'}
               onSpin={onPromptWheel ? () => spinPrompt('spinPrompt') : () => spinDancer('spin')}
             />
@@ -670,9 +684,16 @@ export function SessionScreen({
         )}
       </div>
 
-      {showHint && !dancing && (
+      {/* Before the first spin: the wheel is a button. During it: how to hurry.
+          Never both at once, in the same spot. */}
+      {showHint && !dancing && !spinning && (
         <p className="hint-toast" role="status">
-          Tap the wheel itself to spin. Tap again to hurry it along.
+          Tap the wheel itself to spin it.
+        </p>
+      )}
+      {spinTip && spinning && (
+        <p className="hint-toast" role="status">
+          Tap the wheel to hurry it — double-tap to skip straight to the answer.
         </p>
       )}
 

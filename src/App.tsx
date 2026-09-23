@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AboutScreen } from './screens/AboutScreen';
+import { HowItWorksScreen } from './screens/HowItWorksScreen';
 import { PromptBankScreen } from './screens/PromptBankScreen';
 import { RosterScreen } from './screens/RosterScreen';
 import { SessionScreen } from './screens/SessionScreen';
@@ -32,7 +33,7 @@ import {
 import { useExitGuard } from './hooks/useExitGuard';
 import './styles/app.css';
 
-type Screen = 'title' | 'roster' | 'session' | 'bank' | 'about';
+type Screen = 'title' | 'roster' | 'session' | 'bank' | 'about' | 'how';
 
 /**
  * One step back: everything a single action could have changed.
@@ -332,6 +333,8 @@ export default function App() {
         }}
       />
     );
+  } else if (screen === 'how') {
+    view = <HowItWorksScreen onBack={() => setScreen('title')} />;
   } else if (screen === 'about') {
     view = (
       <AboutScreen
@@ -383,6 +386,7 @@ export default function App() {
           setScreen('bank');
         }}
         onOpenAbout={() => setScreen('about')}
+        onOpenHow={() => setScreen('how')}
       />
     );
   }

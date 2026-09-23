@@ -184,6 +184,52 @@ export function markWheelHintSeen(): void {
 }
 
 /**
+ * One-time tips, by name.
+ *
+ * A tip teaches something the screen cannot say for itself — a gesture, mostly
+ * — at the moment it becomes useful, and then gets out of the way.
+ */
+const TIP_PREFIX = 'jnj:v1:seen-tip:';
+
+export type TipId = 'spin-skip';
+
+export function hasSeenTip(id: TipId): boolean {
+  try {
+    return localStorage.getItem(TIP_PREFIX + id) === '1';
+  } catch {
+    return true; // no storage, no nagging
+  }
+}
+
+export function markTipSeen(id: TipId): void {
+  try {
+    localStorage.setItem(TIP_PREFIX + id, '1');
+  } catch {
+    // Nothing to do; the tip simply shows again next time.
+  }
+}
+
+/**
+ * Bring every tip back.
+ *
+ * Tips are remembered per device, and the device is exactly what gets handed
+ * over: in the handoff rehearsal a newcomer used the owner's tablet, which had
+ * seen every tip weeks earlier, so they were shown none — and never learned that
+ * a double-tap skips the spin. The owner resets them before handing it over.
+ */
+export function resetTips(): void {
+  try {
+    localStorage.removeItem(WHEEL_HINT_KEY);
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(TIP_PREFIX)) localStorage.removeItem(key);
+    }
+  } catch {
+    // Storage unavailable: every tip already shows each time.
+  }
+}
+
+/**
  * Whether the welcome page has already been shown.
  *
  * Read once at launch. Storage that cannot be read reports true — an operator on
