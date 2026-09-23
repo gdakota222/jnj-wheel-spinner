@@ -1,8 +1,8 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.12.0 — deployed and live
-**Current phase:** Building ahead of the handoff rehearsal; 1.0.0 waits on that test, not on code
-**Last updated:** 2026-09-16
+**Current version:** 0.13.0 — deployed and live
+**Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
+**Last updated:** 2026-09-23
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
 
 ---
@@ -57,7 +57,8 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.10.0** | An ending | Crown a winner: pick the couple, the curtain, hold to reveal, celebration. v1.2's headline, shipped early — see D-048 | ✅ Shipped 2026-08-31 |
 | **0.11.0** | One last dance | The all-skate finale: three ways to land on one challenge, revealed identically | ✅ Shipped 2026-09-16 |
 | **0.12.0** | The ending, tidied | Two ending cards on a finished session, leaving behind one sheet, the AllSkate named as dancers name it | ✅ Shipped 2026-09-16 |
-| **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | ⏳ Waiting on the handoff rehearsal |
+| **0.13.0** | Handoff fixes | Lock owns the back gesture, back steps back to Undo, rename in setup, visible edges, the night's record, no-scroll end screen | ✅ Shipped 2026-09-23 |
+| **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | 🟢 **Bar met** in rehearsal Round 4 — declaring it is the owner's call |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
 been in a room. The first real event produced a backlog large enough that shipping 1.0.0 on top of
@@ -86,6 +87,47 @@ backlog, worked through in order of what actually broke the night.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-09-23 — 0.13.0: the handoff rehearsal's fixes
+The handoff rehearsal passed — a friend ran a whole session without being steered, and found both
+endings on her own. Everything below is what it and a cold read turned up. See rehearsal Round 4.
+
+- **The lock now owns the back gesture.** It got past the lock in the rehearsal: the back guard
+  lived app-wide and had no idea the screen was locked, so it did what it does everywhere — warn,
+  then close. Lock state moved up to where the guard lives; while locked, every back press is
+  swallowed and the lock screen says why. Verified with three presses in a row, and that back
+  behaves normally again after unlocking.
+- **Mid-session, back steps back through the app and never out of it** — closing whatever is
+  open, then opening Undo, then acting like the ← button. It *opens* the Undo prompt and never
+  undoes by itself. Asked for by the owner after the rehearsal. See D-051.
+- **Names can be corrected during setup.** The first thing the cold read hit. Same control and
+  same checks as renaming mid-session, minus the confirmation. Verified: a duplicate is caught
+  case-insensitively, the fix persists, Escape changes nothing.
+- **Every box edge now clears 3:1**, up from about 1.5:1. Both testers said boxes were hard to see,
+  and the numbers agreed. The border colour keeps its hue and saturation and is only lighter. See
+  D-052.
+- **The audit checks edges now.** It never did, which is how a failing edge passed every screen
+  for weeks. On its first run it caught a regression the new border itself caused — see below.
+- **The finished night is a record**: the winners' row is gold and says so, and the AllSkate is
+  the night's last line. The cards stay as actions and lead with the result once there is one.
+- **The end screen no longer scrolls** — only the list does, inside its own space. Doing that
+  exposed a real problem: on a big night the winners' row and the AllSkate could be scrolled out
+  of sight on the one screen meant to remember them. So the pinned cards carry the result too.
+  See D-053.
+- The "optional, both of them" line only shows while it is still an invitation.
+- Audited on every session, setup and end-of-night screen with all four checks. 130 tests.
+
+#### Three things caught on the way, all by looking
+- **The step circles were filled with the border colour.** Harmless while the border was too dark
+  to see; the moment it was raised to be visible, the digits "2" and "3" dropped to 4.21:1. The new
+  edge check found it on its first run. A token named for edges now only draws edges.
+- **I raised the log rows' fill as part of the contrast fix, and it wasn't the fix.** The end
+  screen's rows already had a fill from a more specific rule, so the change only altered the
+  in-session log, under a comment that was not true. Reverted; the edge was the real problem.
+- **Moving the winner badge into a new line under each couple nearly broke the in-session log**,
+  which puts the same challenge line straight into its rows. Caught before applying; the original
+  rule keeps its layout and is only overridden inside the new line.
+
 
 ### 2026-09-16 — 0.12.0: the end of the night, tidied
 - **The completed session is split by kind**: the two endings are cards that stay on screen, and
@@ -1211,6 +1253,54 @@ which deleted the separate banner and its two buttons. "Choose someone else" sur
 rather than a control — the card replays the curtain, and the curtain already had a way back to the
 picker. One less thing on screen, nothing less reachable.
 
+### D-051 — Mid-session, back goes back through the app instead of warning
+**Decision:** on the session screen the back gesture closes what is open, then opens Undo, then
+acts like the ← button. It never leaves the app from a session. Everywhere else it still warns
+once before closing.
+
+**Reasoning:** asked for by the owner after the handoff rehearsal, as a fast way to Undo. It
+**supersedes part of D-036**, which chose "back always warns once" as one uniform rule across every
+screen, on the grounds that a rule people can learn in one go beats one that varies. That was
+right when back had nothing useful to do inside the app. It now does: during a session there is
+almost always a sheet to close or a step to undo, and leaving the app mid-event is the one outcome
+nobody ever wants. The rule is still simple to state — *back goes back* — it just goes somewhere
+now.
+
+**The gesture opens Undo and never performs it.** Undo can reverse a whole committed couple, and
+the edge of a tablet is easy to brush. The prompt names what would be reversed, and a second
+deliberate tap does it.
+
+**Where back does nothing:** during the curtain, because a swipe must not break a reveal in front
+of a room; mid-spin, because there is nothing sensible to return to; and on a locked screen.
+
+### D-052 — Component edges must meet 3:1, and the audit checks them
+**Decision:** `--border` raised from #3d3163 to #7d69b5, clearing 3:1 against the page, a box and
+a raised box. The audit script gains a fourth check for edges.
+
+**Reasoning:** two testers independently said boxes were hard to see. Measured, every edge in the
+app was about 1.5:1, and a box's fill against the page 1.11:1; WCAG 1.4.11 asks 3:1 for the edges
+of components. "Accessible always" is the second design principle, and the audit that was meant to
+hold it only looked at text — so it passed this failure on every screen. The new colour has the
+same hue and saturation as the old one, only lighter, which answers "make things pop" without
+making anything clash.
+
+**On the aesthetic finding (E7).** One tester did not love the look overall. That is recorded and
+deliberately not acted on — the owner prefers sleek — and it is kept apart from this one on
+purpose. This was a defect with a number attached; that was a taste.
+
+### D-053 — The finished night does not scroll, and its cards carry the result
+**Decision:** only the list of couples scrolls on the finished session. Once crowned, the crown card
+reads *Winners — Tom K & Marco R*; once danced, the AllSkate card names what was danced.
+
+**Reasoning:** the owner asked for no scrolling where it is not needed, on the title and the end
+of the night as everywhere else. Pinning the cards is the setup screen's answer (D-046) applied
+again. But pinning them pushed the record into a scrolling box, and on a big night the winners'
+row and the AllSkate would sit out of sight on the one screen meant to remember them. The cards
+never scroll, so they carry the result as well as the list marking it in place.
+
+**This walks back part of 0.13.0's own first draft**, which had the cards say only "show it
+again". The list is still the record; the cards are the part of it that is always visible.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
@@ -1244,6 +1334,10 @@ disappears between checkpoints.
   (found 0.2.0, narrowed 2026-08-31)
 - **No component or end-to-end tests.** By design (D-007) — but it means screen-level regressions
   would be caught by eye, not by the suite.
+- **The audit only ever checked text.** Box edges measured about 1.5:1 everywhere and passed every
+  audit for weeks, until two testers said boxes were hard to see. The script now checks edges too.
+  The general lesson: an audit certifies what it measures and nothing else, so a clean run is only
+  as good as its list of checks. (found 0.13.0)
 - **Test helpers can hand back the wrong thing silently.** `runSession` returned a session that had
   never completed whenever prompts were switched on, which made a new test pass while asserting
   nothing. Fixed, and the helper now asserts it got where it claims. Worth remembering that a green

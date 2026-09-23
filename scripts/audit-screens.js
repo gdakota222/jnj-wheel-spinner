@@ -8,6 +8,12 @@
  *   2. Labels         — every interactive element has an accessible name.
  *   3. Contrast       — every run of text meets WCAG AA against its real
  *                       background (4.5:1, or 3:1 for large text).
+ *   4. Edges          — every bordered box, field and button has an edge that
+ *                       meets 3:1 against what it sits on (WCAG 1.4.11), unless
+ *                       its own fill already does. Added after two testers said
+ *                       boxes were hard to see and the numbers proved them
+ *                       right: every edge in the app measured about 1.5:1, and
+ *                       checks 1–3 had passed it for months.
  *
  * It cannot check the principle that matters most — whether a screen explains
  * itself to someone who just picked up the tablet. That part is read, not
@@ -49,6 +55,7 @@ window.audit = function audit(label = 'screen') {
   const touch = [];
   const unlabelled = [];
   const contrast = [];
+  const edges = [];
 
   document.querySelectorAll('button, a, input, select, textarea').forEach((el) => {
     const rect = el.getBoundingClientRect();
@@ -92,10 +99,38 @@ window.audit = function audit(label = 'screen') {
     }
   });
 
-  const failures = touch.length + unlabelled.length + contrast.length;
+  // 4. Edges. A box needs a boundary you can see: either its border, or its fill
+  // standing apart from whatever it sits on. Disabled controls are exempt, as
+  // WCAG allows, and so is anything the reader cannot see.
+  document.querySelectorAll('body *').forEach((el) => {
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return;
+    if (el.closest('.visually-hidden') || el.closest('.curtain')) return;
+    if (el.disabled) return;
+    const width = px(cs.borderTopWidth);
+    if (width === 0 || cs.borderTopStyle === 'none') return;
+    const border = parse(cs.borderTopColor);
+    if (!border || (border.length > 3 && border[3] < 0.5)) return;
+
+    const behind = effectiveBackground(el.parentElement || el);
+    const fill = parse(cs.backgroundColor);
+    const ownFill = fill && (fill.length < 4 || fill[3] > 0.5) ? fill.slice(0, 3) : null;
+    if (ownFill && ratio(ownFill, behind) >= 3) return; // the fill is the edge
+
+    const actual = ratio(border.slice(0, 3), behind);
+    if (actual < 3) {
+      edges.push({
+        className: String(el.className).split(' ')[0] || el.tagName,
+        actual: +actual.toFixed(2),
+        required: 3,
+      });
+    }
+  });
+
+  const failures = touch.length + unlabelled.length + contrast.length + edges.length;
   console.log(`${failures === 0 ? 'PASS' : 'FAIL'} — ${label} (${failures} issues)`);
-  if (failures) console.table([...touch, ...unlabelled, ...contrast]);
-  return { label, touch, unlabelled, contrast };
+  if (failures) console.table([...touch, ...unlabelled, ...contrast, ...edges]);
+  return { label, touch, unlabelled, contrast, edges };
 };
 
 /**

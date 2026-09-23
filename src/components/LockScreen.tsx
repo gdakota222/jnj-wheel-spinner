@@ -1,9 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLongPress } from '../hooks/useLongPress';
 
 type Props = {
   onUnlock: () => void;
+  /**
+   * Rises each time a back press is swallowed. The screen answers it, because a
+   * gesture that silently does nothing reads as a frozen app.
+   */
+  nudge?: number;
 };
+
+/** Long enough to read, short enough not to linger over the room. */
+const NUDGE_MS = 2600;
 
 /**
  * Freeze the app so a pocket cannot touch it.
@@ -23,9 +31,20 @@ type Props = {
  * overlay that looked almost exactly like the dance hold was impossible to tell
  * apart, on a screen being cast to a TV.
  */
-export function LockScreen({ onUnlock }: Props) {
+export function LockScreen({ onUnlock, nudge = 0 }: Props) {
   const [holding, setHolding] = useState(false);
   const hold = useLongPress(onUnlock);
+  const [nudging, setNudging] = useState(false);
+  /** Presses from before this lock was put on are not this lock's business. */
+  const seen = useRef(nudge);
+
+  useEffect(() => {
+    if (nudge === seen.current) return;
+    seen.current = nudge;
+    setNudging(true);
+    const t = window.setTimeout(() => setNudging(false), NUDGE_MS);
+    return () => window.clearTimeout(t);
+  }, [nudge]);
 
   return (
     <div className="lock" role="dialog" aria-modal="true" aria-label="Screen locked">
@@ -36,8 +55,18 @@ export function LockScreen({ onUnlock }: Props) {
         <h2 className="lock__title">Screen locked</h2>
         <p className="lock__body">Nothing can be spun or changed until you unlock it.</p>
 
+        <p className="lock__nudge" role="status" data-show={nudging}>
+          {nudging ? 'Back is switched off while the screen is locked.' : ''}
+        </p>
+
         <button
-          className={holding ? 'lock__button lock__button--holding' : 'lock__button'}
+          className={[
+            'lock__button',
+            holding && 'lock__button--holding',
+            nudging && !holding && 'lock__button--nudge',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           type="button"
           {...hold}
           onTouchStart={(e) => {

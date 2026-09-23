@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AllSkate } from '../components/AllSkate';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { EndgameSheet } from '../components/EndgameSheet';
@@ -39,6 +39,13 @@ type Props = {
   wasResumed: boolean;
   onDismissResumed: () => void;
   onEditDancers: (next: Dancer[]) => void;
+  /** Owned by App, because the back guard there has to know about it. */
+  locked: boolean;
+  onLockChange: (locked: boolean) => void;
+  /** Back presses swallowed while locked; rising means "say why nothing happened". */
+  blockedPresses: number;
+  /** Hands App the screen's answer to a back press; null on the way out. */
+  onRegisterBack: (handler: (() => boolean) | null) => void;
   onLeave: () => void;
   onStartFresh: () => void;
 };
@@ -53,6 +60,10 @@ export function SessionScreen({
   wasResumed,
   onDismissResumed,
   onEditDancers,
+  locked,
+  onLockChange,
+  blockedPresses,
+  onRegisterBack,
   onLeave,
   onStartFresh,
 }: Props) {
@@ -63,7 +74,6 @@ export function SessionScreen({
   const [confirmRespin, setConfirmRespin] = useState(false);
   const [confirmRedraw, setConfirmRedraw] = useState(false);
   const [confirmUndo, setConfirmUndo] = useState(false);
-  const [locked, setLocked] = useState(false);
   const [showHint, setShowHint] = useState(() => !hasSeenWheelHint());
   /**
    * Where the end-of-night flow has got to.
@@ -77,6 +87,65 @@ export function SessionScreen({
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useWakeLock(session.phase !== 'complete');
+
+  /**
+   * The back gesture, mid-session: it goes back through whatever is on screen,
+   * most recent first, and never out of the app.
+   *
+   * Asked for after the handoff rehearsal, as a quick way to reach Undo. It
+   * **opens** the Undo prompt — the one that says exactly what it would reverse —
+   * and never undoes anything by itself. A brushed screen edge rewinding the
+   * night without a word would be a far worse bug than the one this replaces.
+   *
+   * Refreshed after every render so it always reads current state; registered
+   * with App once.
+   */
+  const handleBack = useRef<() => boolean>(() => false);
+  useLayoutEffect(() => {
+    handleBack.current = () => {
+      // 1. A question on screen: back means "no".
+      if (confirmUndo) return setConfirmUndo(false), true;
+      if (confirmRespin) return setConfirmRespin(false), true;
+      if (confirmRedraw) return setConfirmRedraw(false), true;
+      if (confirmLeave) return setConfirmLeave(false), true;
+
+      // 2. A sheet on screen: back closes it.
+      if (toolsOpen) return setToolsOpen(false), true;
+      if (dancersOpen) return setDancersOpen(false), true;
+      if (logOpen) return setLogOpen(false), true;
+      if (sheetOpen) return setSheetOpen(false), true;
+
+      // 3. The end of the night.
+      if (session.phase === 'complete') {
+        // The curtain is a performance in front of a room; a swipe must not
+        // break it. Its own buttons are the way out.
+        if (ending === 'reveal') return true;
+        // The picker commits nothing, and the AllSkate saves as it lands, so
+        // stepping back from either loses nothing.
+        if (ending === 'picking' || ending === 'finale') return setEnding('log'), true;
+        // On the finished session itself: show the ways out, rather than taking
+        // one. "Back to the roster" clears the night's record.
+        return setSheetOpen(true), true;
+      }
+
+      // 4. Mid-spin there is nothing sensible to go back to, and leaving is the
+      //    worst possible outcome.
+      if (session.phase === 'spinning' || session.phase === 'prompt-spinning') return true;
+
+      // 5. Something to undo: ask, naming it.
+      if (canUndo) return setConfirmUndo(true), true;
+
+      // 6. Nothing to undo: the same as the ← button.
+      if (session.log.length > 0) return setConfirmLeave(true), true;
+      onLeave();
+      return true;
+    };
+  });
+
+  useEffect(() => {
+    onRegisterBack(() => handleBack.current());
+    return () => onRegisterBack(null);
+  }, [onRegisterBack]);
 
   /** The hint is a one-time reminder, not permanent furniture beside the wheel. */
   useEffect(() => {
@@ -275,12 +344,23 @@ export function SessionScreen({
           setEnding(crowned ? 'reveal' : 'picking');
         }}
       >
-        <span className="endgame__title">{crowned ? 'Winning couple' : 'Crown a Winner'}</span>
-        <span className="endgame__sub">
-          {crowned
-            ? `${crowned.leader.name} & ${crowned.follower.name} — show it again`
-            : 'Pick the couple, then reveal it'}
-        </span>
+        {/* Once decided, the card leads with the result. The record above also
+            marks it, but on a big night that row can be scrolled out of sight —
+            and these cards never scroll. */}
+        {crowned ? (
+          <>
+            <span className="endgame__label">Winners</span>
+            <span className="endgame__title endgame__title--result">
+              {crowned.leader.name} &amp; {crowned.follower.name}
+            </span>
+            <span className="endgame__sub">Tap to show the reveal again</span>
+          </>
+        ) : (
+          <>
+            <span className="endgame__title">Crown a Winner</span>
+            <span className="endgame__sub">Pick the couple, then reveal it</span>
+          </>
+        )}
       </button>
     );
 
@@ -290,31 +370,80 @@ export function SessionScreen({
         type="button"
         onClick={() => setEnding('finale')}
       >
-        <span className="endgame__title">AllSkate</span>
         {/* No explanation here on purpose: the room already knows the word, and
             the options screen explains it to anyone who does not. */}
-        <span className="endgame__sub">
-          {session.allSkate ? `${session.allSkate.name} — show it again` : 'One last challenge'}
-        </span>
+        {session.allSkate ? (
+          <>
+            <span className="endgame__label">AllSkate</span>
+            <span className="endgame__title endgame__title--result">{session.allSkate.name}</span>
+            <span className="endgame__sub">Tap to show it again</span>
+          </>
+        ) : (
+          <>
+            <span className="endgame__title">AllSkate</span>
+            <span className="endgame__sub">One last challenge</span>
+          </>
+        )}
       </button>
     );
 
+    /**
+     * The record of the night: who danced with whom, who won, and what everybody
+     * danced last.
+     *
+     * The crown and the AllSkate used to live only on the cards, worded as things
+     * to press ("show it again"), so the results of the night never read as
+     * results. They belong here, in the list, in the order they happened — which
+     * is also the shape v1.6 will save as event history.
+     */
     const record = (
-      <ol className="log log--full">
-        {session.log.map((couple, i) => (
-          <li key={`${couple.leader.id}-${couple.follower.id}-${i}`} className="log__row">
-            <span className="log__number">{i + 1}</span>
-            <span className="log__names">
-              <span className="log__name">{couple.leader.name}</span>
-              <span className="log__role">Leader</span>
+      <ol className="log log--full panel__scroll">
+        {session.log.map((couple, i) => {
+          const won = session.winner === i;
+          return (
+            <li
+              key={`${couple.leader.id}-${couple.follower.id}-${i}`}
+              className="log__row"
+              data-winner={won}
+            >
+              <span className="log__number">{i + 1}</span>
+              <span className="log__names">
+                <span className="log__name">{couple.leader.name}</span>
+                <span className="log__role">Leader</span>
+              </span>
+              <span className="log__names">
+                <span className="log__name">{couple.follower.name}</span>
+                <span className="log__role">Follower</span>
+              </span>
+              {(couple.prompt || won) && (
+                <span className="log__foot">
+                  {couple.prompt && <span className="log__prompt">{couple.prompt.name}</span>}
+                  {/* A word as well as a crown, so the result is never carried by
+                      an emoji or a colour alone. */}
+                  {won && (
+                    <span className="log__winner">
+                      <span aria-hidden="true">👑 </span>Winners
+                    </span>
+                  )}
+                </span>
+              )}
+            </li>
+          );
+        })}
+        {session.allSkate && (
+          <li className="log__row log__row--skate">
+            <span className="log__number" aria-hidden="true">
+              ★
             </span>
             <span className="log__names">
-              <span className="log__name">{couple.follower.name}</span>
-              <span className="log__role">Follower</span>
+              <span className="log__name">AllSkate</span>
+              <span className="log__role">Everybody</span>
             </span>
-            {couple.prompt && <span className="log__prompt">{couple.prompt.name}</span>}
+            <span className="log__foot">
+              <span className="log__prompt log__prompt--skate">{session.allSkate.name}</span>
+            </span>
           </li>
-        ))}
+        )}
       </ol>
     );
 
@@ -328,16 +457,24 @@ export function SessionScreen({
       </header>
     );
 
+    // Nothing on this screen scrolls except the record itself, the same rule
+    // setup and the session already live by. A big night makes a long list, so
+    // the list scrolls inside its own space; the endings and the way out stay
+    // exactly where they are.
     return (
-      <div className="shell">
+      <div className="shell shell--setup shell--complete">
         {head}
 
         {record}
 
-        {/* Said once, above both, rather than as a paragraph under each. */}
-        <p className="endgame__hint">
-          Optional, both of them — a night can end on either, on both, or on neither.
-        </p>
+        {/* Said once, above both, rather than as a paragraph under each — and
+            only while it is still an invitation. Once either has happened the
+            record above says so, and "optional" would be talking to nobody. */}
+        {!crowned && !session.allSkate && (
+          <p className="endgame__hint">
+            Optional, both of them — a night can end on either, on both, or on neither.
+          </p>
+        )}
 
         <div className="endgame">
           {session.log.length > 0 && crownCard}
@@ -387,7 +524,7 @@ export function SessionScreen({
             nothing a pocket can do, and a lock overlay that looked almost
             identical to the dance hold was impossible to tell apart. */}
         {!dancing && (
-          <button className="toolbar__button" type="button" onClick={() => setLocked(true)}>
+          <button className="toolbar__button" type="button" onClick={() => onLockChange(true)}>
             Lock
           </button>
         )}
@@ -539,7 +676,7 @@ export function SessionScreen({
         </p>
       )}
 
-      {locked && <LockScreen onUnlock={() => setLocked(false)} />}
+      {locked && <LockScreen onUnlock={() => onLockChange(false)} nudge={blockedPresses} />}
 
       {toolsOpen && (
         <SessionTools

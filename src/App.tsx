@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AboutScreen } from './screens/AboutScreen';
 import { PromptBankScreen } from './screens/PromptBankScreen';
 import { RosterScreen } from './screens/RosterScreen';
@@ -103,8 +103,30 @@ export default function App() {
 
   const { session, dancers, past } = state;
 
-  // A stray back gesture should not close the app out from under an event.
-  const { warning: exitWarning } = useExitGuard();
+  /**
+   * Whether the session screen is locked.
+   *
+   * Held here rather than on the session screen because the back guard lives
+   * here, and the guard has to know. Kept on the session screen, the lock was
+   * invisible to the one listener that could undo it.
+   */
+  const [locked, setLocked] = useState(false);
+
+  // A stray back gesture should not close the app out from under an event — and
+  // while locked, it should not do anything at all.
+  /**
+   * What the session screen wants done with a back press, registered by the
+   * screen itself because only it knows which sheet or dialog is open.
+   */
+  const sessionBack = useRef<(() => boolean) | null>(null);
+  const registerSessionBack = useCallback((handler: (() => boolean) | null) => {
+    sessionBack.current = handler;
+  }, []);
+
+  const { warning: exitWarning, blockedPresses } = useExitGuard(
+    locked && screen === 'session',
+    () => sessionBack.current?.() ?? false,
+  );
 
   // Persist on every change rather than on a timer. The data is tiny and the
   // event is slow, so there is no reason to risk losing an edit.
@@ -263,6 +285,7 @@ export default function App() {
   }
 
   function endSession() {
+    setLocked(false);
     setWasResumed(false);
     setState((current) => ({ ...current, session: null, past: [] }));
     clearSession();
@@ -289,6 +312,10 @@ export default function App() {
         wasResumed={wasResumed}
         onDismissResumed={() => setWasResumed(false)}
         onEditDancers={editDancers}
+        locked={locked}
+        onLockChange={setLocked}
+        blockedPresses={blockedPresses}
+        onRegisterBack={registerSessionBack}
         onLeave={endSession}
         onStartFresh={() => {
           setWasResumed(false);

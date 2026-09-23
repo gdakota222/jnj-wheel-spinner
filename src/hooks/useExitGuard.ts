@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 /** How long the second press has to arrive before the warning lapses. */
 const ARM_WINDOW_MS = 3000;
@@ -29,11 +29,42 @@ const ARM_WINDOW_MS = 3000;
  * That is exactly what happened on a real device after the first release of this
  * hook. So the guard is re-armed every time the page becomes visible, not only
  * when the component mounts.
+ *
+ * ## While the screen is locked
+ *
+ * Pass `blocked` and back does nothing at all, however many times it is pressed.
+ * What it cannot do is stop the Android **home** or **recents** gestures: no web
+ * app can intercept those, installed or not. The lock stops a back swipe; it
+ * cannot stop someone going home. That limit is the platform's, and it is stated
+ * here so nobody spends an afternoon trying to get round it.
  */
-export function useExitGuard(): { warning: boolean } {
+export function useExitGuard(
+  blocked = false,
+  /**
+   * Offered each back press before the exit warning. Returns true when the
+   * screen did something with it — closed a sheet, opened Undo — so the press is
+   * spent there and the app stays put.
+   */
+  onBack?: () => boolean,
+): { warning: boolean; blockedPresses: number } {
   const [warning, setWarning] = useState(false);
+  /** Back presses swallowed while blocked, so the screen can say why nothing happened. */
+  const [blockedPresses, setBlockedPresses] = useState(0);
   const armed = useRef(false);
   const timer = useRef<number | undefined>(undefined);
+  /**
+   * Read inside the listener rather than re-subscribing on every change: the
+   * listener is registered once, and a stale closure over `blocked` is exactly
+   * the bug this exists to fix.
+   */
+  const blockedRef = useRef(blocked);
+  const onBackRef = useRef(onBack);
+  // Kept current after every render, so the listener registered once below
+  // always sees the latest values.
+  useLayoutEffect(() => {
+    blockedRef.current = blocked;
+    onBackRef.current = onBack;
+  });
 
   useEffect(() => {
     const hasGuard = () => Boolean(history.state && history.state.jnjExitGuard);
@@ -49,6 +80,25 @@ export function useExitGuard(): { warning: boolean } {
     };
 
     const onPopState = () => {
+      // Locked: every back press is swallowed, not just the first. The lock
+      // exists so a pocket or a brushed screen edge cannot act on the app, and a
+      // guard that lets the second swipe through would undo it — which is what
+      // happened in the handoff rehearsal.
+      if (blockedRef.current) {
+        disarm();
+        ensureGuard();
+        setBlockedPresses((n) => n + 1);
+        return;
+      }
+
+      // The screen gets first refusal. The session screen spends back on
+      // closing whatever is open, then on Undo, so it never leaves the app.
+      if (onBackRef.current?.()) {
+        disarm();
+        ensureGuard();
+        return;
+      }
+
       if (armed.current) {
         // Second press inside the window: let it leave. The guard entry has
         // already been popped, so the browser carries on out of the app.
@@ -93,5 +143,5 @@ export function useExitGuard(): { warning: boolean } {
     };
   }, []);
 
-  return { warning };
+  return { warning, blockedPresses };
 }

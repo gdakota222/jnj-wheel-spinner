@@ -2,9 +2,8 @@
 
 **Devices:** Samsung Android phone and Samsung Android tablet
 **App:** https://gdakota222.github.io/jnj-wheel-spinner/
-**Status:** Rehearsal passed, and the app has run a real event. Section 7 — the handoff test — is
-the last item outstanding, planned for roughly the week of 2026-09-07 with a dancer rather than a
-second organiser.
+**Status:** Every section passed. The app has run a real event, and — in Round 4 — been run end
+to end by someone other than its author.
 
 This is the first version the owner runs rather than Claude verifies. Everything up to now has
 been checked in a desktop browser pane, which can prove logic, layout, wording and contrast — and
@@ -177,9 +176,8 @@ general spinner, something for gamers, a decision-maker.
 | C4 | Wanted an **About page** — who made this — with a way for early adopters to **donate or buy a coffee**. Suggested it appear on first open after install, with an **About button on the title screen** to find it again later. ✅ *Fixed in 0.9.5. The donate link is unset until a Ko-fi account exists.* |
 
 ### Still to run
-- **Section 7 — the handoff test.** Still outstanding: the operator ran the whole event alone, so
-  no second organiser ever took over. Dancers *did* hold the device to spin, which is a partial
-  signal, but not the test. **Planned for roughly the week of 2026-09-07**, and deliberately
+- ~~**Section 7 — the handoff test.**~~ **Done — see Round 4.** A friend ran a full session
+  without being steered, on the owner's tablet. Passed. **Planned for roughly the week of 2026-09-07**, and deliberately
   harder than the original checklist item: the device goes to **a dancer**, not a second organiser.
   An organiser who has watched the app run all night is not a cold start; a dancer is. See
   Round 3 below for what that run needs to answer.
@@ -197,7 +195,46 @@ it before — so this is a check on whether the fixes landed, not new first-cont
 | D2 | **Less scrolling overall**, and the session screen not scrolling at all. | ✅ Confirms C1 |
 | D3 | **The About page is wordy.** | ⏸ Logged, not acted on. One reader on a page they see once is thin evidence for a rewrite; the owner's call is to wait and see whether it comes back from anyone else. If it does, the two cards worth keeping are who made it and what it does with your data. |
 
-## The handoff rehearsal — planned for the evening of 2026-09-16
+## Round 4 — the handoff rehearsal, the weekend after 0.12.0
+
+*Exact date not recorded — the owner wrote it up a few days later from memory, and has said details
+may resurface. Run on 0.12.0.*
+
+**Two people, two different tests:**
+- **A cold read** — someone who had never seen the app, walked through setup and gave their view.
+- **The handoff** — a friend who ran an entire session start to finish, without the owner steering.
+
+**The headline: the handoff passed.** The friend ran the whole session "pretty smoothly — pretty
+much no issues". That was the last open item on the original checklist, and the bar 1.0.0 was
+waiting on.
+
+**The endings were found unprompted.** Nobody told her Crown a Winner or AllSkate existed. She saw
+the two cards, said *"Ooh, what are these?"*, pressed them herself, and used them. That is exactly
+the bet behind keeping the endings on screen rather than behind a sheet (D-050), and it paid off.
+
+| # | Who | What happened | Standing |
+|---|---|---|---|
+| E1 | Cold read | **A misspelled name could not be fixed during setup** — only mid-session. The first thing they hit. | ✅ Fixed in 0.13.0 |
+| E2 | Cold read | **Wanted pop-ups explaining how things work.** Liked the UI; wished it said more about itself. | ⏳ 0.14.0 — a *How it works* page and one-time tips |
+| E3 | Cold read | **Wished they could skip the spin** — which already exists as a double-tap. They were never told, and nothing on screen says so. | ⏳ 0.14.0 — a tip on the first spin, at the moment it is useful |
+| E4 | Both | **The winner reveal was not celebratory enough.** The burst was noticed; more was wanted. | ⏳ 0.14.0 |
+| E5 | Both | **Boxes were hard to see**; things did not stand out. | ✅ Fixed in 0.13.0 — and it was measurable, not taste: see below |
+| E6 | Handoff | **The end-of-night record was hard to read** — who danced with whom, who won. | ✅ Fixed in 0.13.0 |
+| E7 | Handoff | **Did not love the look overall** — not fun or engaging enough. An artist's eye. | ⏸ Recorded, not acted on. The owner prefers sleek over decorated. Kept separate from E5, which *was* a defect. |
+| E8 | Owner | **The back gesture got past the lock screen.** | ✅ Fixed in 0.13.0 |
+| E9 | Owner | **The end screen did not hold on to the winner or the AllSkate** as part of the record. | ✅ Fixed in 0.13.0 |
+
+**E5 in numbers.** Every box edge in the app measured about **1.5:1** against what it sat on, and
+a box's fill against the page was **1.11:1** — effectively invisible except as a hairline. The
+standard for the edge of a component is **3:1** (WCAG 1.4.11). The audit script checked text,
+touch targets and labels, and never checked edges, so it had passed this on every screen for
+weeks. Both testers were simply right.
+
+**Also asked for by the owner afterwards:** the back gesture, mid-session, should step back
+through the app — to Undo — rather than leave it; and no screen should scroll where it does not
+have to, the title and the end of the night included.
+
+## The handoff rehearsal — as originally planned
 
 The last outstanding item on the original checklist, and the last thing between here and 1.0.0.
 

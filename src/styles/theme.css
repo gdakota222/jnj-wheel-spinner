@@ -14,7 +14,13 @@
   --bg: #1a142c;
   --surface: #241c3d;
   --surface-raised: #2e2450;
-  --border: #3d3163;
+  /* The edge of every box, field and button in the app. Was #3d3163, which
+     measured 1.54:1 against the page and 1.39:1 against a box — two testers
+     separately said boxes were hard to see, and they were right: component
+     edges need 3:1 (WCAG 1.4.11), and the audit only ever checked text, so it
+     never noticed. Same hue and saturation as before, only lighter:
+     3.86 on --bg, 3.48 on --surface, 3.07 on --surface-raised. */
+  --border: #7d69b5;
 
   /* Text — contrast checked against --bg and --surface */
   --text: #f6f3ff;

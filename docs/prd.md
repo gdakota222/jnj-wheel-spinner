@@ -332,6 +332,16 @@ during a session is effectively hidden.
 - **Behind the Tools sheet:** view log, re-spin, edit dancers. Useful, rarely urgent, and each one
   is a tap away.
 
+### The finished night is a record, and it does not scroll
+- **The winners and the AllSkate are part of the record**, in the list, where they happened: the
+  winning couple's row takes the crown's gold and says **Winners**; the AllSkate closes the night
+  as its last line, in cyan.
+- **Only the list scrolls.** Heading, endings and the way out stay put, as they do in setup and
+  during the session. A big night makes a long list, so the list scrolls inside its own space.
+- **The cards lead with the result once there is one** — *Winners: Tom K & Marco R*,
+  *AllSkate: Hands Off* — because on a big night the marked rows can be scrolled out of sight,
+  and the cards never are.
+
 ### The completed session is split by kind
 A finished night holds two different sorts of thing, and rendering them as four identical buttons
 with a paragraph under each is what made the screen feel cluttered.
@@ -349,6 +359,11 @@ with a paragraph under each is what made the screen feel cluttered.
   winner is still reachable: the card replays the curtain, and the curtain's own way back lands on
   the picker.
 
+### Names can be corrected while setting up
+The first thing a stranger hit in the handoff rehearsal. Renaming works exactly as it does
+mid-session — **Rename** beside the name, a field, *Cancel* or *Save name*, the same duplicate
+check — minus the confirmation, because nothing is live yet. One way to rename, learned once.
+
 ### Setting up is staged, and the way on is never below the fold
 The same rule, applied one screen earlier. A colleague meeting the app cold at the first real
 event scrolled past the roster, the counts, the spin order and the challenges question hunting for
@@ -364,6 +379,29 @@ the button that starts the night.
 - **The last step is a summary** of everything decided — dancers, spin order, challenges and
   bundle — each with **Change** beside it. The last chance to catch an answer set two steps ago,
   before anything is committed.
+
+### The back gesture goes back, not out
+Mid-session, the Android back gesture steps back through what is on screen, most recent first,
+and never leaves the app:
+
+1. A question is open → it is answered *no*.
+2. A sheet is open (Tools, the log, dancers, session options) → it closes.
+3. Something can be undone → **the Undo prompt opens**, saying exactly what it would reverse.
+   The gesture never undoes anything by itself; a brushed screen edge silently rewinding the
+   night would be a far worse bug than the one this replaces.
+4. A wheel is spinning → nothing. Leaving mid-spin is the worst outcome available.
+5. Nothing to undo → the same as the **←** button: back to setup, asking first if anyone has
+   danced.
+
+On the finished session, back opens *Session options* rather than taking one of them, since
+*Back to the roster* clears the night. During the curtain it does nothing at all — a swipe must not
+break a reveal in front of a room.
+
+**While the screen is locked, back does nothing at all**, however often it is pressed, and says
+so. What no web app can do is stop the Android **home** or **recents** gestures; the lock stops a
+back swipe, and cannot stop someone going home.
+
+Everywhere outside a session, back still warns once before closing the app, as before.
 
 ### Undo
 **Any action can be stepped back** — a draw, a prompt draw, a dancer added, renamed, removed or

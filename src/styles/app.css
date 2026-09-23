@@ -441,6 +441,12 @@
   overflow-wrap: anywhere;
 }
 
+/* A row being renamed takes the full width, so the field and its two buttons
+   are not squeezed in beside a role picker the operator is not using. */
+.dancer--editing {
+  display: block;
+}
+
 .dancer__controls {
   display: flex;
   align-items: center;
@@ -929,6 +935,60 @@
   font-weight: 650;
 }
 
+
+/* The line under a couple on the completed session: what they danced, and
+   whether they won. The in-session log still puts .log__prompt straight into the
+   row, so that rule keeps its own layout and is only neutralised in here. */
+.log__foot {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-xs) var(--gap-sm);
+  padding-top: var(--gap-xs);
+  border-top: 1px solid var(--border);
+}
+
+.log__foot .log__prompt {
+  grid-column: auto;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* The winning couple. The row takes the crown's gold at its edge, and the word
+   "Winners" says it outright, so neither the colour nor the emoji carries the
+   result alone. */
+.log--full .log__row[data-winner='true'] {
+  border: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
+.log__winner {
+  padding: 2px var(--gap-sm);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--step--1);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* The AllSkate closes the record in its own cyan, matching its card. */
+.log__row--skate {
+  grid-template-columns: auto 1fr;
+  border: 2px solid var(--seg-5);
+}
+
+.log__row--skate .log__number {
+  background: var(--seg-5);
+  color: var(--bg);
+}
+
+.log__prompt--skate {
+  color: var(--seg-5);
+}
+
 /* ------------------------------------------------------------- prompt bank */
 
 .bank {
@@ -1317,6 +1377,31 @@
 }
 
 /* Fills as the hold progresses, so the gesture shows its own progress. */
+/* Answers a swallowed back press: says what happened, and points at the one
+   control that does anything here. Space is reserved so the button never jumps. */
+.lock__nudge {
+  min-height: 1.4em;
+  font-size: var(--step--1);
+  color: var(--accent);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lock__button--nudge {
+    animation: lock-nudge 600ms ease-in-out 2;
+  }
+}
+
+@keyframes lock-nudge {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
 .lock__button--holding {
   background: var(--accent);
   color: var(--accent-ink);
@@ -1832,7 +1917,12 @@
   width: 1.35rem;
   height: 1.35rem;
   border-radius: 50%;
-  background: var(--border);
+  /* Its own fill, with the border as its edge. This circle used to be filled
+     *with* the border colour, which was fine while that colour was dark enough
+     to be invisible — and dropped the digit to 4.21:1 the moment the border was
+     raised to be seen. A token named for edges should only draw edges. */
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
   color: var(--text);
   font-size: var(--step--1);
   font-weight: 700;
@@ -2314,10 +2404,24 @@
 
 .endgame {
   display: grid;
-  /* Side by side where there is room, stacked on a phone, with no breakpoint
-     to keep in step with anything else. */
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  /* Side by side even on a phone. Stacked, the two cards cost the record about
+     a hundred pixels of height on a screen that no longer scrolls — and the
+     record is what the handoff tester found hardest to read. A lone card still
+     spans the full width. */
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: var(--gap-sm);
+}
+
+/* The finished session: head, record, endings, way out. Only the record moves. */
+.shell--complete .screen-head,
+.shell--complete .endgame,
+.shell--complete .endgame__hint,
+.shell--complete .endgame__more {
+  flex: none;
+}
+
+.shell--complete .log--full {
+  margin: 0;
 }
 
 .endgame__card {
@@ -2343,6 +2447,22 @@
 .endgame__sub {
   font-size: var(--step--1);
   font-weight: 600;
+}
+
+/* What the card was for, once it has happened: a small label over the result. */
+.endgame__label {
+  font-size: var(--step--1);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Names can be long, and two of them share a card half the width of a phone.
+   A step smaller than an action title, so "Christopher W & Alexandra P" wraps
+   onto two lines rather than four. */
+.endgame__title--result {
+  font-size: var(--step-0);
+  line-height: 1.2;
 }
 
 /* Two colours, not one. The crown keeps the gold it has always had; the

@@ -7,6 +7,7 @@ import {
   adviseOnSize,
   checkName,
   makeDancer,
+  normalizeName,
   projectPools,
   type Dancer,
   type Role,
@@ -70,6 +71,10 @@ export function RosterScreen({
   const [draftRole, setDraftRole] = useState<Role>('leader');
   const [error, setError] = useState<string | null>(null);
   const [birthdayCandidate, setBirthdayCandidate] = useState<Dancer | null>(null);
+  /** The dancer whose name is being corrected, if any. One at a time. */
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const projection = useMemo(() => projectPools(dancers), [dancers]);
@@ -112,6 +117,40 @@ export function RosterScreen({
 
   function remove(id: string) {
     onChange(dancers.filter((d) => d.id !== id));
+  }
+
+  function startRename(dancer: Dancer) {
+    setEditingId(dancer.id);
+    setRenameDraft(dancer.name);
+    setRenameError(null);
+  }
+
+  function cancelRename() {
+    setEditingId(null);
+    setRenameError(null);
+  }
+
+  /**
+   * Correct a typo before the night starts.
+   *
+   * The first thing a stranger hit in the handoff rehearsal: a misspelled name
+   * could be fixed mid-session but not here, where it was typed. Same control and
+   * same checks as renaming mid-session, so there is one way to learn — minus
+   * the confirmation, because nothing is live yet and setup edits are free.
+   */
+  function saveRename(dancer: Dancer) {
+    // Checked against everyone *except* this dancer, so keeping the same name is
+    // never reported as clashing with itself.
+    const others = dancers.filter((d) => d.id !== dancer.id);
+    const result = checkName(renameDraft, others);
+    if (!result.ok) {
+      setRenameError(result.reason);
+      return;
+    }
+    if (result.name !== dancer.name) {
+      onChange(dancers.map((d) => (d.id === dancer.id ? { ...d, name: result.name } : d)));
+    }
+    cancelRename();
   }
 
   function toggleBirthday(dancer: Dancer) {
@@ -250,10 +289,62 @@ export function RosterScreen({
               </p>
             ) : (
               <ul className="list__items">
-                {dancers.map((dancer) => (
+                {dancers.map((dancer) =>
+                  editingId === dancer.id ? (
+                    <li key={dancer.id} className="dancer dancer--editing">
+                      <div className="edit-row__form">
+                        <label className="add__label" htmlFor={`setup-rename-${dancer.id}`}>
+                          New name for {dancer.name}
+                        </label>
+                        <input
+                          id={`setup-rename-${dancer.id}`}
+                          className="add__input"
+                          value={renameDraft}
+                          autoFocus
+                          autoComplete="off"
+                          autoCapitalize="words"
+                          onChange={(e) => {
+                            setRenameDraft(e.target.value);
+                            if (renameError) setRenameError(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveRename(dancer);
+                            if (e.key === 'Escape') cancelRename();
+                          }}
+                          aria-invalid={renameError ? true : undefined}
+                        />
+                        {renameError && (
+                          <p className="add__error" role="alert">
+                            {renameError}
+                          </p>
+                        )}
+                        <div className="edit-row__buttons">
+                          <button className="dialog__cancel" type="button" onClick={cancelRename}>
+                            Cancel
+                          </button>
+                          <button
+                            className="dialog__confirm"
+                            type="button"
+                            onClick={() => saveRename(dancer)}
+                            disabled={normalizeName(renameDraft).length === 0}
+                          >
+                            Save name
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ) : (
                   <li key={dancer.id} className="dancer" data-birthday={dancer.isBirthday === true}>
                     <DancerName dancer={dancer} onHold={() => setBirthdayCandidate(dancer)} />
                     <div className="dancer__controls">
+                      <button
+                        className="dancer__remove"
+                        type="button"
+                        onClick={() => startRename(dancer)}
+                      >
+                        Rename
+                        <span className="visually-hidden"> {dancer.name}</span>
+                      </button>
                       <label className="dancer__role">
                         <span className="visually-hidden">Role for {dancer.name}</span>
                         <select
@@ -277,7 +368,8 @@ export function RosterScreen({
                       </button>
                     </div>
                   </li>
-                ))}
+                  ),
+                )}
               </ul>
             )}
           </section>
