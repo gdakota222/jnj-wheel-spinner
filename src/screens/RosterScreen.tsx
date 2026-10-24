@@ -102,15 +102,8 @@ export function RosterScreen({
   const [renameError, setRenameError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /**
-   * Divisions as they will actually apply to this session. The wheel does not
-   * match by division yet (planned for 0.16.0), so for a wheel night they are
-   * off here too — the screen must never promise matching that will not happen.
-   */
-  const applied = useMemo(
-    () => (mode === 'wheel' ? { ...divisionSettings, enabled: false } : divisionSettings),
-    [mode, divisionSettings],
-  );
+  /** Divisions apply to both the wheel and the Quick list (D-062). */
+  const applied = divisionSettings;
 
   /** The event's shape — counted within divisions when matching by division applies. */
   const projection = useMemo(() => {
@@ -534,18 +527,14 @@ export function RosterScreen({
             </fieldset>
           </section>
 
-          {divisionsOn && mode === 'wheel' && (
-            <p className="summary__note summary__note--warn">
-              The wheel doesn’t match by division yet — it draws from everyone. Divisions work in
-              the Quick list today, and are coming to the wheel next.
-            </p>
-          )}
-
-          {divisionsOn && mode === 'list' && (
+          {divisionsOn && mode !== null && (
             <section className="card">
               <h2 className="card__title">Divisions</h2>
               <p className="card__body">
-                Couples are paired within their division. When a division has nobody on one side:
+                {mode === 'wheel'
+                  ? 'The first spin draws from everyone. The second wheel shows only partners in the same division, and says which.'
+                  : 'Couples are paired within their division.'}{' '}
+                When a division has nobody on one side:
               </p>
               <fieldset className="roles roles--stacked">
                 <legend className="visually-hidden">Strict or merge</legend>
@@ -712,7 +701,7 @@ export function RosterScreen({
                   term="Divisions"
                   detail={
                     mode === 'wheel'
-                      ? 'Not used by the wheel yet — it draws from everyone'
+                      ? `${divisionSettings.mode === 'strict' ? 'Strict' : 'Merge'} · second wheel shows the same division`
                       : `${divisionSettings.mode === 'strict' ? 'Strict' : 'Merge'} · ${
                           divisionSettings.order === 'ascending'
                             ? 'lowest first'
@@ -769,8 +758,9 @@ export function RosterScreen({
                 ))}
               </ul>
               <p className="warning-card__body">
-                With Strict on they will not be matched. Let them know — or switch to Merge, or pair
-                them by hand once the night starts.
+                {mode === 'wheel'
+                  ? 'With Strict on they will not be on the wheel tonight. Let them know — or switch to Merge.'
+                  : 'With Strict on they will not be matched. Let them know — or switch to Merge, or pair them by hand once the night starts.'}
               </p>
               <button
                 className="warning-card__fix"

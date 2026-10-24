@@ -121,6 +121,10 @@ const TABS: { id: string; label: string; items: Item[] }[] = [
         what: 'Optional, on the dancers step. Newcomer to Champions, one division for leading and one for following.',
       },
       {
+        name: 'Divisions on the wheel',
+        what: 'The first spin draws from everyone; the second shows only partners in the same division, and says which.',
+      },
+      {
         name: 'Strict or Merge',
         what: 'Strict keeps every division to itself. Merge lets a division with nobody on one side dance one division down.',
       },

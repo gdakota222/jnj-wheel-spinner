@@ -22,7 +22,7 @@ const SEEN_ABOUT_KEY = 'jnj:v1:seen-about';
  * The shape of a stored session.
  *
  * Bumped whenever SessionState changes in a way that would break a session saved
- * by an older build. v2 added the jamboree fields; v3 made the jam cover every birthday dancer at once; v4 added previousRotation; v5 made prompt draws id-based; v6 added the crowned winner; v7 added the all-skate finale. A mismatch discards the saved session rather than restoring
+ * by an older build. v2 added the jamboree fields; v3 made the jam cover every birthday dancer at once; v4 added previousRotation; v5 made prompt draws id-based; v6 added the crowned winner; v7 added the all-skate finale. Divisions (0.16.0) did not bump it: a session saved without them simply loads with them off. A mismatch discards the saved session rather than restoring
  * something the current code cannot read — losing an in-flight session is bad,
  * but crashing on launch in front of a room is worse.
  */
@@ -139,7 +139,8 @@ export function loadSession(): SessionState | null {
     const wrapper = parsed as Record<string, unknown>;
     if (wrapper.schema !== SESSION_SCHEMA) return null;
     if (!looksLikeSession(wrapper.state)) return null;
-    return wrapper.state;
+    // Saved before divisions existed: restore it as the plain night it was.
+    return { ...wrapper.state, divisions: wrapper.state.divisions ?? DEFAULT_DIVISION_SETTINGS };
   } catch {
     return null;
   }

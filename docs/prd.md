@@ -916,8 +916,9 @@ the numbered roadmap, because a real group asked for it. Decisions: D-056 to D-0
   down that has anyone in it (Newcomers fold up). It never merges just to avoid repeats.
 - In Strict, anyone who cannot be matched is named on the start step, and starting takes a hold.
 - Order: lowest first by default, highest first, or mixed.
-- **Quick list only, for now.** Matching on the wheel — the second spin showing only partners in
-  the same division — is the next slice. Until then the setup screen says the wheel ignores them.
+- **On the wheel (0.16.0):** the first spin draws from everyone still owed a couple; the second
+  shows only partners in the same division and says which. Division order applies to the Quick
+  list only.
 
 - **Someone left** takes a dancer off tonight's list (not the roster) and rearranges everything
   still to dance without them. Change still works for fixing it by hand instead.

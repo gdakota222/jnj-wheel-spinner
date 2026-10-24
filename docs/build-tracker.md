@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.15.0 — built, not yet deployed (0.14.0 is live)
+**Current version:** 0.16.0 — built, not yet deployed (0.15.0 is live)
 **Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
 **Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -59,8 +59,8 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.12.0** | The ending, tidied | Two ending cards on a finished session, leaving behind one sheet, the AllSkate named as dancers name it | ✅ Shipped 2026-09-16 |
 | **0.13.0** | Handoff fixes | Lock owns the back gesture, back steps back to Undo, rename in setup, visible edges, the night's record, no-scroll end screen | ✅ Shipped 2026-09-23 |
 | **0.14.0** | Explains itself | How it works, one-time tips that can be reset, a one-screen title, and a reveal that celebrates | ✅ Shipped 2026-09-23 |
-| **0.15.0** | Practice mode | Quick list, divisions (Quick list only), Strict/Merge, the unmatched warning held to confirm, How it works › Practice, a first-time tip | 🔨 Built 2026-10-24, awaiting owner review |
-| **0.16.0** | Divisions on the wheel | The second spin shows only partners in the same division, labelled as such | ⏳ Next |
+| **0.15.0** | Practice mode | Quick list, divisions (Quick list only), Strict/Merge, the unmatched warning held to confirm, How it works › Practice, a first-time tip | ✅ Shipped 2026-10-24 |
+| **0.16.0** | Divisions on the wheel | The second spin shows only partners in the same division, labelled as such; re-spin aims at the right pool | 🔨 Built 2026-10-24, awaiting owner review |
 | **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | 🟢 **Bar met** in rehearsal Round 4 — declaring it is the owner's call |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
@@ -88,6 +88,30 @@ backlog, worked through in order of what actually broke the night.
 ---
 
 ## Build log
+
+### 2026-10-24 — 0.16.0: divisions on the wheel
+**Built:** with divisions on, the first spin draws from everyone still owed a couple; the second
+wheel shows only partners in the drawn dancer's division group, and the screen says so — *Now
+spinning: Followers — Advanced*. Within a group the short side recycles exactly as the whole floor
+does without divisions. In Strict, a dancer with no partner in their division stays off the wheel,
+and the start-step warning says so in wheel terms (there is no pair-by-hand on the wheel). The
+couple count is the sum of each group's larger side. Setup offers Strict or Merge for the wheel;
+division order stays Quick list only (D-062).
+
+**Kept safe:** with divisions off, the draw goes down exactly the old path, and all 153 earlier
+tests pass unchanged. A session saved by 0.15.0 loads as a plain night rather than being
+discarded — the save format was deliberately not bumped.
+
+**Proved:** 80 complete simulated nights (40 seeds, each order), asserting at every landing that the
+name resolved is the name the wheel was aimed at, and that every couple is within one division.
+
+**Found while reading, unrelated to divisions — fixed:** re-spinning the *first* name of a pair
+picked its index against the pool waiting next, not the pool being re-spun. The winner was always
+honest (the reducer clamps), but with uneven pools the wheel could animate to a different segment
+than the name announced. The re-spin now sizes against its own list (`respinEntries`).
+
+**Found by looking:** the "last one left" wink said *Only Ann A left* on a division-limited wheel,
+which reads as if everyone else had danced. It now says *Ann A is the only Advanced follower here.*
 
 ### 2026-10-24 — 0.15.0: practice mode
 The owner's new West Philly practice group, and an All-Star's bi-monthly JnJ practice, both wanted

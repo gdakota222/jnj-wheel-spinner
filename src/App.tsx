@@ -364,7 +364,13 @@ export default function App() {
     setState((current) => ({
       ...current,
       practice: null,
-      session: createSession(current.dancers, choice.order, choice.promptsEnabled, deckInPlay),
+      session: createSession(
+        current.dancers,
+        choice.order,
+        choice.promptsEnabled,
+        deckInPlay,
+        divisionSettings,
+      ),
       past: [],
     }));
     setScreen('session');
@@ -433,6 +439,7 @@ export default function App() {
               session.spinOrder,
               session.promptsEnabled,
               deckInPlay,
+              session.divisions,
             ),
             past: [],
           }));

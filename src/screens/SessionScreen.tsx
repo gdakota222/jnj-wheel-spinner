@@ -16,7 +16,9 @@ import {
   POOL_LABEL,
   POOL_NOUN,
   drawEntries,
+  drawLimitLabel,
   isForegoneConclusion,
+  respinEntries,
   promptEntries,
   promptsExhausted,
   wheelEntries,
@@ -177,6 +179,16 @@ export function SessionScreen({
   const deckSpent = promptsExhausted(session) && onPromptWheel;
   const foregone = isForegoneConclusion(session) && !onPromptWheel && !dancing;
 
+  /**
+   * "Followers — Intermediate" while a draw is limited to one division, so the
+   * room can see the wheel is narrowed and why (D-062).
+   */
+  const poolTitle = (pool: typeof session.currentPool) => {
+    const limit = drawLimitLabel(session, pool);
+    return limit ? `${POOL_LABEL[pool]} — ${limit}` : POOL_LABEL[pool];
+  };
+  const currentLimit = drawLimitLabel(session, session.currentPool);
+
   const coupleNumber = Math.min(session.log.length + 1, session.couplesTotal);
   const isLastCouple = session.log.length + 1 >= session.couplesTotal;
 
@@ -187,9 +199,12 @@ export function SessionScreen({
       : session.drawn[session.currentPool];
 
   function spinDancer(type: 'spin' | 'respin') {
-    if (drawPool.length === 0) return;
-    const index = pickIndex(drawPool.length);
-    const plan = planSpin(index, drawPool.length, session.rotation);
+    // A re-spin of the first name of a pair draws from a different pool than
+    // the one waiting next, so it is sized against its own list.
+    const pool = type === 'respin' ? respinEntries(session) : drawPool;
+    if (pool.length === 0) return;
+    const index = pickIndex(pool.length);
+    const plan = planSpin(index, pool.length, session.rotation);
     dispatch({ type, index, rotation: plan.rotation });
   }
 
@@ -584,18 +599,19 @@ export function SessionScreen({
               </>
             ) : phase === 'drawn' ? (
               <>
-                Next: <strong>{POOL_LABEL[session.currentPool]}</strong>
+                Next: <strong>{poolTitle(session.currentPool)}</strong>
               </>
             ) : (
               <>
-                Now spinning: <strong>{POOL_LABEL[session.currentPool]}</strong>
+                Now spinning: <strong>{poolTitle(session.wheelPool)}</strong>
               </>
             )}
           </p>
 
           {recyclingNow && (
             <p className="note note--info">
-              All {POOL_LABEL[session.currentPool].toLowerCase()} have danced — they are back on the
+              All {currentLimit ? `${currentLimit} ` : ''}
+              {POOL_LABEL[session.currentPool].toLowerCase()} have danced — they are back on the
               wheel so nobody sits out.
             </p>
           )}
@@ -606,7 +622,10 @@ export function SessionScreen({
           )}
           {foregone && !recyclingNow && (
             <p className="note note--wink">
-              Only {drawPool[0]?.name} left. Spin it anyway — they have earned the moment.
+              {currentLimit
+                ? `${drawPool[0]?.name} is the only ${currentLimit} ${POOL_NOUN[session.currentPool]} here.`
+                : `Only ${drawPool[0]?.name} left.`}{' '}
+              Spin it anyway — they have earned the moment.
             </p>
           )}
 

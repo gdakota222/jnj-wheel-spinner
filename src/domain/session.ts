@@ -11,6 +11,14 @@
  */
 import { buildPools, type Dancer } from './roster';
 import { WESTIE_STARTER_PACK, type Prompt } from './prompts';
+import {
+  DEFAULT_DIVISION_SETTINGS,
+  countCouples,
+  divisionGroups,
+  groupOf,
+  type DivisionGroup,
+  type DivisionSettings,
+} from './divisions';
 
 export type PoolName = 'leaders' | 'followers';
 
@@ -143,6 +151,13 @@ export type SessionState = {
    * the crown, so the finale is offered and never automatic.
    */
   allSkate: Prompt | null;
+
+  /**
+   * Matching by division (D-058, D-062). The first spin draws from everyone who
+   * is still owed a dance; the second shows only partners in the same division
+   * group. Off whenever the organizer has not turned it on.
+   */
+  divisions: DivisionSettings;
 };
 
 export type SessionAction =
@@ -179,13 +194,11 @@ export function createSession(
   spinOrder: SpinOrder,
   promptsEnabled = false,
   deck: readonly Prompt[] = WESTIE_STARTER_PACK.prompts,
+  divisions: DivisionSettings = DEFAULT_DIVISION_SETTINGS,
 ): SessionState {
   const pools = buildPools(dancers);
   const originals = { leaders: pools.leaders, followers: pools.followers };
-  const couplesTotal =
-    originals.leaders.length === 0 || originals.followers.length === 0
-      ? 0
-      : Math.max(originals.leaders.length, originals.followers.length);
+  const couplesTotal = totalCouples(originals, divisions);
 
   return {
     spinOrder,
@@ -213,7 +226,59 @@ export function createSession(
     jamboreeDancers: [],
     phaseAfterJamboree: null,
     jammed: [],
+    divisions,
   };
+}
+
+/**
+ * How many couples the night will dance. Without divisions, the larger pool
+ * decides; with them, each division group dances as many as its larger side,
+ * and a group with nobody on one side (Strict) dances none.
+ */
+function totalCouples(originals: Record<PoolName, Dancer[]>, divisions: DivisionSettings): number {
+  if (divisions.enabled) return countCouples(originals, divisions);
+  return originals.leaders.length === 0 || originals.followers.length === 0
+    ? 0
+    : Math.max(originals.leaders.length, originals.followers.length);
+}
+
+const divisionsOn = (state: SessionState) => state.divisions?.enabled === true;
+
+function groupsFor(state: SessionState): DivisionGroup[] {
+  return divisionGroups(state.originals, state.divisions ?? DEFAULT_DIVISION_SETTINGS);
+}
+
+/** Couples a division group still has to dance tonight. */
+function owedBy(state: SessionState, group: DivisionGroup): number {
+  if (group.leaders.length === 0 || group.followers.length === 0) return 0;
+  const leaders = new Set(group.leaders.map((d) => d.id));
+  const followers = new Set(group.followers.map((d) => d.id));
+  const danced = state.log.filter(
+    (c) => leaders.has(c.leader.id) && followers.has(c.follower.id),
+  ).length;
+  return Math.max(group.leaders.length, group.followers.length) - danced;
+}
+
+/**
+ * The division group a draw from `pool` must come from, when its partner has
+ * already been drawn. Null for the first draw of a couple, and always null with
+ * divisions off.
+ */
+export function partnerGroup(state: SessionState, pool: PoolName): DivisionGroup | null {
+  if (!divisionsOn(state)) return null;
+  const other = OTHER_POOL[pool];
+  const partner = state.drawn[other];
+  if (!partner) return null;
+  return groupOf(groupsFor(state), partner, other) ?? null;
+}
+
+/**
+ * The division a draw from `pool` is limited to, for the screen to say so —
+ * "Followers — Intermediate". Drawing within a division is honest only while it
+ * is said out loud (D-062).
+ */
+export function drawLimitLabel(state: SessionState, pool: PoolName): string | null {
+  return partnerGroup(state, pool)?.label ?? null;
 }
 
 /** "A", "A and B", "A, B and C" — read aloud to a room, so it has to scan. */
@@ -287,9 +352,69 @@ function poolEntries(
   state: SessionState,
   pool: PoolName,
 ): { entries: Dancer[]; recycledNow: boolean } {
+  if (divisionsOn(state)) return divisionPoolEntries(state, pool);
   const entries = state.remaining[pool];
   if (entries.length > 0) return { entries, recycledNow: false };
   return { entries: [...state.originals[pool]], recycledNow: true };
+}
+
+/**
+ * The same question with divisions on, answered group by group.
+ *
+ * The second draw comes only from the drawn partner's group. The first draw
+ * comes from every group still owed a couple — which keeps a one-sided group
+ * in Strict off the wheel entirely, as its dancers were warned at setup. Within
+ * a group the short side recycles exactly as the whole floor does without
+ * divisions: nobody twice before everyone in their group once.
+ *
+ * Listed in roster order, so the screen and the reducer always agree on which
+ * index is which name.
+ */
+function divisionPoolEntries(
+  state: SessionState,
+  pool: PoolName,
+): { entries: Dancer[]; recycledNow: boolean } {
+  const undrawn = new Set(state.remaining[pool].map((d) => d.id));
+  const limit = partnerGroup(state, pool);
+  const groups = limit ? [limit] : groupsFor(state).filter((g) => owedBy(state, g) > 0);
+
+  let recycledNow = false;
+  const ids = new Set<string>();
+  for (const group of groups) {
+    const fresh = group[pool].filter((d) => undrawn.has(d.id));
+    if (fresh.length === 0) recycledNow = true;
+    for (const d of fresh.length > 0 ? fresh : group[pool]) ids.add(d.id);
+  }
+  return { entries: state.originals[pool].filter((d) => ids.has(d.id)), recycledNow };
+}
+
+/** The pool a re-spin would draw from: the one holding the most recent draw. */
+export function respinPool(state: SessionState): PoolName {
+  return state.phase === 'drawn' ? OTHER_POOL[state.currentPool] : state.currentPool;
+}
+
+/**
+ * What a re-spin will draw from, with the discarded dancer still eligible.
+ *
+ * Its own question because it is a different pool from `drawEntries` whenever
+ * the first name of a pair is re-spun — sizing that spin against the other pool
+ * aimed the wheel at the wrong segment (found 0.16.0).
+ */
+export function respinEntries(state: SessionState): Dancer[] {
+  const pool = respinPool(state);
+  const drawn = { ...state.drawn };
+  delete drawn[pool];
+  return poolEntries({ ...state, drawn }, pool).entries;
+}
+
+/** Put `entries` back into a pool without disturbing anyone already waiting there. */
+function refill(
+  remaining: Record<PoolName, Dancer[]>,
+  pool: PoolName,
+  entries: Dancer[],
+): Record<PoolName, Dancer[]> {
+  const waiting = new Set(remaining[pool].map((d) => d.id));
+  return { ...remaining, [pool]: [...remaining[pool], ...entries.filter((d) => !waiting.has(d.id))] };
 }
 
 /**
@@ -360,8 +485,10 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       if (entries.length === 0) return state;
       return {
         ...state,
+        // Added back rather than replaced: with divisions, one group can come
+        // round again while another still has dancers waiting.
         remaining: recycledNow
-          ? { ...state.remaining, [state.currentPool]: entries }
+          ? refill(state.remaining, state.currentPool, entries)
           : state.remaining,
         recycled: recycledNow
           ? { ...state.recycled, [state.currentPool]: true }
@@ -394,7 +521,10 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
 
       if (state.phase !== 'spinning' || state.pendingIndex === null) return state;
       const pool = state.currentPool;
-      const candidates = state.remaining[pool];
+      // Resolved against exactly the list the screen aimed at. Without divisions
+      // that is the undrawn pool, as it always was; with them, the same pool
+      // narrowed to the right group.
+      const candidates = poolEntries(state, pool).entries;
       if (candidates.length === 0) return state;
       // Clamp rather than stall. An index outside the pool is a caller bug, but
       // the failure mode here would be the wheel spinning forever in front of a
@@ -454,9 +584,12 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       // exactly what "returns to the pool immediately" asks for.
       const drawn = { ...state.drawn };
       delete drawn[pool];
+      const { entries, recycledNow } = poolEntries({ ...state, drawn }, pool);
+      if (entries.length === 0) return state;
 
       return {
         ...state,
+        remaining: recycledNow ? refill(state.remaining, pool, entries) : state.remaining,
         drawn,
         currentPool: pool,
         wheelPool: pool,
@@ -620,10 +753,8 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         }))
         .filter(Boolean);
 
-      const couplesTotal =
-        originals.leaders.length === 0 || originals.followers.length === 0
-          ? log.length
-          : Math.max(originals.leaders.length, originals.followers.length, log.length);
+      const planned = totalCouples(originals, state.divisions ?? DEFAULT_DIVISION_SETTINGS);
+      const couplesTotal = planned === 0 ? log.length : Math.max(planned, log.length);
 
       const bothDrawn = drawn.leaders !== undefined && drawn.followers !== undefined;
       let phase: SessionPhase;
