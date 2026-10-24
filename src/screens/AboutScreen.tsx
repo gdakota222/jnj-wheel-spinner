@@ -1,4 +1,4 @@
-import { WheelMark } from '../components/WheelMark';
+import avatarUrl from '../assets/avatar.png';
 import { supportLinks } from '../support';
 import { SUPPORT_QR } from '../supportQr';
 
@@ -35,8 +35,10 @@ export function AboutScreen({ firstRun, onDone }: Props) {
         </p>
       </header>
 
+      {/* The page is about who made it, so it shows the maker rather than the wheel.
+          Bundled with the app, so it appears with the wifi off. */}
       <div className="mark mark--small">
-        <WheelMark size={120} />
+        <img className="about-avatar" src={avatarUrl} width={120} height={120} alt="Dakota's avatar" />
       </div>
 
       <section className="card">

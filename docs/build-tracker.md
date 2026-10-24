@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.16.0 — built, not yet deployed (0.15.0 is live)
+**Current version:** 0.16.1 — live
 **Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
 **Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -88,6 +88,19 @@ backlog, worked through in order of what actually broke the night.
 ---
 
 ## Build log
+
+### 2026-10-24 — 0.16.1: the right Ko-fi page, the owner on the About page, centered QR codes
+
+- **Fixed: the Ko-fi link went to Ko-fi's homepage.** The handle is `slowjamslabs` (Slow **Jams**
+  Labs), not `slowjamlabs`; Ko-fi sends an unknown handle to its homepage instead of an error, so
+  it looked like a link that half worked. Found by the owner tapping it on their phone. Supersedes
+  the handle in the entry below. QR codes regenerated with `npm run qr`.
+- **The owner's avatar replaces the wheel mark on the About page.** The page is about who made
+  the app, so it shows them. Shrunk from the 1000px art to 240px (47 KB, sharp at 120px on
+  high-density screens) and bundled, so it is precached and appears offline. The title screen
+  keeps the wheel.
+- **QR codes centered** in their card: stacked one above the other on a phone, side by side on a
+  tablet. Checked in the browser at both widths.
 
 ### 2026-10-24 — Support goes live: Ko-fi, Venmo, and QR codes (Slow Jam Labs)
 

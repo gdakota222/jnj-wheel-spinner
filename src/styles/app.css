@@ -1806,6 +1806,14 @@
   padding-block: 0;
 }
 
+/* The art is already a circle on transparency; the shadow matches the wheel
+   mark it replaced on the About page. */
+.about-avatar {
+  display: block;
+  border-radius: 50%;
+  filter: drop-shadow(0 10px 24px rgb(0 0 0 / 0.45));
+}
+
 .card__body--quiet {
   font-size: var(--step--1);
   color: var(--text-faint);
@@ -1823,6 +1831,7 @@
 .support__qrs {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--gap);
   margin-top: var(--gap-sm);
 }

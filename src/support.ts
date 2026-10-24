@@ -12,7 +12,7 @@
  */
 
 /** Ko-fi username, from ko-fi.com/<handle>. Empty until the account exists. */
-export const KOFI_HANDLE = 'slowjamlabs';
+export const KOFI_HANDLE = 'slowjamslabs';
 
 /**
  * Venmo username, from venmo.com/u/<handle>. A Venmo profile is public and
