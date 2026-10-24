@@ -1818,6 +1818,30 @@
   margin-top: var(--gap-sm);
 }
 
+/* QR codes always draw black on white with a quiet zone, whatever the theme:
+   phone cameras read dark-on-light far more reliably than the reverse. */
+.support__qrs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  margin-top: var(--gap-sm);
+}
+
+.support__qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-xs);
+  margin: 0;
+  text-align: center;
+}
+
+.support__qr svg {
+  width: 168px;
+  height: 168px;
+  border-radius: var(--radius-sm);
+}
+
 /* Built to match .menu__item exactly: a link that leaves the app should not look
    or feel different from a button that stays in it. */
 .support__link {

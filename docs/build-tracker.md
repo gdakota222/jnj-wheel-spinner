@@ -89,6 +89,25 @@ backlog, worked through in order of what actually broke the night.
 
 ## Build log
 
+### 2026-10-24 — Support goes live: Ko-fi, Venmo, and QR codes (Slow Jam Labs)
+
+- **`KOFI_HANDLE` is set to `slowjamlabs`** in `src/support.ts`, so the About page's support card
+  now renders. The account exists (ko-fi.com/slowjamlabs) and pays out through Stripe, which was
+  D-045's condition for filling it in. The note now says card, Apple Pay, or Google Pay (no PayPal
+  is connected).
+- **`VENMO_HANDLE` is set to `dakota-gibbs`**, as the owner's deliberate choice that D-045 asked
+  for: most dancers already have Venmo and it costs nothing. Ko-fi stays listed first because it
+  needs no account and shows no real name. A Venmo business profile is the upgrade path if tips
+  become regular.
+- **QR codes for both links** on the About page, for the room: the operator's tablet shows them
+  and a dancer scans with their own phone. Generated at build time by `npm run qr`
+  (`scripts/generate-support-qr.mjs`, `qrcode` as a devDependency only) into `src/supportQr.ts`,
+  so they render offline and no QR library ships to the browser. Always black on white with a
+  quiet zone. `src/support.test.ts` fails if a handle changes without re-running the script.
+- **"Coffee" became "boba"** in the labels and About copy, to match the Ko-fi page. Slow Jam Labs
+  is the owner's umbrella brand for this and future apps.
+- Placement unchanged: the About page only, never the wheel or the projector view (D-045).
+
 ### 2026-10-24 — 0.16.0: divisions on the wheel
 **Built:** with divisions on, the first spin draws from everyone still owed a couple; the second
 wheel shows only partners in the drawn dancer's division group, and the screen says so — *Now

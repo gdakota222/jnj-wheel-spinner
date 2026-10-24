@@ -1,5 +1,6 @@
 import { WheelMark } from '../components/WheelMark';
 import { supportLinks } from '../support';
+import { SUPPORT_QR } from '../supportQr';
 
 const VERSION = __APP_VERSION__;
 
@@ -68,7 +69,7 @@ export function AboutScreen({ firstRun, onDone }: Props) {
         ) : (
           <>
             <p className="card__body">
-              The app is free and stays free. If it has earned a coffee, this is where that goes.
+              The app is free and stays free. If it has earned a boba, this is where that goes.
             </p>
             <div className="support">
               {links.map((link) => (
@@ -89,6 +90,32 @@ export function AboutScreen({ firstRun, onDone }: Props) {
             <p className="card__body card__body--quiet">
               These open outside the app, so they need a connection.
             </p>
+            {/* The same links as QR codes, for the room: the operator's tablet
+                shows them and a dancer scans with their own phone. Drawn at
+                build time, so they appear with the wifi off. */}
+            <p className="card__body">Or scan one with your own phone's camera:</p>
+            <div className="support__qrs">
+              {links.map((link) => {
+                const qr = SUPPORT_QR[link.url];
+                if (!qr) return null;
+                const pad = 2;
+                const box = qr.size + pad * 2;
+                return (
+                  <figure key={link.url} className="support__qr">
+                    <svg
+                      viewBox={`${-pad} ${-pad} ${box} ${box}`}
+                      role="img"
+                      aria-label={`QR code: ${link.label}`}
+                      shapeRendering="crispEdges"
+                    >
+                      <rect x={-pad} y={-pad} width={box} height={box} fill="#ffffff" />
+                      <path d={qr.path} fill="#000000" />
+                    </svg>
+                    <figcaption className="menu__note">{link.label}</figcaption>
+                  </figure>
+                );
+              })}
+            </div>
           </>
         )}
       </section>
