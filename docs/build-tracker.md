@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.16.1 — live
+**Current version:** 0.16.2 — live
 **Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
 **Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -88,6 +88,22 @@ backlog, worked through in order of what actually broke the night.
 ---
 
 ## Build log
+
+### 2026-10-24 — Setup: How it runs comes first
+
+- **The setup steps are now How it runs, Dancers, Start.** Asked for by the owner in a UI
+  tweaking pass. See D-065.
+- **The *Match by division* toggle moved to How it runs**, so the Dancers step opens straight on
+  the add form. The How it works screen now says where to find it.
+- **The pinned button's notes were rewritten for the new order** — "Next: Dancers" says
+  "Add who is dancing tonight" (and "with their divisions" when that is on).
+- Checked in the browser at 375px: both steps, the toggle, and division pickers appearing on the
+  Dancers step once it is on. Not yet versioned or pushed.
+
+### 2026-10-24 — 0.16.2: the current avatar
+
+- The About page avatar is now v4 (dance shoes and shoe bag). 0.16.1 shipped v3 (sneakers on a
+  power line) because v4 had not been saved to the Art folder yet. Same 240px treatment, 46 KB.
 
 ### 2026-10-24 — 0.16.1: the right Ko-fi page, the owner on the About page, centered QR codes
 
@@ -1559,6 +1575,20 @@ All-Star running her own group shares that one list with anyone else on the devi
 
 **Also found:** the owner's phone was "stuck on 0.14.0". Nothing was wrong with it — 0.15.0 had not
 been pushed, and the live site only changes on a push to `main`.
+
+### D-065 — How it runs comes before Dancers, and owns the division toggle
+**Decision:** the setup steps reorder to How it runs / Dancers / Start, and *Match by division*
+moves from the top of Dancers onto How it runs. Supersedes the step order in D-046; the reasoning
+for staging setup at all stands.
+
+**Reasoning:** the owner's call. How it runs decides things that change the roster step —
+divisions in particular put a picker on every dancer — so making those choices first means the
+roster is built once in the shape the night needs, rather than turned on halfway and then
+backfilled. It also leaves Dancers as just the form, the counts and the list.
+
+**Gap, named:** dancers can be added before the night's shape is chosen by tapping straight to
+Dancers, as before. Nothing breaks — every step stays reachable (D-046) — but a first-timer's
+default path now asks the mode question before anyone is on the roster.
 
 ## Known issues and in-flight notes
 
