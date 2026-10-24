@@ -20,8 +20,8 @@ After that it works with no signal. Your dancers and night are saved on that one
 
 RUN A NIGHT
 1. Start a Session.
-2. Add dancers, each as Leader, Follower or Switch (names need a last initial, like "Sarah M"). 5 couples is the sweet spot, 10 max.
-3. Pick who is drawn first, and whether couples get a challenge.
+2. How it runs: pick the Wheel (the show) or the Quick list (every pairing at once, for practice nights). Turn on Match by division if you want couples kept within a level. On the wheel, pick who is drawn first and whether couples get a challenge.
+3. Dancers: add each one as Leader, Follower or Switch (names need a last initial, like "Sarah M"). On the wheel, 5 couples is the sweet spot, 10 max. The Quick list has no limit.
 4. Check the summary and start.
 5. Tap the wheel to spin. Tap again to hurry it, double-tap to skip. Spin for the first dancer, the second, then the challenge.
 6. While they dance, the screen holds. Press and HOLD "Next couple" when they are done.

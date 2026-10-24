@@ -177,10 +177,10 @@ general spinner, something for gamers, a decision-maker.
 
 ### Still to run
 - ~~**Section 7 — the handoff test.**~~ **Done — see Round 4.** A friend ran a full session
-  without being steered, on the owner's tablet. Passed. **Planned for roughly the week of 2026-09-07**, and deliberately
+  without being steered, on the owner's tablet. Passed. *(Originally planned for roughly the week of 2026-09-07,
   harder than the original checklist item: the device goes to **a dancer**, not a second organiser.
   An organiser who has watched the app run all night is not a cold start; a dancer is. See
-  Round 3 below for what that run needs to answer.
+  Round 3 below for what that run needs to answer.)*
 - ~~Section 9 — a realistic full run~~ — done, at the event itself.
 - ~~A real event~~ — done 2026-08-26.
 

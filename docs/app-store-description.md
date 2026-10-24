@@ -1,13 +1,13 @@
 # JnJ Wheel Spinner — Store / landing copy
 
 **Status:** Draft copy. **Two versions — check which one you are using.**
-**Last updated:** 2026-08-26
+**Last updated:** 2026-10-24 (checked against 0.16.4)
 **Source:** Written from [intent.md](intent.md) and [prd.md](prd.md)
 
-> **Read this first.** The original copy below was written before the v1.0 scope was cut, and it
-> describes the **finished product** — including the winner, the audience vote and the theatre
-> curtain, which are **v1.2 and v1.3** and do not exist yet (D-011). Using it today would promise
-> things the app cannot do. The v1.0 copy is the one that is true right now.
+> **Read this first.** The second copy below describes the **finished product**. Since it was
+> written, the crown and the curtain shipped (Mode A, 0.10.0) — but **passing the tablet for the
+> crowd to vote is v1.3 and does not exist yet**, so that copy still promises something the app
+> cannot do. The first copy is true today; it now also mentions the crown and the practice list.
 
 ---
 
@@ -18,8 +18,13 @@ that usually happens on a clipboard and puts it on a big, bright, spinning wheel
 can watch — spin for a leader, spin for a follower, and let the cheer happen. Add your dancers
 once, mark them as leaders, followers or switches, and the app handles the rest: everyone dances,
 nobody sits out, and no couple repeats. Flip on the challenge wheel and every pair gets a named
-dare — *A Whole New Level*, anyone? — drawn fresh so nothing repeats all night. No accounts, no
-setup, no internet required, because venue wifi always dies right when you need it.
+dare — *A Whole New Level*, anyone? — drawn fresh so nothing repeats all night. Crown a winner
+behind a curtain when the night is done, or skip the show entirely on practice nights and get every
+pairing in one list. No accounts, no setup, no internet required, because venue wifi always dies
+right when you need it.
+
+> *Added 2026-10-24:* the "Crown a winner…" sentence. Owner: veto or reword freely — it is the one
+> line here not yet read by you.
 
 ## Copy for the finished product — not yet true
 
@@ -47,8 +52,7 @@ Choices recorded so they survive future edits:
 - **Every claim in the v1.0 copy is one the app actually makes today.** "Nobody sits out" is the
   recycling behaviour, "no couple repeats" is guaranteed structurally rather than by luck, and "no
   internet required" is a real design constraint verified on a real device.
-- **Claims to keep out until the versions that deliver them ship:** a winner or a crown (v1.2), the
-  audience vote and the curtain (v1.3), writing your own prompts or bundles (v1.1), sharing bundles
+- **Claims to keep out until the versions that deliver them ship:** the audience vote (v1.3), writing your own prompts or bundles (v1.1), sharing bundles
   with other organisers (v1.4), and any dance style beyond West Coast Swing (v2.0).
 
 **The lesson worth keeping:** this copy went stale because it was written against the product's

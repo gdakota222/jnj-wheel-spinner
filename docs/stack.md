@@ -1,7 +1,7 @@
 # JnJ Wheel Spinner — Technical Stack
 
 **Status:** **In use.** Every choice below is running in the deployed app.
-**Last updated:** 2026-08-26
+**Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md)
 
 **Target devices:** a **Samsung Android tablet** primarily, with iPhone and iPad as fully
@@ -24,7 +24,9 @@ clever — when the owner searches for an answer without Claude present, the ans
 | State | **A single reducer** | See below. |
 | Storage | **localStorage**, versioned key | Data is tiny. Synchronous writes make "persist on every state change" trivial. IndexedDB is overkill without images. |
 | Offline / install | **vite-plugin-pwa** (Workbox) | Manifest, service worker, precaching, install prompt. |
-| Tests | **Vitest**, pairing logic only | See below. |
+| Tests | **Vitest**, domain logic only | See below. Plus one guard that the support QR codes match the handles. |
+| Lint | **oxlint** | Fast, zero-config; `npm run lint`. |
+| Build-time assets | **`qrcode`** (dev dependency only) | `npm run qr` draws the About page's QR codes into `src/supportQr.ts`, so nothing QR-related ships to the browser and they work offline. `npm run icons` does the same for the PWA icons (D-019). |
 | Hosting | **GitHub Pages** | Free, git-native, static. Repo needed anyway. |
 
 ### Why SVG for the wheel, not canvas

@@ -29,18 +29,21 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 7 of 9 |
-| **Blocked on** | Owner decisions on what ships in v1.0 (see the first-real-event entry) |
-| **Next up** | 0.8.0 — Device rehearsal |
+| **Versions shipped** | 0.1.0 → 0.16.4 — every rung of the ladder below except 1.0.0 |
+| **Blocked on** | Nothing. 1.0.0's bar was met in rehearsal Round 4; declaring it is the owner's call |
+| **Next up** | Owner's choice — see *Open — needs an answer from the owner* below |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
-| **First real event** | Ran 2026-08-26 — it worked; findings being triaged |
+| **First real event** | Ran 2026-08-26 — it worked; its findings were closed across 0.9.x–0.13.0 |
+| **Handoff rehearsal** | Passed — Round 4, mid-September 2026 ([rehearsal.md](rehearsal.md)) |
+| **In real use** | The owner's events, and a West Philly practice group on the Quick list since 0.15.0 |
 
 ---
 
 ## The version ladder
 
-Nine internal releases between here and a real event. Each is a **usable checkpoint**, not a
+Originally nine internal releases between nothing and a real event (0.1.0–0.8.0, then 1.0.0). The
+rows from 0.9.x down were added as real use asked for them. Each is a **usable checkpoint**, not a
 code drop — something that can be opened on the tablet and looked at.
 
 | Version | Name | Contains | Status |
@@ -60,7 +63,8 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.13.0** | Handoff fixes | Lock owns the back gesture, back steps back to Undo, rename in setup, visible edges, the night's record, no-scroll end screen | ✅ Shipped 2026-09-23 |
 | **0.14.0** | Explains itself | How it works, one-time tips that can be reset, a one-screen title, and a reveal that celebrates | ✅ Shipped 2026-09-23 |
 | **0.15.0** | Practice mode | Quick list, divisions (Quick list only), Strict/Merge, the unmatched warning held to confirm, How it works › Practice, a first-time tip | ✅ Shipped 2026-10-24 |
-| **0.16.0** | Divisions on the wheel | The second spin shows only partners in the same division, labelled as such; re-spin aims at the right pool | 🔨 Built 2026-10-24, awaiting owner review |
+| **0.16.0** | Divisions on the wheel | The second spin shows only partners in the same division, labelled as such; re-spin aims at the right pool | ✅ Shipped 2026-10-24 |
+| **0.16.1–0.16.4** | Support and setup polish | Ko-fi, Venmo and QR codes on About; the owner's avatar; setup asks How it runs first and scrolls itself to the next question | ✅ Shipped 2026-10-24 |
 | **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | 🟢 **Bar met** in rehearsal Round 4 — declaring it is the owner's call |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
@@ -88,6 +92,26 @@ backlog, worked through in order of what actually broke the night.
 ---
 
 ## Build log
+
+Newest first. Every entry dated.
+
+### 2026-10-24 — Documentation audit
+
+A full pass over every doc, the memory notes and the recent chats, checking each against the app as
+it stands at 0.16.4. What was stale, and is now fixed:
+- **This tracker's status table** still read "7 of 9 shipped, next up 0.8.0". The ladder showed
+  0.16.0 as awaiting review; the owner approved and pushed it the same evening.
+- **Reversed decisions had no forward pointer.** D-011, D-020, D-036, D-045 and D-046 were each
+  superseded later, but only the *later* entry said so — someone reading the original would take it
+  as standing. Each now carries a note pointing forward. Nothing was deleted.
+- **The PRD** still described the app as pre-first-event, listed the winner, the AllSkate and adding
+  a dancer mid-session as "not in v1.0" (all shipped), and said the donate link was pending.
+- **The landing copy** said the crown does not exist yet, and undersold what ships today.
+- **costs-and-monetization.md** treated donations as hypothetical. They are live.
+- **stack.md** did not mention the QR script or the `qrcode` dev dependency.
+- **The README** was still Vite's template text — the first thing anyone opening the public repo saw.
+- **The organizer share guide** (written 2026-10-05) gave the old setup order and did not know about
+  the Quick list. The text version is updated; the .docx is flagged below.
 
 ### 2026-10-24 — 0.16.4: How it runs scrolls to the next question
 
@@ -126,7 +150,7 @@ backlog, worked through in order of what actually broke the night.
 
 ### 2026-10-24 — Support goes live: Ko-fi, Venmo, and QR codes (Slow Jam Labs)
 
-- **`KOFI_HANDLE` is set to `slowjamlabs`** in `src/support.ts`, so the About page's support card
+- **`KOFI_HANDLE` is set to `slowjamlabs`** in `src/support.ts` *(a typo — corrected to `slowjamslabs` in 0.16.1)*, so the About page's support card
   now renders. The account exists (ko-fi.com/slowjamlabs) and pays out through Stripe, which was
   D-045's condition for filling it in. The note now says card, Apple Pay, or Google Pay (no PayPal
   is connected).
@@ -195,9 +219,7 @@ all of it. That is the code that runs live nights, so it gets its own slice (0.1
 being rushed in here.
 
 **Interpretation to confirm:** with no All-Stars on the roster, Merge folds a lone Champions dancer
-into Advanced — "one down" skips empty divisions.
-
-Newest first. Every entry dated.
+into Advanced — "one down" skips empty divisions. *Confirmed by the owner in D-064.*
 
 ### 2026-09-23 — 0.14.0: the app explains itself, and the reveal celebrates
 - **How it works**, from the title screen: every feature in one line each, in four tabs. Fits a
@@ -863,6 +885,9 @@ optional and off by default. Building it after a real event means building it wi
 out loud — which is what happens today anyway. This is the largest experiential hole in the MVP and
 is accepted knowingly.
 
+> **Superseded by D-048** (2026-08-31): the ending shipped early as 0.10.0, before 1.0.0 was
+> declared. The reasoning above held for the MVP that went to the first event.
+
 ### D-012 — Prove the deployment pipeline before building features
 **Decision:** 0.1.0 is a deployed, installable, offline-capable blank app.
 **Reasoning:** service workers, HTTPS install, and offline caching are the riskiest unknowns in the
@@ -939,6 +964,9 @@ fitting on the wheel.
 unbounded name silently breaks that. Rejecting at entry keeps the failure in setup, where it
 costs a retype, rather than on the wheel in front of a room. The number is a judgement call, not
 a measured limit — revisit once the real wheel exists in 0.3.0 and the actual text budget is known.
+
+> **Revised by D-022:** the 28-character cap stands for storage and the reveal; the wheel now sizes
+> each label itself.
 
 ### D-021 — No service worker in development
 **Decision:** `devOptions.enabled: false` in the PWA plugin config.
@@ -1172,6 +1200,9 @@ browser, the logic was sound, and the failure needs a real installed Android app
 closed and reopened. It is the clearest case yet for the rehearsal existing at all — no amount of
 desktop verification would have reached it.
 
+> **Partly superseded by D-051:** mid-session, back now steps back through the app to Undo instead
+> of warning. The re-arm-on-resume mechanism stands.
+
 ### D-037 — Undo steps back through anything, session and roster together
 **Decision:** any action can be reversed — draws, prompt draws, dancers added, renamed, re-roled or
 removed. Each step restores the session **and** the roster, since a dancer edit changes both. A spin
@@ -1282,6 +1313,10 @@ to make deliberately rather than a default to inherit.
 **A full screen, not a dialog.** On a phone a first-run modal is a cramped box over a screen the
 operator has not seen yet.
 
+> **Filled in 2026-10-24:** Ko-fi (`slowjamslabs`, paying out through Stripe) and, by the owner's
+> deliberate choice, Venmo — see the *Support goes live* and 0.16.1 build-log entries. The
+> render-nothing-while-unset rule stands.
+
 ### D-046 — Setting up is staged, and .shell is positioned
 **Decision:** split session setup into Dancers / How it runs / Start, with a pinned step bar and
 primary button. Give `.shell` `position: relative`.
@@ -1305,6 +1340,9 @@ document by 635px and made the whole "pinned" layout scrollable — the header c
 the top. `position: relative` on `.shell` fixes it everywhere at no cost, since every overlay in
 the app is `position: fixed` and unaffected. The session screen had the same latent bug and had
 only ever been saved by not overflowing far enough.
+
+> **Step order superseded by D-065** (2026-10-24): How it runs / Dancers / Start. Staging, the pinned
+> step bar and button, and `.shell` being positioned all stand.
 
 ### D-047 — In Mode A the curtain is a drumroll, not a screen
 **Decision:** the operator chooses the winner first; *then* the curtain comes down, says
@@ -1622,6 +1660,14 @@ Discovered during the build, deferred within v1.0, and tracked here so nothing q
 disappears between checkpoints.
 
 ### Open — needs an answer from the owner
+- **Declare 1.0.0?** The bar (both event blockers closed, run by someone other than its author) was
+  met in rehearsal Round 4 in September. Everything since has been additive. (open since 0.13.0)
+- **The organizer guide .docx is out of date.** `docs/share/organizer-text.txt` was updated in the
+  2026-10-24 audit (setup order, the Quick list, the 10-couple cap applying to spotlight nights only);
+  the Word version, and any copy already shared on Google Drive, still say the old thing. Regenerate
+  it, or retire it in favour of the text? (found 2026-10-24)
+- **Divisions on the wheel have not been run in a room.** 0.16.0 was proven by simulation and
+  checked in the browser pane; the practice group is the natural first real test. (found 2026-10-24)
 
 ### Closed
 - ~~Spin-order choice is not on the roster screen~~ — resolved in 0.9.5. Setup is staged now, and

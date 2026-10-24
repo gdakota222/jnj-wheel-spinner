@@ -1,8 +1,9 @@
 # JnJ Wheel Spinner — Product Requirements
 
-**Status:** v1.0 is **built and deployed**, in device rehearsal before its first real event.
-Later versions outlined.
-**Last updated:** 2026-08-26
+**Status:** v1.0 is **built, deployed and in real use** (0.16.4). It has run a real event and passed
+a handoff rehearsal; declaring 1.0.0 is the owner's call. Parts of v1.2 and a practice mode shipped
+early. Later versions outlined.
+**Last updated:** 2026-10-24
 **Progress:** see [build-tracker.md](build-tracker.md) · **Live:** https://gdakota222.github.io/jnj-wheel-spinner/
 **Companion doc:** [intent.md](intent.md) — why this exists, design principles, permanent non-goals.
 
@@ -152,7 +153,7 @@ less hassle, and it's fun for everyone. Those are not directly measurable, so th
 | **v1.3** | The audience decides | The most complex feature in the product. Built with real-event knowledge. |
 | **v1.4** | Sharing decks | Only matters once decks are worth sharing, which requires v1.1 plus content. |
 | **v1.5** | Delight | Pure polish. Deliberately last; nothing depends on it. |
-| **Practice** | Quick list and divisions | Shipped out of sequence in 0.15.0 for a real practice group — see D-056 to D-063. |
+| **Practice** | Quick list and divisions | Shipped out of sequence in 0.15.0–0.16.0 for a real practice group — see D-056 to D-064. |
 | **v1.6** | Event history | Save past events with dates, names and the songs danced. Overturns a permanent non-goal — see D-043. |
 | **v2.0** | Parked | Genuinely undecided. Answered by use, not by planning. |
 
@@ -290,7 +291,7 @@ or the operator double-tapped. One correction tool: **re-spin the current draw.*
 
 ### About, and asking for support
 Asked for after the first real event: make it clear a person made this, and let early adopters
-buy that person a coffee if they want to.
+buy that person a boba if they want to.
 
 - **Shown once, on the first launch after installing**, as a full screen rather than a dialog. On
   a phone a dialog would be a cramped box over a screen the operator has not seen yet.
@@ -300,10 +301,11 @@ buy that person a coffee if they want to.
   back, not an introduction to an app they are already running.
 - **States plainly that nothing leaves the device** — no account, no server, no ads. This is the
   one screen where that claim is worth making explicitly, and it is true.
-- **Donations are opt-in and unset by default.** Every outward link lives in one file; an unset
-  handle means the page says there is nothing to take yet rather than showing a button that leads
-  nowhere. Ko-fi is the intended destination — chosen because a giver needs no account of their
-  own — and is pending an account.
+- **Donations are opt-in, and only shown once they exist.** Every outward link lives in one file
+  (`src/support.ts`); an unset handle renders nothing rather than a button that leads nowhere.
+  **Live since 2026-10-24:** Ko-fi first (a giver needs no account of their own and sees no real
+  name), then Venmo by the owner's choice, each with a QR code so a dancer can scan the operator's
+  screen with their own phone. Shown on the About page only — never on the wheel or the TV.
 - **Redrawing a challenge spins the wheel again, with the replaced one taken off it.** The couple
   sees a genuinely different set rather than a wheel that passes over a segment it cannot land on.
   The replaced challenge returns to circulation once the couple is committed — it was never danced.
@@ -559,13 +561,18 @@ another person must not cost the night.
 | Prompt reveal | Name and description. |
 | Dance hold | Prompt + `Next Couple`. |
 | Session log | Reachable during the session. |
-| Session complete | End of the pass. No winner in v1.0. |
+| Session complete | End of the pass, with *Crown a Winner* and *AllSkate* offered and neither owed. |
 | Prompt Bank | Every prompt with its description, by bundle, with set-aside toggles and a bundle picker. |
 
 ### Explicitly not in v1.0
 The winner feature in any form, deck authoring, deck sharing, the all-skate, sloth mode, audio,
 color-blind palettes, multiple saved rosters, adding a dancer mid-session, the announce-a-re-spin
 option, and the one- and two-couple special modes.
+
+> **As of 0.16.4, three of these shipped anyway**, each for a recorded reason: adding a dancer
+> mid-session (0.9.0, the first real event asked for it), the winner in Mode A (0.10.0, D-048) and
+> the AllSkate (0.11.0). The paragraph below is the reasoning as it stood when v1.0 was scoped, kept
+> for the record. Everything else in the list is still out.
 
 **What cutting the winner costs:** the night loses its ending. This is the largest experiential
 hole in v1.0, closed by the operator announcing a winner out loud — which is what happens today
@@ -625,6 +632,9 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
 ---
 
 ## v1.2 — An ending
+
+> **Mode A, the curtain and the AllSkate shipped early, in 0.10.0–0.12.0 (D-048).** What is left of
+> v1.2 is anything below that is not on the finished-night screen today.
 
 **Goal:** give the night a finish, cheaply.
 
@@ -899,7 +909,8 @@ See [costs-and-monetization.md](costs-and-monetization.md).
 ## Practice mode — Quick list and divisions
 
 **Goal:** let a practice group get fair pairings fast, without the show. Shipped in 0.15.0, ahead of
-the numbered roadmap, because a real group asked for it. Decisions: D-056 to D-063.
+the numbered roadmap, because a real group asked for it; divisions reached the wheel in 0.16.0.
+Decisions: D-056 to D-064.
 
 **Quick list** — chosen at setup beside the wheel, each session.
 - Every pairing at once, numbered, in one scrolling list. Same pairing rules as the wheel.

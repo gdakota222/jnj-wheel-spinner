@@ -1,7 +1,8 @@
 # Costs and Monetization
 
-**Status:** Free today. Monetization is a possible future, with no model chosen.
-**Last updated:** 2026-08-26
+**Status:** Free, with a tip jar. Donations went live 2026-10-24 (Ko-fi and Venmo, About page
+only). Any other monetization is a possible future, with no model chosen.
+**Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [stack.md](stack.md) · [prd.md](prd.md)
 
 This document exists so that a decision to charge money later doesn't arrive as a surprise
@@ -88,6 +89,8 @@ from least to most disruptive.
 
 1. **Tip jar / donations.** A link out to Ko-fi or GitHub Sponsors. Zero architectural change, zero
    risk, low revenue. Compatible with everything, including staying open source.
+   **Done 2026-10-24:** Ko-fi (`slowjamslabs`, under the owner's Slow Jam Labs brand) and Venmo,
+   with QR codes, on the About page only. See D-045 and the tracker's *Support goes live* entry.
 2. **One-time paid app-store listing**, with the PWA staying free. The store handles payment and
    licensing, so **no backend is needed** — the only model that charges real money without breaking
    the no-server non-goal. Costs the $99/year and Apple's cut.
@@ -95,7 +98,8 @@ from least to most disruptive.
    content unit, already named, already shareable. Professionally-written prompt sets for other
    dance styles are a real thing someone might pay for. But delivering them requires payment
    handling and some notion of ownership — a backend.
-4. **A "Pro" tier** gating features like sharing, multiple rosters, or the winner modes. Highest
+4. **A "Pro" tier** gating features like sharing, multiple rosters, or the winner modes *(Mode A
+   has shipped free since 0.10.0, so gating it now would take something away)*. Highest
    revenue potential and the worst fit: it would gut the free version of exactly the things that
    make the app useful to the organizers it was built for.
 5. **Licensing to dance organizations or event series.** High touch, low volume, no infrastructure
