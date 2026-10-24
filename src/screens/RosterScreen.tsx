@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { HoldButton } from '../components/HoldButton';
 import type { StartChoice } from '../App';
@@ -105,6 +105,34 @@ export function RosterScreen({
   const [renameDraft, setRenameDraft] = useState('');
   const [renameError, setRenameError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const runningRef = useRef<HTMLDivElement>(null);
+  /** The question to bring up next on How it runs. A fresh object per answer, so
+      answering the same question twice still scrolls. */
+  const [nextQuestion, setNextQuestion] = useState<{ id: string } | null>(null);
+
+  /**
+   * Each answer on How it runs brings the next question up to the top, so the
+   * operator taps down the page instead of scrolling it. Only ever downward: an
+   * answer whose next question is already above the top leaves the page where
+   * it is, so looking back up is never fought.
+   *
+   * The scroll is done on the panel by hand rather than with scrollIntoView,
+   * which would also scroll the overflow-hidden shell and push the pinned step
+   * bar off the top.
+   */
+  useEffect(() => {
+    const panel = runningRef.current;
+    const target = nextQuestion && panel?.querySelector(`[data-question="${nextQuestion.id}"]`);
+    if (!panel || !target) return;
+    const gap = 8;
+    const top =
+      panel.scrollTop + target.getBoundingClientRect().top - panel.getBoundingClientRect().top - gap;
+    if (top <= panel.scrollTop) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    panel.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
+  }, [nextQuestion]);
+
+  const bringUp = (id: string | null) => setNextQuestion(id ? { id } : null);
 
   /** Divisions apply to both the wheel and the Quick list (D-062). */
   const applied = divisionSettings;
@@ -485,7 +513,7 @@ export function RosterScreen({
       )}
 
       {step === 'running' && (
-        <div className="panel panel__scroll">
+        <div className="panel panel__scroll" ref={runningRef}>
           <section className="card">
             <h2 className="card__title">The wheel, or a quick list?</h2>
             <p className="card__body">
@@ -498,7 +526,10 @@ export function RosterScreen({
                 type="button"
                 className="roles__option"
                 aria-pressed={mode === 'wheel'}
-                onClick={() => setMode('wheel')}
+                onClick={() => {
+                  setMode('wheel');
+                  bringUp('divisions-toggle');
+                }}
               >
                 The wheel — spin for every couple
               </button>
@@ -506,7 +537,10 @@ export function RosterScreen({
                 type="button"
                 className="roles__option"
                 aria-pressed={mode === 'list'}
-                onClick={() => setMode('list')}
+                onClick={() => {
+                  setMode('list');
+                  bringUp('divisions-toggle');
+                }}
               >
                 Quick list — every pairing at once
               </button>
@@ -516,11 +550,20 @@ export function RosterScreen({
           {/* Optional, and off unless turned on — divisions serve the groups
               preparing for competition, not every night (D-058). Asked here,
               before the roster, because turning it on changes the Dancers step. */}
-          <label className="toggle-row">
+          <label className="toggle-row" data-question="divisions-toggle">
             <input
               type="checkbox"
               checked={divisionsOn}
-              onChange={(e) => setDivisions({ enabled: e.target.checked })}
+              onChange={(e) => {
+                setDivisions({ enabled: e.target.checked });
+                bringUp(
+                  e.target.checked && mode !== null
+                    ? 'divisions'
+                    : mode === 'wheel'
+                      ? 'order'
+                      : null,
+                );
+              }}
             />
             <span className="toggle-row__text">
               <span className="toggle-row__label">Match by division</span>
@@ -533,7 +576,7 @@ export function RosterScreen({
           </label>
 
           {divisionsOn && mode !== null && (
-            <section className="card">
+            <section className="card" data-question="divisions">
               <h2 className="card__title">Divisions</h2>
               <p className="card__body">
                 {mode === 'wheel'
@@ -547,7 +590,10 @@ export function RosterScreen({
                   type="button"
                   className="roles__option"
                   aria-pressed={divisionSettings.mode === 'strict'}
-                  onClick={() => setDivisions({ mode: 'strict' })}
+                  onClick={() => {
+                    setDivisions({ mode: 'strict' });
+                    bringUp(mode === 'list' ? 'division-order' : 'order');
+                  }}
                 >
                   Strict — they go without a partner
                 </button>
@@ -555,14 +601,19 @@ export function RosterScreen({
                   type="button"
                   className="roles__option"
                   aria-pressed={divisionSettings.mode === 'merge'}
-                  onClick={() => setDivisions({ mode: 'merge' })}
+                  onClick={() => {
+                    setDivisions({ mode: 'merge' });
+                    bringUp(mode === 'list' ? 'division-order' : 'order');
+                  }}
                 >
                   Merge — they dance one division down
                 </button>
               </fieldset>
               {mode === 'list' && (
                 <>
-                  <p className="card__body">Which division goes first?</p>
+                  <p className="card__body" data-question="division-order">
+                    Which division goes first?
+                  </p>
                   <fieldset className="roles roles--stacked">
                     <legend className="visually-hidden">Division order</legend>
                     {(
@@ -590,7 +641,7 @@ export function RosterScreen({
 
           {mode === 'wheel' && (
           <>
-          <section className="card">
+          <section className="card" data-question="order">
             <h2 className="card__title">Which role is drawn first?</h2>
             <p className="card__body">
               Set once and locked for the whole session, so the room learns the rhythm of the draw.
@@ -609,7 +660,10 @@ export function RosterScreen({
                   type="button"
                   className="roles__option"
                   aria-pressed={orderChoice === value}
-                  onClick={() => setOrderChoice(value)}
+                  onClick={() => {
+                    setOrderChoice(value);
+                    bringUp('challenges');
+                  }}
                 >
                   {label}
                 </button>
@@ -620,7 +674,7 @@ export function RosterScreen({
           {/* Asked, never defaulted (D-015). A default set the wrong way is only
               discovered mid-session, when changing it is disruptive — and asking
               makes the feature visible to an organiser who has never seen the app. */}
-          <section className="card">
+          <section className="card" data-question="challenges">
             <h2 className="card__title">Dance challenges?</h2>
             <p className="card__body">
               Each couple can draw a challenge to dance — a named constraint like{' '}

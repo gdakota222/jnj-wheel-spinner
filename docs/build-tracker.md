@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.16.3 — live
+**Current version:** 0.16.4 — live
 **Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
 **Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -88,6 +88,12 @@ backlog, worked through in order of what actually broke the night.
 ---
 
 ## Build log
+
+### 2026-10-24 — 0.16.4: How it runs scrolls to the next question
+
+- **Each answer on How it runs brings the next question up.** See D-066.
+- Checked in the browser at 375px through both paths, wheel and Quick list, with divisions on:
+  each next question landed 8px from the top, and the step bar never moved.
 
 ### 2026-10-24 — 0.16.3: setup asks how it runs first
 
@@ -1589,6 +1595,26 @@ backfilled. It also leaves Dancers as just the form, the counts and the list.
 **Gap, named:** dancers can be added before the night's shape is chosen by tapping straight to
 Dancers, as before. Nothing breaks — every step stays reachable (D-046) — but a first-timer's
 default path now asks the mode question before anyone is on the roster.
+
+### D-066 — How it runs scrolls itself to the next question
+**Decision:** every answer on How it runs smoothly scrolls the next question to the top of the
+panel: mode → *Match by division* → Divisions (if on) → which role first → challenges, or on the
+Quick list, Strict/Merge → which division first. Only downward; scrolling back up is free.
+
+**Reasoning:** the owner's ask. Choosing the wheel opens three more cards, and the operator was
+scrolling between every tap. With the next decision always at the top, setting up is a run of taps.
+
+**Choices made without asking, flagged:**
+- **It never scrolls up.** If the next question is already above the top, nothing moves, so
+  someone reading back is never pulled away. Re-answering an earlier question does scroll down
+  again, since its next question is below it.
+- **Turning divisions off skips to the next question** (spin order on the wheel; nothing on the
+  Quick list, where there is none left on the page).
+- **The last questions cannot reach the top**, because nothing is below them to scroll into. They
+  end fully in view at the bottom, beside the pinned Next button.
+- **Reduced motion jumps instead of gliding.**
+- **The panel is scrolled by hand, not with `scrollIntoView`,** which also scrolls overflow-hidden
+  ancestors and would push the pinned step bar off the top (the same family of bug as D-046).
 
 ## Known issues and in-flight notes
 
