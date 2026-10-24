@@ -1,6 +1,6 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.16.2 — live
+**Current version:** 0.16.3 — live
 **Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
 **Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
@@ -89,7 +89,7 @@ backlog, worked through in order of what actually broke the night.
 
 ## Build log
 
-### 2026-10-24 — Setup: How it runs comes first
+### 2026-10-24 — 0.16.3: setup asks how it runs first
 
 - **The setup steps are now How it runs, Dancers, Start.** Asked for by the owner in a UI
   tweaking pass. See D-065.
@@ -98,7 +98,7 @@ backlog, worked through in order of what actually broke the night.
 - **The pinned button's notes were rewritten for the new order** — "Next: Dancers" says
   "Add who is dancing tonight" (and "with their divisions" when that is on).
 - Checked in the browser at 375px: both steps, the toggle, and division pickers appearing on the
-  Dancers step once it is on. Not yet versioned or pushed.
+  Dancers step once it is on. (These notes rode along in the 0.16.2 commit by accident; the code ships here.)
 
 ### 2026-10-24 — 0.16.2: the current avatar
 

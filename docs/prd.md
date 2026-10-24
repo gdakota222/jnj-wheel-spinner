@@ -396,8 +396,10 @@ The same rule, applied one screen earlier. A colleague meeting the app cold at t
 event scrolled past the roster, the counts, the spin order and the challenges question hunting for
 the button that starts the night.
 
-- **Three steps: Dancers, How it runs, Start.** Numbered and ordered, because someone who has
-  never run this needs telling what setting up involves.
+- **Three steps: How it runs, Dancers, Start.** Numbered and ordered, because someone who has
+  never run this needs telling what setting up involves. How it runs comes first because it
+  shapes the roster: the *Match by division* toggle lives there, and turning it on puts division
+  pickers on the Dancers step (D-065).
 - **Every step is reachable at any time**, by tapping it. Nothing in the step bar is disabled — an
   organiser on their fifth event should not have to walk a wizard to change one answer.
 - **A step marks itself done with a tick**, not with colour alone.
@@ -547,7 +549,7 @@ another person must not cost the night.
 |---|---|
 | Title | One screen, no scrolling. **Start a Session**, then **Prompt Bank · How it works · About** in a row, and one line saying what arrives later. The permanent home of the app title. |
 | How it works | Every feature in one line each, in four tabs — *Setting up, Running, The end, The app* — and a button to bring the one-time tips back. Easter eggs deliberately absent. |
-| Session setup | Three steps — Dancers, How it runs, Start — with a pinned step bar and primary button, and a summary before committing. |
+| Session setup | Three steps — How it runs, Dancers, Start — with a pinned step bar and primary button, and a summary before committing. |
 | About | Who made the app, that it holds nothing off the device, and where to chip in. Shown once on first launch, and permanently on the title screen. |
 | Crown a winner | The session's couples, one chosen, nothing committed yet. *(v1.2, shipped early in 0.10.0.)* |
 | Curtain and reveal | The drumroll, the countdown, and the names. *(v1.2, shipped early in 0.10.0.)* |

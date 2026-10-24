@@ -118,7 +118,7 @@ const TABS: { id: string; label: string; items: Item[] }[] = [
       },
       {
         name: 'Match by division',
-        what: 'Optional, on the dancers step. Newcomer to Champions, one division for leading and one for following.',
+        what: 'Optional, on the How it runs step. Newcomer to Champions, one division for leading and one for following.',
       },
       {
         name: 'Divisions on the wheel',

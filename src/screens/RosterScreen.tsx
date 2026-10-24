@@ -65,10 +65,14 @@ const SIDE_LABEL: Record<Side, string> = { leaders: 'Lead', followers: 'Follow' 
  * needs telling what setting up involves. They are also directly tappable,
  * because someone running their fifth event should not have to walk a wizard to
  * change one answer.
+ *
+ * How it runs comes first because it shapes the roster: matching by division
+ * puts a division picker on every dancer, so that choice is made before the
+ * names go in rather than discovered after.
  */
 const STEPS = [
-  { id: 'dancers', label: 'Dancers' },
   { id: 'running', label: 'How it runs' },
+  { id: 'dancers', label: 'Dancers' },
   { id: 'start', label: 'Start' },
 ] as const;
 
@@ -87,7 +91,7 @@ export function RosterScreen({
   mixedBundles,
   onEditBundles,
 }: Props) {
-  const [step, setStep] = useState<StepId>('dancers');
+  const [step, setStep] = useState<StepId>('running');
   const [mode, setMode] = useState<Mode | null>(null);
   const [orderChoice, setOrderChoice] = useState<OrderChoice>('leaders');
   const [draftDivisions, setDraftDivisions] = useState<Partial<Record<Side, Division>>>({});
@@ -276,24 +280,6 @@ export function RosterScreen({
               the height the panel has, which left the list of names six pixels
               tall. The complaint being answered here was the button below the
               fold, and the pinned step bar and primary button answer it. */}
-          {/* Optional, and off unless turned on — divisions serve the groups
-              preparing for competition, not every night (D-058). */}
-          <label className="toggle-row">
-            <input
-              type="checkbox"
-              checked={divisionsOn}
-              onChange={(e) => setDivisions({ enabled: e.target.checked })}
-            />
-            <span className="toggle-row__text">
-              <span className="toggle-row__label">Match by division</span>
-              <span className="toggle-row__note">
-                {divisionsOn
-                  ? 'Couples are paired within Newcomer, Novice, Intermediate and up.'
-                  : 'Optional — for competition practice.'}
-              </span>
-            </span>
-          </label>
-
           <form className="add" onSubmit={addDancer} noValidate>
             <label className="add__label" htmlFor="dancer-name">
               Dancer name
@@ -526,6 +512,25 @@ export function RosterScreen({
               </button>
             </fieldset>
           </section>
+
+          {/* Optional, and off unless turned on — divisions serve the groups
+              preparing for competition, not every night (D-058). Asked here,
+              before the roster, because turning it on changes the Dancers step. */}
+          <label className="toggle-row">
+            <input
+              type="checkbox"
+              checked={divisionsOn}
+              onChange={(e) => setDivisions({ enabled: e.target.checked })}
+            />
+            <span className="toggle-row__text">
+              <span className="toggle-row__label">Match by division</span>
+              <span className="toggle-row__note">
+                {divisionsOn
+                  ? 'Couples are paired within Newcomer, Novice, Intermediate and up.'
+                  : 'Optional — for competition practice.'}
+              </span>
+            </span>
+          </label>
 
           {divisionsOn && mode !== null && (
             <section className="card">
@@ -816,11 +821,13 @@ export function RosterScreen({
           <button className="next__button" type="button" onClick={() => setStep(nextStep.id)}>
             <span className="menu__label">Next: {nextStep.label}</span>
             <span className="menu__note">
-              {step === 'dancers'
-                ? dancersReady
-                  ? `${projection.couples} ${projection.couples === 1 ? 'couple' : 'couples'} so far — more can be added later`
-                  : 'Dancers can still be added after this'
-                : 'Check it all over before the night starts'}
+              {step === 'running'
+                ? divisionsOn
+                  ? 'Add who is dancing tonight, with their divisions'
+                  : 'Add who is dancing tonight'
+                : dancersReady
+                  ? `${projection.couples} ${projection.couples === 1 ? 'couple' : 'couples'} so far — check it all over before starting`
+                  : 'Check it all over before the night starts'}
             </span>
           </button>
         ) : blocker === null && unpairable.length > 0 ? (
