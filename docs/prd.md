@@ -74,6 +74,7 @@ ones that are easy to overlook.
 | **The dancing couple** | Reads the prompt from the floor, at a glance, then performs it. | The prompt stays on screen mainly for *them*, not for the operator's memory. |
 | **The deck author** | Same person as the operator, but at home, unhurried, two hands free. | Three of five title-screen destinations belong to this context. |
 | **The second organizer** | Receives a shared deck, or picks up the tablet mid-event. | Arrives with no context and no onboarding. |
+| **The practice organizer** | Runs a JnJ practice group, not a social — the first is an All-Star running a bi-monthly competition-practice night. Uses the Quick list and, often, divisions. | Sets the app up **without the owner there**, so setup, the Quick list and divisions have to explain themselves. Cares about fast pairings and fair levels, not spectacle. |
 
 There are no accounts and no logins. **The app never knows or cares who is holding it.**
 
@@ -151,6 +152,7 @@ less hassle, and it's fun for everyone. Those are not directly measurable, so th
 | **v1.3** | The audience decides | The most complex feature in the product. Built with real-event knowledge. |
 | **v1.4** | Sharing decks | Only matters once decks are worth sharing, which requires v1.1 plus content. |
 | **v1.5** | Delight | Pure polish. Deliberately last; nothing depends on it. |
+| **Practice** | Quick list and divisions | Shipped out of sequence in 0.15.0 for a real practice group — see D-056 to D-063. |
 | **v1.6** | Event history | Save past events with dates, names and the songs danced. Overturns a permanent non-goal — see D-043. |
 | **v2.0** | Parked | Genuinely undecided. Answered by use, not by planning. |
 
@@ -891,6 +893,35 @@ See [costs-and-monetization.md](costs-and-monetization.md).
 > history, which is a deliberate reversal, not an oversight — see D-043. Everything still stays on
 > the device with no server, so the *architectural* non-goal is untouched; it is the *product*
 > claim that changes.
+
+## Practice mode — Quick list and divisions
+
+**Goal:** let a practice group get fair pairings fast, without the show. Shipped in 0.15.0, ahead of
+the numbered roadmap, because a real group asked for it. Decisions: D-056 to D-063.
+
+**Quick list** — chosen at setup beside the wheel, each session.
+- Every pairing at once, numbered, in one scrolling list. Same pairing rules as the wheel.
+- Tap a couple once they've danced. Danced couples are locked.
+- **Reshuffle** re-pairs only couples still to dance.
+- **A late arrival** takes the first still-to-dance repeat on their side, or joins at the end.
+- **Change** pairs anyone with anyone by hand, and warns if someone would drop off the list.
+- No challenges, birthday jam, crown or finale. No 10-couple advice.
+- Nobody dances twice in a row when someone else could go.
+- Tagged *Practice* for event history (v1.6).
+
+**Divisions** — optional, off unless turned on.
+- WSDC ladder: Newcomer, Novice, Intermediate, Advanced, All-Star, Champions.
+- One division for leading and one for following; unset is matched as Novice, and the app says who.
+- **Strict** or **Merge**. Merge folds a division with nobody on one side into the next division
+  down that has anyone in it (Newcomers fold up). It never merges just to avoid repeats.
+- In Strict, anyone who cannot be matched is named on the start step, and starting takes a hold.
+- Order: lowest first by default, highest first, or mixed.
+- **Quick list only, for now.** Matching on the wheel — the second spin showing only partners in
+  the same division — is the next slice. Until then the setup screen says the wheel ignores them.
+
+- **Someone left** takes a dancer off tonight's list (not the roster) and rearranges everything
+  still to dance without them. Change still works for fixing it by hand instead.
+- **No size cap.** The 10-couple ceiling is for spotlight nights only (D-064).
 
 ## v2.0 — Parked pending real-world use
 

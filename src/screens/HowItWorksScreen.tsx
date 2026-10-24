@@ -39,6 +39,10 @@ const TABS: { id: string; label: string; items: Item[] }[] = [
         what: 'Press and hold a name. When they are drawn, everything stops for a birthday jam.',
       },
       {
+        name: 'Wheel or Quick list',
+        what: 'Chosen each time you start. Same roster either way — see Practice.',
+      },
+      {
         name: 'Who goes first',
         what: 'Leaders, followers, or let the app decide. Locked in for the night.',
       },
@@ -77,6 +81,60 @@ const TABS: { id: string; label: string; items: Item[] }[] = [
     ],
   },
   {
+    id: 'practice',
+    label: 'Practice',
+    items: [
+      {
+        name: 'Quick list',
+        what: 'Every pairing at once, numbered. No wheel — for practice nights.',
+      },
+      {
+        name: 'Ticking off',
+        what: 'Tap a couple once they’ve danced. Danced couples are locked in place.',
+      },
+      {
+        name: 'Send up as many as you like',
+        what: 'One couple at a time or the whole floor — the list just keeps the order.',
+      },
+      {
+        name: 'Reshuffle',
+        what: 'New pairings for everyone still to dance. Nobody who has danced moves.',
+      },
+      {
+        name: 'Late arrival',
+        what: 'Takes someone’s second dance on their side if there is one, or joins at the end.',
+      },
+      {
+        name: 'Change',
+        what: 'Pair anyone with anyone by hand. It warns if someone would drop off the list.',
+      },
+      {
+        name: 'Someone left',
+        what: 'Takes them off tonight’s list and rearranges who is still to dance. The roster keeps them.',
+      },
+      {
+        name: 'No size limit',
+        what: 'The 10-couple cap is for wheel nights. A practice list can be as long as you need.',
+      },
+      {
+        name: 'Match by division',
+        what: 'Optional, on the dancers step. Newcomer to Champions, one division for leading and one for following.',
+      },
+      {
+        name: 'Strict or Merge',
+        what: 'Strict keeps every division to itself. Merge lets a division with nobody on one side dance one division down.',
+      },
+      {
+        name: 'No division set',
+        what: 'Matched as Novice — the start screen says who.',
+      },
+      {
+        name: 'Division order',
+        what: 'Lowest first unless you choose highest first or mixed.',
+      },
+    ],
+  },
+  {
     id: 'end',
     label: 'The end',
     items: [
@@ -100,7 +158,7 @@ const TABS: { id: string; label: string; items: Item[] }[] = [
     label: 'The app',
     items: [
       { name: 'Works offline', what: 'No signal needed once it is installed.' },
-      { name: 'Stays awake', what: 'The screen will not sleep during a session.' },
+      { name: 'Stays awake', what: 'The screen will not sleep during a session or a practice.' },
       { name: 'Stays on this device', what: 'No account, no server. Nothing about your night leaves.' },
       {
         name: 'The back gesture',

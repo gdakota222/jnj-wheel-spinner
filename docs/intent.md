@@ -1,7 +1,7 @@
 # JnJ Wheel Spinner — Product Intent
 
 **Status:** Stable. This document changes rarely.
-**Last updated:** 2026-08-26
+**Last updated:** 2026-10-24
 **Companion docs:** [prd.md](prd.md) — what gets built, version by version ·
 [prompts.md](prompts.md) — every challenge, current and archived.
 
@@ -31,6 +31,12 @@ drives the app's size limits and the pace of everything in it.
 judging, no scoring, no sanctioned result. Prompts are not part of standard Jack & Jill; they
 exist here to make the night playful. Nothing this app produces should be treated as a
 competitive record.
+
+**Practice is in scope (D-056).** A practice group has no audience to perform for, and its pain is
+time rather than dead air. For those nights the app offers a **Quick list**: every pairing at once,
+no spectacle. The wheel and everything said above about spectacle still hold for a social night.
+Competition *practice* — matching by division — is welcome; scoring, judging and results still are
+not.
 
 Primary dance style: **West Coast Swing**. The prompt system is built deck-agnostic so other
 styles can be added later without rework.
@@ -146,10 +152,13 @@ These hold for every version and are not up for renegotiation feature by feature
   care. Neither platform gets a broken experience.
 - **Castable to a TV or projector** as a supported use case: large text, high contrast, readable
   from across a room.
-- **Small events by design.** Spotlight format means 3–10 couples, with 5 the sweet spot and 10 a
-  hard maximum — roughly 20 dancers at the outside.
+- **Small events by design — for spotlight nights.** Spotlight format means 3–10 couples, with 5 the
+  sweet spot and 10 a hard maximum — roughly 20 dancers at the outside. **The Quick list has no
+  cap** (D-064): a practice floor is not a room watching one couple at a time, and long lists are
+  what it is for.
 - **Honest randomness.** The wheel is not steered, curated, or quietly filtered. The room believes
-  it is watching chance, and it is.
+  it is watching chance, and it is. **Matching by division (D-058) is a disclosed rule, not a
+  filter:** it is chosen by the organizer, said on screen, and the draw within it is still chance.
 
 ---
 
@@ -181,7 +190,8 @@ Permanent non-goals. Not "later" — never, without a change of intent.
   stays on the device, with no server and no account. See D-043.
 - **An app dancers use from their own phones.**
 - **Bracket or heat management.**
-- **A large-event tool.** The 10-couple ceiling is a design choice, not a limitation to lift.
+- **A large-event tool.** The 10-couple ceiling on spotlight nights is a design choice, not a
+  limitation to lift. A practice list may run longer; the show never will.
 
 ---
 

@@ -7,6 +7,8 @@
  */
 import type { Dancer, Role } from './domain/roster';
 import type { SessionState } from './domain/session';
+import type { PracticeState } from './domain/practice';
+import { DEFAULT_DIVISION_SETTINGS, type DivisionSettings } from './domain/divisions';
 
 const ROSTER_KEY = 'jnj:v1:roster';
 const EXCLUDED_PROMPTS_KEY = 'jnj:v1:excluded-prompts';
@@ -191,7 +193,7 @@ export function markWheelHintSeen(): void {
  */
 const TIP_PREFIX = 'jnj:v1:seen-tip:';
 
-export type TipId = 'spin-skip';
+export type TipId = 'spin-skip' | 'practice-list';
 
 export function hasSeenTip(id: TipId): boolean {
   try {
@@ -271,5 +273,93 @@ export function saveActiveDeckId(id: string): void {
     localStorage.setItem(ACTIVE_DECK_KEY, id);
   } catch {
     // The choice simply resets to the default next time.
+  }
+}
+
+/**
+ * The running Quick list, kept separately from a wheel session.
+ *
+ * Its own key and its own schema number, so a change to one mode can never
+ * discard the other's night. Same rule as the session: a mismatch is dropped
+ * rather than half-read.
+ */
+const PRACTICE_KEY = 'jnj:v1:practice';
+const PRACTICE_SCHEMA = 1;
+
+function looksLikePractice(value: unknown): value is PracticeState {
+  if (typeof value !== 'object' || value === null) return false;
+  const p = value as Record<string, unknown>;
+  const pools = p.pools as Record<string, unknown> | undefined;
+  return (
+    p.kind === 'practice' &&
+    Array.isArray(p.couples) &&
+    typeof p.nextId === 'number' &&
+    typeof p.divisions === 'object' &&
+    p.divisions !== null &&
+    typeof pools === 'object' &&
+    pools !== null &&
+    Array.isArray(pools.leaders) &&
+    Array.isArray(pools.followers)
+  );
+}
+
+export function loadPractice(): PracticeState | null {
+  try {
+    const raw = localStorage.getItem(PRACTICE_KEY);
+    if (!raw) return null;
+    const wrapper = JSON.parse(raw) as Record<string, unknown> | null;
+    if (!wrapper || wrapper.schema !== PRACTICE_SCHEMA) return null;
+    return looksLikePractice(wrapper.state) ? wrapper.state : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Returns false when the write failed, so the caller can tell the operator. */
+export function savePractice(state: PracticeState): boolean {
+  try {
+    localStorage.setItem(PRACTICE_KEY, JSON.stringify({ schema: PRACTICE_SCHEMA, state }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearPractice(): void {
+  try {
+    localStorage.removeItem(PRACTICE_KEY);
+  } catch {
+    // Nothing useful to do; a stale list is rejected on load anyway.
+  }
+}
+
+/**
+ * Matching by division, and how.
+ *
+ * Kept on the device rather than asked each night: a group that competes uses
+ * divisions every time, and one that does not should never see them (D-058).
+ */
+const DIVISION_SETTINGS_KEY = 'jnj:v1:division-settings';
+
+export function loadDivisionSettings(): DivisionSettings {
+  try {
+    const raw = localStorage.getItem(DIVISION_SETTINGS_KEY);
+    if (!raw) return DEFAULT_DIVISION_SETTINGS;
+    const p = JSON.parse(raw) as Partial<DivisionSettings> | null;
+    return {
+      enabled: p?.enabled === true,
+      mode: p?.mode === 'merge' ? 'merge' : 'strict',
+      order: p?.order === 'descending' || p?.order === 'mixed' ? p.order : 'ascending',
+    };
+  } catch {
+    return DEFAULT_DIVISION_SETTINGS;
+  }
+}
+
+export function saveDivisionSettings(settings: DivisionSettings): void {
+  try {
+    localStorage.setItem(DIVISION_SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    // The choice simply resets next time.
   }
 }

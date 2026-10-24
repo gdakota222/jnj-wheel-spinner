@@ -2792,3 +2792,377 @@
   color: var(--text-faint);
   text-align: center;
 }
+
+/* ============================================================ Quick list */
+/* Practice mode (D-056). The list is the only thing that scrolls; the header
+   and the two actions never move. Danced couples are marked by a tick, the
+   word "Danced" and a dimmer row together — never by colour alone. */
+
+.practice__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin: 0;
+  padding: 0 0 var(--gap-xs);
+  list-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.practice__group {
+  margin-top: var(--gap-xs);
+  padding-inline: var(--gap-xs);
+  color: var(--accent);
+  font-size: var(--step--1);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.practice__group:first-child {
+  margin-top: 0;
+}
+
+.practice__row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--gap-xs);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.practice__row[data-next='true'] {
+  border: 2px solid var(--accent);
+}
+
+.practice__row[data-done='true'] {
+  background: var(--bg);
+}
+
+.practice__row[data-done='true'] .practice__names {
+  opacity: 0.6;
+}
+
+.practice__main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 2px var(--gap-sm);
+  min-height: var(--touch);
+  padding: var(--gap-sm);
+  background: none;
+  border: 0;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.practice__row--lonely .practice__main {
+  grid-template-columns: auto 1fr;
+  cursor: default;
+}
+
+.practice__number {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  font-size: var(--step--1);
+  font-weight: 800;
+}
+
+.practice__row[data-done='true'] .practice__number {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.practice__names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.practice__name {
+  font-size: var(--step-0);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.practice__role {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+
+.practice__again {
+  margin-left: var(--gap-xs);
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-weight: 700;
+  vertical-align: 2px;
+}
+
+.practice__state {
+  grid-column: 2 / -1;
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.practice__state:empty {
+  display: none;
+}
+
+.practice__row[data-next='true'] .practice__state {
+  color: var(--accent);
+}
+
+.practice__change {
+  flex: none;
+  min-width: var(--touch);
+  margin: var(--gap-xs);
+  padding-inline: var(--gap-sm);
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step--1);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.practice__notice {
+  flex: none;
+  padding: var(--gap-xs) var(--gap-sm);
+  border-left: 4px solid var(--accent);
+  background: var(--surface-raised);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+}
+
+.practice__actions {
+  flex: none;
+  display: flex;
+  gap: var(--gap-sm);
+}
+
+.practice__actions .next__button {
+  width: 100%;
+}
+
+.practice__action {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--touch);
+  padding: var(--gap-sm);
+  background: var(--surface-raised);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--step-0);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.practice__action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.practice__action-note {
+  font-size: var(--step--1);
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.pair-pickers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin-block: var(--gap);
+}
+
+/* ============================================================== divisions */
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  min-height: var(--touch);
+  padding: var(--gap-sm) var(--gap);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.toggle-row input {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  accent-color: var(--accent);
+}
+
+.toggle-row__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-row__label {
+  font-weight: 700;
+}
+
+.toggle-row__note {
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+
+.division-pickers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.division-pickers--row {
+  order: 3;
+  width: 100%;
+  gap: var(--gap-xs) var(--gap-sm);
+}
+
+.division-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  font-size: var(--step--1);
+  color: var(--text-dim);
+}
+
+.division-picker select {
+  min-height: 44px;
+  padding-inline: var(--gap-xs);
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: inherit;
+  font-weight: 650;
+}
+
+/* Unset is a real state with a real consequence (matched as Novice), so it is
+   marked with a dashed edge and its own words, not just a colour. */
+.division-picker select[data-unset='true'] {
+  border-style: dashed;
+  color: var(--text-dim);
+}
+
+.warning-card {
+  padding: var(--gap);
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-left-width: 6px;
+  border-radius: var(--radius);
+}
+
+.warning-card__title {
+  font-size: var(--step-1);
+  font-weight: 800;
+}
+
+.warning-card__title::before {
+  content: '⚠ ';
+}
+
+.warning-card__list {
+  margin: var(--gap-sm) 0;
+  padding-left: 1.2rem;
+}
+
+.warning-card__body {
+  color: var(--text-dim);
+}
+
+.warning-card__fix {
+  margin-top: var(--gap-sm);
+  min-height: 44px;
+  padding-inline: var(--gap);
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.summary__note--warn {
+  border-left: 4px solid var(--accent);
+  padding-left: var(--gap-sm);
+}
+
+.link-button {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.practice__change--spacer {
+  visibility: hidden;
+}
+
+/* In a sheet, Cancel is a small way out, not a second primary button. */
+.sheet__head .dialog__cancel {
+  flex: none;
+  padding-inline: var(--gap);
+}
+
+.sheet .add__submit {
+  width: 100%;
+}
+
+/* Inside a scrolling step, these keep their own height rather than being
+   squeezed to fit — the panel scrolls instead. */
+.panel__scroll > .toggle-row,
+.panel__scroll > .warning-card {
+  flex: none;
+}
+
+/* Three actions across a phone: the notes go and the labels shrink, so the bar
+   stays one short row and the list keeps the height. The sheets each action
+   opens explain themselves. */
+@media (max-width: 30rem) {
+  .practice__actions {
+    gap: var(--gap-xs);
+  }
+
+  .practice__action {
+    padding: var(--gap-xs);
+    font-size: var(--step--1);
+    white-space: nowrap;
+  }
+
+  .practice__action-note {
+    display: none;
+  }
+}

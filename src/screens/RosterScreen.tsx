@@ -1,10 +1,24 @@
 import { useMemo, useRef, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { HoldButton } from '../components/HoldButton';
+import type { StartChoice } from '../App';
+import {
+  DIVISIONS,
+  DIVISION_LABELS,
+  countCouples,
+  dancersMissingDivision,
+  divisionSides,
+  unpairableGroups,
+  type Division,
+  type DivisionSettings,
+  type Side,
+} from '../domain/divisions';
 import { useLongPress } from '../hooks/useLongPress';
 import type { SpinOrder } from '../domain/session';
 import {
   ROLE_LABELS,
   adviseOnSize,
+  buildPools,
   checkName,
   makeDancer,
   normalizeName,
@@ -17,7 +31,9 @@ type Props = {
   dancers: Dancer[];
   onChange: (next: Dancer[]) => void;
   onBack: () => void;
-  onStartSession: (order: SpinOrder, promptsEnabled: boolean) => void;
+  onStartSession: (choice: StartChoice) => void;
+  divisionSettings: DivisionSettings;
+  onDivisionSettingsChange: (next: DivisionSettings) => void;
   /** How many challenges are left in play after Prompt Bank set-asides. */
   promptsInPlay: number;
   /** The bundle a session would draw from. */
@@ -31,6 +47,11 @@ type Props = {
 const ROLES: readonly Role[] = ['leader', 'follower', 'switch'];
 
 type OrderChoice = SpinOrder | 'random';
+
+/** The wheel, or the Quick list for practice (D-056). Asked each session, never stored. */
+type Mode = 'wheel' | 'list';
+
+const SIDE_LABEL: Record<Side, string> = { leaders: 'Lead', followers: 'Follow' };
 
 /**
  * Setting up is three steps, not one long page.
@@ -58,6 +79,8 @@ export function RosterScreen({
   onChange,
   onBack,
   onStartSession,
+  divisionSettings,
+  onDivisionSettingsChange,
   promptsInPlay,
   deckName,
   deckTotal,
@@ -65,7 +88,9 @@ export function RosterScreen({
   onEditBundles,
 }: Props) {
   const [step, setStep] = useState<StepId>('dancers');
+  const [mode, setMode] = useState<Mode | null>(null);
   const [orderChoice, setOrderChoice] = useState<OrderChoice>('leaders');
+  const [draftDivisions, setDraftDivisions] = useState<Partial<Record<Side, Division>>>({});
   const [promptsEnabled, setPromptsEnabled] = useState<boolean | null>(null);
   const [draftName, setDraftName] = useState('');
   const [draftRole, setDraftRole] = useState<Role>('leader');
@@ -77,17 +102,63 @@ export function RosterScreen({
   const [renameError, setRenameError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const projection = useMemo(() => projectPools(dancers), [dancers]);
-  const advice = useMemo(() => adviseOnSize(projection), [projection]);
+  /**
+   * Divisions as they will actually apply to this session. The wheel does not
+   * match by division yet (planned for 0.16.0), so for a wheel night they are
+   * off here too — the screen must never promise matching that will not happen.
+   */
+  const applied = useMemo(
+    () => (mode === 'wheel' ? { ...divisionSettings, enabled: false } : divisionSettings),
+    [mode, divisionSettings],
+  );
+
+  /** The event's shape — counted within divisions when matching by division applies. */
+  const projection = useMemo(() => {
+    const p = projectPools(dancers);
+    if (!applied.enabled || p.couples === 0) return p;
+    return { ...p, couples: countCouples(buildPools(dancers), applied) };
+  }, [dancers, applied]);
+  const advice = useMemo(
+    () => adviseOnSize(projection, { practice: mode === 'list' }),
+    [projection, mode],
+  );
+  const divisionsOn = divisionSettings.enabled;
+  const setDivisions = (patch: Partial<DivisionSettings>) =>
+    onDivisionSettingsChange({ ...divisionSettings, ...patch });
+  /** Who goes without a partner under Strict — warned about before the start (D-060). */
+  const unpairable = useMemo(
+    () => unpairableGroups(buildPools(dancers), applied),
+    [dancers, applied],
+  );
+  /** Matched as Novice only because nothing was set — said, never silent (D-061). */
+  const missingDivision = useMemo(
+    () => (applied.enabled ? dancersMissingDivision(dancers) : []),
+    [dancers, applied],
+  );
 
   /** What is still missing, in the words the operator will be shown. */
   const dancersReady = projection.couples > 0;
-  const runningReady = promptsEnabled !== null;
+  const runningReady = mode === 'list' || (mode === 'wheel' && promptsEnabled !== null);
   const blocker = !dancersReady
     ? 'Needs at least one leader and one follower'
-    : !runningReady
-      ? 'Choose whether to use challenges'
-      : null;
+    : mode === null
+      ? 'Choose the wheel or the Quick list'
+      : !runningReady
+        ? 'Choose whether to use challenges'
+        : null;
+
+  function start() {
+    if (mode === 'list') {
+      onStartSession({ mode: 'list' });
+      return;
+    }
+    onStartSession({
+      mode: 'wheel',
+      order:
+        orderChoice === 'random' ? (Math.random() < 0.5 ? 'leaders' : 'followers') : orderChoice,
+      promptsEnabled: promptsEnabled === true,
+    });
+  }
 
   const stepIndex = STEPS.findIndex((s) => s.id === step);
   const nextStep = STEPS[stepIndex + 1];
@@ -105,7 +176,14 @@ export function RosterScreen({
       setError(result.reason);
       return;
     }
-    onChange([...dancers, makeDancer(result.name, draftRole)]);
+    const made = makeDancer(result.name, draftRole);
+    if (divisionsOn) {
+      const sides = divisionSides(made);
+      if (sides.includes('leaders') && draftDivisions.leaders) made.leadDivision = draftDivisions.leaders;
+      if (sides.includes('followers') && draftDivisions.followers)
+        made.followDivision = draftDivisions.followers;
+    }
+    onChange([...dancers, made]);
     setDraftName('');
     setError(null);
     inputRef.current?.focus();
@@ -113,6 +191,11 @@ export function RosterScreen({
 
   function setRole(id: string, role: Role) {
     onChange(dancers.map((d) => (d.id === id ? { ...d, role } : d)));
+  }
+
+  function setDivision(id: string, side: Side, division: Division | undefined) {
+    const field = side === 'leaders' ? 'leadDivision' : 'followDivision';
+    onChange(dancers.map((d) => (d.id === id ? { ...d, [field]: division } : d)));
   }
 
   function remove(id: string) {
@@ -200,6 +283,24 @@ export function RosterScreen({
               the height the panel has, which left the list of names six pixels
               tall. The complaint being answered here was the button below the
               fold, and the pinned step bar and primary button answer it. */}
+          {/* Optional, and off unless turned on — divisions serve the groups
+              preparing for competition, not every night (D-058). */}
+          <label className="toggle-row">
+            <input
+              type="checkbox"
+              checked={divisionsOn}
+              onChange={(e) => setDivisions({ enabled: e.target.checked })}
+            />
+            <span className="toggle-row__text">
+              <span className="toggle-row__label">Match by division</span>
+              <span className="toggle-row__note">
+                {divisionsOn
+                  ? 'Couples are paired within Newcomer, Novice, Intermediate and up.'
+                  : 'Optional — for competition practice.'}
+              </span>
+            </span>
+          </label>
+
           <form className="add" onSubmit={addDancer} noValidate>
             <label className="add__label" htmlFor="dancer-name">
               Dancer name
@@ -238,6 +339,20 @@ export function RosterScreen({
                 </button>
               ))}
             </fieldset>
+
+            {divisionsOn && (
+              <div className="division-pickers">
+                {divisionSides({ id: '', name: '', role: draftRole }).map((side) => (
+                  <DivisionPicker
+                    key={side}
+                    id={`draft-division-${side}`}
+                    label={`${SIDE_LABEL[side]} division`}
+                    value={draftDivisions[side]}
+                    onChange={(v) => setDraftDivisions((cur) => ({ ...cur, [side]: v }))}
+                  />
+                ))}
+              </div>
+            )}
 
             {error && (
               <p className="add__error" id="name-error" role="alert">
@@ -336,6 +451,20 @@ export function RosterScreen({
                   ) : (
                   <li key={dancer.id} className="dancer" data-birthday={dancer.isBirthday === true}>
                     <DancerName dancer={dancer} onHold={() => setBirthdayCandidate(dancer)} />
+                    {divisionsOn && (
+                      <div className="division-pickers division-pickers--row">
+                        {divisionSides(dancer).map((side) => (
+                          <DivisionPicker
+                            key={side}
+                            id={`division-${dancer.id}-${side}`}
+                            label={`${SIDE_LABEL[side]}`}
+                            srLabel={`${SIDE_LABEL[side]} division for ${dancer.name}`}
+                            value={side === 'leaders' ? dancer.leadDivision : dancer.followDivision}
+                            onChange={(v) => setDivision(dancer.id, side, v)}
+                          />
+                        ))}
+                      </div>
+                    )}
                     <div className="dancer__controls">
                       <button
                         className="dancer__remove"
@@ -378,6 +507,95 @@ export function RosterScreen({
 
       {step === 'running' && (
         <div className="panel panel__scroll">
+          <section className="card">
+            <h2 className="card__title">The wheel, or a quick list?</h2>
+            <p className="card__body">
+              The wheel draws each couple in front of the room. The Quick list pairs everyone at
+              once, for practice — no spinning, just the list.
+            </p>
+            <fieldset className="roles roles--stacked">
+              <legend className="visually-hidden">How the night runs</legend>
+              <button
+                type="button"
+                className="roles__option"
+                aria-pressed={mode === 'wheel'}
+                onClick={() => setMode('wheel')}
+              >
+                The wheel — spin for every couple
+              </button>
+              <button
+                type="button"
+                className="roles__option"
+                aria-pressed={mode === 'list'}
+                onClick={() => setMode('list')}
+              >
+                Quick list — every pairing at once
+              </button>
+            </fieldset>
+          </section>
+
+          {divisionsOn && mode === 'wheel' && (
+            <p className="summary__note summary__note--warn">
+              The wheel doesn’t match by division yet — it draws from everyone. Divisions work in
+              the Quick list today, and are coming to the wheel next.
+            </p>
+          )}
+
+          {divisionsOn && mode === 'list' && (
+            <section className="card">
+              <h2 className="card__title">Divisions</h2>
+              <p className="card__body">
+                Couples are paired within their division. When a division has nobody on one side:
+              </p>
+              <fieldset className="roles roles--stacked">
+                <legend className="visually-hidden">Strict or merge</legend>
+                <button
+                  type="button"
+                  className="roles__option"
+                  aria-pressed={divisionSettings.mode === 'strict'}
+                  onClick={() => setDivisions({ mode: 'strict' })}
+                >
+                  Strict — they go without a partner
+                </button>
+                <button
+                  type="button"
+                  className="roles__option"
+                  aria-pressed={divisionSettings.mode === 'merge'}
+                  onClick={() => setDivisions({ mode: 'merge' })}
+                >
+                  Merge — they dance one division down
+                </button>
+              </fieldset>
+              {mode === 'list' && (
+                <>
+                  <p className="card__body">Which division goes first?</p>
+                  <fieldset className="roles roles--stacked">
+                    <legend className="visually-hidden">Division order</legend>
+                    {(
+                      [
+                        ['ascending', 'Lowest first — Newcomer up'],
+                        ['descending', 'Highest first — Champions down'],
+                        ['mixed', 'Mixed — all divisions shuffled together'],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        className="roles__option"
+                        aria-pressed={divisionSettings.order === value}
+                        onClick={() => setDivisions({ order: value })}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </fieldset>
+                </>
+              )}
+            </section>
+          )}
+
+          {mode === 'wheel' && (
+          <>
           <section className="card">
             <h2 className="card__title">Which role is drawn first?</h2>
             <p className="card__body">
@@ -453,6 +671,8 @@ export function RosterScreen({
               </button>
             </fieldset>
           </section>
+          </>
+          )}
         </div>
       )}
 
@@ -475,6 +695,38 @@ export function RosterScreen({
                 ok={dancersReady}
                 onFix={() => setStep('dancers')}
               />
+              <SummaryRow
+                term="Runs as"
+                detail={
+                  mode === null
+                    ? 'Not answered yet'
+                    : mode === 'wheel'
+                      ? 'The wheel'
+                      : 'Quick list — every pairing at once'
+                }
+                ok={mode !== null}
+                onFix={() => setStep('running')}
+              />
+              {divisionsOn && (
+                <SummaryRow
+                  term="Divisions"
+                  detail={
+                    mode === 'wheel'
+                      ? 'Not used by the wheel yet — it draws from everyone'
+                      : `${divisionSettings.mode === 'strict' ? 'Strict' : 'Merge'} · ${
+                          divisionSettings.order === 'ascending'
+                            ? 'lowest first'
+                            : divisionSettings.order === 'descending'
+                              ? 'highest first'
+                              : 'mixed'
+                        }`
+                  }
+                  ok
+                  onFix={() => setStep('running')}
+                />
+              )}
+              {mode === 'wheel' && (
+              <>
               <SummaryRow
                 term="Drawn first"
                 detail={
@@ -499,8 +751,46 @@ export function RosterScreen({
                 ok={runningReady}
                 onFix={() => setStep('running')}
               />
+              </>
+              )}
             </dl>
           </section>
+
+          {unpairable.length > 0 && dancersReady && (
+            <section className="warning-card" role="alert">
+              <h2 className="warning-card__title">Some dancers have no partner in their division</h2>
+              <ul className="warning-card__list">
+                {unpairable.map((u) => (
+                  <li key={u.label}>
+                    <strong>{u.dancers.map((d) => d.name).join(', ')}</strong> —{' '}
+                    {u.label} {u.side === 'leaders' ? 'leading' : 'following'}, with no{' '}
+                    {u.label} {u.side === 'leaders' ? 'followers' : 'leaders'}.
+                  </li>
+                ))}
+              </ul>
+              <p className="warning-card__body">
+                With Strict on they will not be matched. Let them know — or switch to Merge, or pair
+                them by hand once the night starts.
+              </p>
+              <button
+                className="warning-card__fix"
+                type="button"
+                onClick={() => setDivisions({ mode: 'merge' })}
+              >
+                Switch to Merge
+              </button>
+            </section>
+          )}
+
+          {missingDivision.length > 0 && (
+            <p className="summary__note summary__note--warn">
+              No division set for {missingDivision.map((d) => d.name).join(', ')} — matched as
+              Novice.{' '}
+              <button className="link-button" type="button" onClick={() => setStep('dancers')}>
+                Set divisions
+              </button>
+            </p>
+          )}
 
           {projection.switches > 0 && dancersReady && (
             <p className="summary__note">
@@ -543,20 +833,14 @@ export function RosterScreen({
                 : 'Check it all over before the night starts'}
             </span>
           </button>
+        ) : blocker === null && unpairable.length > 0 ? (
+          // Held, not tapped, so the warning above cannot be skipped unread (D-060).
+          <HoldButton label="Hold to start anyway" onHold={start} />
         ) : (
           <button
             className="next__button"
             type="button"
-            onClick={() =>
-              onStartSession(
-                orderChoice === 'random'
-                  ? Math.random() < 0.5
-                    ? 'leaders'
-                    : 'followers'
-                  : orderChoice,
-                promptsEnabled === true,
-              )
-            }
+            onClick={start}
             disabled={blocker !== null}
           >
             <span className="menu__label">Start the session</span>
@@ -613,5 +897,39 @@ function DancerName({ dancer, onHold }: DancerNameProps) {
         </span>
       )}
     </span>
+  );
+}
+
+type DivisionPickerProps = {
+  id: string;
+  label: string;
+  /** A fuller name for screen readers, when the visible label is short. */
+  srLabel?: string;
+  value: Division | undefined;
+  onChange: (next: Division | undefined) => void;
+};
+
+/** One role's division. "Not set" is a real choice and is matched as Novice (D-061). */
+function DivisionPicker({ id, label, srLabel, value, onChange }: DivisionPickerProps) {
+  return (
+    <label className="division-picker" htmlFor={id}>
+      <span className="division-picker__label" aria-hidden={srLabel ? true : undefined}>
+        {label}
+      </span>
+      {srLabel && <span className="visually-hidden">{srLabel}</span>}
+      <select
+        id={id}
+        value={value ?? ''}
+        data-unset={value === undefined}
+        onChange={(e) => onChange(e.target.value === '' ? undefined : (e.target.value as Division))}
+      >
+        <option value="">Not set (Novice)</option>
+        {DIVISIONS.map((d) => (
+          <option key={d} value={d}>
+            {DIVISION_LABELS[d]}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

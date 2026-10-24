@@ -5,6 +5,7 @@
  * directly (D-007). Everything here is about who is dancing and what shape the
  * event will take, not about how any of it looks.
  */
+import type { Division } from './divisions';
 
 export type Role = 'leader' | 'follower' | 'switch';
 
@@ -17,6 +18,12 @@ export type Dancer = {
    * session stops for a birthday jam — see `jamboree` in session.ts.
    */
   isBirthday?: boolean;
+  /**
+   * Competition level when leading and when following, used only when matching
+   * by division is on (D-058). Unset is matched as Novice (D-061).
+   */
+  leadDivision?: Division;
+  followDivision?: Division;
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -158,7 +165,10 @@ export type SizeAdvice = {
  * a new organiser should learn the format's shape from the app, not from one
  * long first night.
  */
-export function adviseOnSize(projection: PoolProjection): SizeAdvice {
+export function adviseOnSize(
+  projection: PoolProjection,
+  options: { practice?: boolean } = {},
+): SizeAdvice {
   const { couples, balancedLeaders, balancedFollowers } = projection;
 
   if (balancedLeaders + balancedFollowers === 0) {
@@ -175,6 +185,16 @@ export function adviseOnSize(projection: PoolProjection): SizeAdvice {
       level: 'unpairable',
       headline: `No ${missing} yet`,
       detail: `Every couple needs one of each. Add ${missing}, or set someone to Switch.`,
+    };
+  }
+
+  // The spotlight limits exist because a room watches one couple at a time. A
+  // practice floor does not, so a Quick list of any length is fine (D-056).
+  if (options.practice) {
+    return {
+      level: 'good',
+      headline: `${couples} ${couples === 1 ? 'couple' : 'couples'}`,
+      detail: 'Quick list has no size limit — send couples up as many at a time as you like.',
     };
   }
 

@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AboutScreen } from './screens/AboutScreen';
 import { HowItWorksScreen } from './screens/HowItWorksScreen';
+import { PracticeScreen } from './screens/PracticeScreen';
 import { PromptBankScreen } from './screens/PromptBankScreen';
 import { RosterScreen } from './screens/RosterScreen';
 import { SessionScreen } from './screens/SessionScreen';
 import { TitleScreen } from './screens/TitleScreen';
 import type { Dancer } from './domain/roster';
+import type { DivisionSettings } from './domain/divisions';
+import {
+  createPractice,
+  practiceReducer,
+  type PracticeAction,
+  type PracticeState,
+} from './domain/practice';
 import {
   POOL_NOUN,
   createSession,
@@ -17,7 +25,12 @@ import {
 } from './domain/session';
 import { ALL_DECKS_ID, DEFAULT_DECK_ID, findDeck, promptsInPlay } from './domain/prompts';
 import {
+  clearPractice,
   clearSession,
+  loadDivisionSettings,
+  loadPractice,
+  saveDivisionSettings,
+  savePractice,
   hasSeenAbout,
   markAboutSeen,
   loadActiveDeckId,
@@ -33,7 +46,12 @@ import {
 import { useExitGuard } from './hooks/useExitGuard';
 import './styles/app.css';
 
-type Screen = 'title' | 'roster' | 'session' | 'bank' | 'about' | 'how';
+type Screen = 'title' | 'roster' | 'session' | 'practice' | 'bank' | 'about' | 'how';
+
+/** What setup hands over when the night starts: the wheel, or the Quick list (D-056). */
+export type StartChoice =
+  | { mode: 'wheel'; order: SpinOrder; promptsEnabled: boolean }
+  | { mode: 'list' };
 
 /**
  * One step back: everything a single action could have changed.
@@ -44,7 +62,8 @@ type Screen = 'title' | 'roster' | 'session' | 'bank' | 'about' | 'how';
  * her place at the first real event.
  */
 type Snapshot = {
-  session: SessionState;
+  session: SessionState | null;
+  practice: PracticeState | null;
   dancers: Dancer[];
   /** Plain English for what undoing this would reverse. */
   label: string;
@@ -74,11 +93,14 @@ const restored = (() => {
  * crash: an operator whose tablet died mid-event needs their couples back, not
  * an introduction to an app they are already running.
  */
-const openOnAbout = restored === null && !hasSeenAbout();
+/** A Quick list survives a crash the same way. Only one of the two is ever running. */
+const restoredPractice = restored ? null : loadPractice();
+
+const openOnAbout = restored === null && restoredPractice === null && !hasSeenAbout();
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>(
-    restored ? 'session' : openOnAbout ? 'about' : 'title',
+    restored ? 'session' : restoredPractice ? 'practice' : openOnAbout ? 'about' : 'title',
   );
   /** True only for the launch that introduces the app, not for later visits. */
   const [aboutIsWelcome, setAboutIsWelcome] = useState(openOnAbout);
@@ -87,7 +109,10 @@ export default function App() {
   const [excludedPrompts, setExcludedPrompts] = useState<string[]>(() => loadExcludedPrompts());
   const [activeDeckId, setActiveDeckId] = useState<string>(() => loadActiveDeckId(DEFAULT_DECK_ID));
   const [storageBroken, setStorageBroken] = useState(() => !isStorageWritable());
-  const [wasResumed, setWasResumed] = useState(restored !== null);
+  const [wasResumed, setWasResumed] = useState(restored !== null || restoredPractice !== null);
+  const [divisionSettings, setDivisionSettings] = useState<DivisionSettings>(() =>
+    loadDivisionSettings(),
+  );
 
   /**
    * Session, roster and undo history move as one value.
@@ -98,11 +123,12 @@ export default function App() {
    */
   const [state, setState] = useState<{
     session: SessionState | null;
+    practice: PracticeState | null;
     dancers: Dancer[];
     past: Snapshot[];
-  }>(() => ({ session: restored, dancers: loadRoster(), past: [] }));
+  }>(() => ({ session: restored, practice: restoredPractice, dancers: loadRoster(), past: [] }));
 
-  const { session, dancers, past } = state;
+  const { session, practice, dancers, past } = state;
 
   /**
    * Whether the session screen is locked.
@@ -142,6 +168,18 @@ export default function App() {
   useEffect(() => {
     saveActiveDeckId(activeDeckId);
   }, [activeDeckId]);
+
+  useEffect(() => {
+    saveDivisionSettings(divisionSettings);
+  }, [divisionSettings]);
+
+  useEffect(() => {
+    if (!practice) {
+      clearPractice();
+      return;
+    }
+    if (!savePractice(practice)) setStorageBroken(true);
+  }, [practice]);
 
   useEffect(() => {
     if (!session) {
@@ -209,10 +247,12 @@ export default function App() {
   /** Push one snapshot, dropping the oldest once the limit is reached. */
   const remember = (
     prev: Snapshot[],
-    session: SessionState,
-    dancers: Dancer[],
+    from: { session: SessionState | null; practice: PracticeState | null; dancers: Dancer[] },
     label: string,
-  ): Snapshot[] => [...prev, { session, dancers, label }].slice(-UNDO_LIMIT);
+  ): Snapshot[] =>
+    [...prev, { session: from.session, practice: from.practice, dancers: from.dancers, label }].slice(
+      -UNDO_LIMIT,
+    );
 
   const dispatch = (action: SessionAction) =>
     setState((current) => {
@@ -225,12 +265,7 @@ export default function App() {
         session: next,
         past: CONTINUATIONS.has(action.type)
           ? current.past
-          : remember(
-              current.past,
-              current.session,
-              current.dancers,
-              describe(action, current.session),
-            ),
+          : remember(current.past, current, describe(action, current.session)),
       };
     });
 
@@ -245,16 +280,54 @@ export default function App() {
       session: current.session
         ? sessionReducer(current.session, { type: 'syncDancers', dancers: next })
         : null,
+      practice: current.practice,
       past: current.session
-        ? remember(
-            current.past,
-            current.session,
-            current.dancers,
-            'Reverses the last change to the dancers.',
-          )
+        ? remember(current.past, current, 'Reverses the last change to the dancers.')
         : current.past,
     }));
   }
+
+  /** In the words the organizer would use, for the Undo confirmation. */
+  function describePractice(action: PracticeAction, before: PracticeState): string {
+    const couple = (id: string) => before.couples.find((c) => c.id === id);
+    const pair = (id: string) => {
+      const c = couple(id);
+      return [c?.leader?.name, c?.follower?.name].filter(Boolean).join(' and ') || 'that couple';
+    };
+    switch (action.type) {
+      case 'toggleDone':
+        return couple(action.id)?.done
+          ? `Marks ${pair(action.id)} as danced again.`
+          : `Puts ${pair(action.id)} back as still to dance.`;
+      case 'reshuffle':
+        return 'Puts the list back the way it was before the reshuffle.';
+      case 'setCouple':
+        return `Puts back ${pair(action.id)}, as the couple was before it was changed.`;
+      case 'addDancer':
+        return `Takes ${action.dancer.name} back off the list and the roster.`;
+      case 'removeDancer': {
+        const who = [...before.pools.leaders, ...before.pools.followers].find(
+          (d) => d.id === action.id,
+        );
+        return `Puts ${who?.name ?? 'them'} back on the list, as it was before they left.`;
+      }
+    }
+  }
+
+  const dispatchPractice = (action: PracticeAction) =>
+    setState((current) => {
+      if (!current.practice) return current;
+      const next = practiceReducer(current.practice, action);
+      if (next === current.practice) return current;
+      return {
+        ...current,
+        practice: next,
+        // A late arrival joins the roster too, exactly as on the wheel (D-023).
+        dancers:
+          action.type === 'addDancer' ? [...current.dancers, action.dancer] : current.dancers,
+        past: remember(current.past, current, describePractice(action, current.practice)),
+      };
+    });
 
   /** Roster changes outside a session are free — setup is not a thing to undo. */
   function setDancers(next: Dancer[]) {
@@ -268,21 +341,40 @@ export default function App() {
       return {
         // Normalised on the way back for the same reason a restored session is:
         // a snapshot taken mid-spin would return to a wheel that never lands.
-        session: resumeSession(previous.session),
+        session: previous.session ? resumeSession(previous.session) : null,
+        practice: previous.practice,
         dancers: previous.dancers,
         past: current.past.slice(0, -1),
       };
     });
   }
 
-  function startSession(order: SpinOrder, promptsEnabled: boolean) {
+  function startSession(choice: StartChoice) {
     setWasResumed(false);
+    if (choice.mode === 'list') {
+      setState((current) => ({
+        ...current,
+        session: null,
+        practice: createPractice(current.dancers, divisionSettings),
+        past: [],
+      }));
+      setScreen('practice');
+      return;
+    }
     setState((current) => ({
       ...current,
-      session: createSession(current.dancers, order, promptsEnabled, deckInPlay),
+      practice: null,
+      session: createSession(current.dancers, choice.order, choice.promptsEnabled, deckInPlay),
       past: [],
     }));
     setScreen('session');
+  }
+
+  function endPractice() {
+    setWasResumed(false);
+    setState((current) => ({ ...current, practice: null, past: [] }));
+    clearPractice();
+    setScreen('roster');
   }
 
   function endSession() {
@@ -301,7 +393,21 @@ export default function App() {
   ) : null;
 
   let view;
-  if (screen === 'session' && session) {
+  if (screen === 'practice' && practice) {
+    view = (
+      <PracticeScreen
+        practice={practice}
+        dispatch={dispatchPractice}
+        dancers={dancers}
+        canUndo={past.length > 0}
+        undoLabel={past[past.length - 1]?.label ?? null}
+        onUndo={undo}
+        wasResumed={wasResumed}
+        onDismissResumed={() => setWasResumed(false)}
+        onLeave={endPractice}
+      />
+    );
+  } else if (screen === 'session' && session) {
     view = (
       <SessionScreen
         session={session}
@@ -364,6 +470,8 @@ export default function App() {
         onChange={setDancers}
         onBack={() => setScreen('title')}
         onStartSession={startSession}
+        divisionSettings={divisionSettings}
+        onDivisionSettingsChange={setDivisionSettings}
         promptsInPlay={deckInPlay.length}
         deckName={activeDeck.name}
         deckTotal={activeDeck.prompts.length}

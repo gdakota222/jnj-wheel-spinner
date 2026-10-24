@@ -1,8 +1,8 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.14.0 — deployed and live
+**Current version:** 0.15.0 — built, not yet deployed (0.14.0 is live)
 **Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
-**Last updated:** 2026-09-23
+**Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
 
 ---
@@ -59,6 +59,8 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.12.0** | The ending, tidied | Two ending cards on a finished session, leaving behind one sheet, the AllSkate named as dancers name it | ✅ Shipped 2026-09-16 |
 | **0.13.0** | Handoff fixes | Lock owns the back gesture, back steps back to Undo, rename in setup, visible edges, the night's record, no-scroll end screen | ✅ Shipped 2026-09-23 |
 | **0.14.0** | Explains itself | How it works, one-time tips that can be reset, a one-screen title, and a reveal that celebrates | ✅ Shipped 2026-09-23 |
+| **0.15.0** | Practice mode | Quick list, divisions (Quick list only), Strict/Merge, the unmatched warning held to confirm, How it works › Practice, a first-time tip | 🔨 Built 2026-10-24, awaiting owner review |
+| **0.16.0** | Divisions on the wheel | The second spin shows only partners in the same division, labelled as such | ⏳ Next |
 | **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | 🟢 **Bar met** in rehearsal Round 4 — declaring it is the owner's call |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
@@ -86,6 +88,36 @@ backlog, worked through in order of what actually broke the night.
 ---
 
 ## Build log
+
+### 2026-10-24 — 0.15.0: practice mode
+The owner's new West Philly practice group, and an All-Star's bi-monthly JnJ practice, both wanted
+fast pairings without the show. Discussed in full before building; every answer is logged as
+D-056 to D-063.
+
+**Built:** the Quick list (every pairing at once, tap to tick off, reshuffle, late arrivals, change
+by hand, undo for all of it, survives a crash like a session does); optional divisions on the
+roster, one per role; Strict and Merge; division order; a warning on the start step naming anyone
+Strict leaves unmatched, with the start turned into a hold; a note naming anyone matched as Novice
+by default; a Practice tab in How it works; a first-time tip on the list.
+
+**Found by looking, not by the suite:**
+- The first list gave one follower two dances back to back. Allowed by the cycling rule, wrong for a
+  practice floor. The top-up now passes over whoever just danced when anyone else is as due; a test
+  checks it across 50 seeds.
+- Change could silently drop a dancer off the list entirely. It still can — the organizer outranks
+  the app — but the sheet now names who would drop off before saving.
+- The roster count said 6 couples where divisions made it 5 plus one unmatched. Counted within
+  divisions now.
+- The setup screen promised the second wheel would filter by division. It does not yet; the screen
+  now says the wheel ignores divisions, and the count and warnings only apply to a Quick list.
+
+**Deliberately not done:** divisions on the wheel. Its draw resolves by position in each pool, and
+recycling and the end of the night both assume two plain pools; filtering the second wheel touches
+all of it. That is the code that runs live nights, so it gets its own slice (0.16.0) rather than
+being rushed in here.
+
+**Interpretation to confirm:** with no All-Stars on the roster, Merge folds a lone Champions dancer
+into Advanced — "one down" skips empty divisions.
 
 Newest first. Every entry dated.
 
@@ -1360,6 +1392,117 @@ the one thing it is for. *Finite*, because endless confetti gets tiresome and co
 tablet with the rest of a night to run. *Deterministic*, so every reveal looks equally good and a
 re-render cannot reshuffle it mid-animation. Transforms and opacity only, so it stays smooth on a
 tablet. Sound is still v1.5.
+
+### D-056 — Quick list: a practice mode that drops the spectacle
+**Decision:** a second way to run a session, chosen at setup beside the wheel: **Quick list**. The
+whole night's pairings appear at once as a numbered list. No wheel, no reveal, no challenges, no
+birthday jam, no crown or finale. Pairing follows the wheel's rules exactly — switches fill the
+short side, the larger side sets the number of couples, the shorter side cycles back through with
+no repeats until all of it has danced. The organizer decides how many couples go up at once; the
+list only keeps the order.
+
+**Reasoning:** the owner started a practice group and found the theatrics were in the way, and an
+All-Star running a bi-monthly JnJ practice asked for exactly this: fast pairings she can read at a
+glance. This **deliberately departs from two standing rules** — "the spectacle is the point" and
+the PRD's "pairings are never drawn up front." Both were written for a social night with a room
+watching. A practice night has no audience to perform for, and its pain is time, not dead air. The
+rules stay true for the wheel; intent.md now says practice is in scope and scoring still is not.
+
+**Mode is asked each session, not stored on the roster.** A roster is people. The same saved list
+can run as a show one night and a practice the next.
+
+**The 10-couple advice does not apply to Quick list.** It exists because a room watches one couple
+at a time; a practice floor does not.
+
+**Challenges are left out.** Practice does not need them. An opt-in is parked, not planned.
+
+### D-057 — A danced couple is locked; everything else on the list can move
+**Decision:** tapping a couple marks them danced, and nothing — reshuffle, a late arrival, an edit
+— touches a danced couple after that. **Reshuffle** re-pairs only couples still to dance. **A late
+arrival** takes the first still-to-dance *repeat* slot on their side (the second dance of someone
+who has already been up once); if there is none, they join as a new couple at the end. **Manual
+override**: any couple still to dance can be set to any leader and follower the organizer wants,
+across divisions or any other rule. The only thing refused is a dancer partnered with themselves.
+
+**Reasoning:** the owner's rule is that the list stays consistent once people have danced. A late
+follower in a 3-leader/2-follower night should simply take the repeat slot, which is exactly what
+a person with a clipboard would do. The override exists because a practice organizer always knows
+something the app does not.
+
+### D-058 — Divisions are optional, per role, on the WSDC ladder
+**Decision:** a *Match by division* toggle, off unless turned on. The ladder is WSDC's: Newcomer,
+Novice, Intermediate, Advanced, All-Star, Champions. **Each dancer has a lead division and a follow
+division** — one field for a leader or follower, both for a switch. It works for the wheel and for
+Quick list alike.
+
+**Reasoning:** WSDC itself tracks divisions per role, and it is common to compete higher in one
+role than the other. One roster entry with two fields was chosen over two entries ("Sam K" and
+"Sam K 2"): two entries would let the app partner a dancer with themselves and count one person as
+two. Optional because the app is for organizers having fun first; divisions serve the ones
+preparing for competition and are not the headline.
+
+### D-059 — Strict or Merge, and Merge only fills an empty side
+**Decision:** with divisions on, the organizer picks **Strict** (a division dances only within
+itself) or **Merge**. Merge reaches one division down for a division that has **nobody on one
+side**; Newcomers, having nothing below, reach one up. An uneven division that *can* pair cycles
+its short side, exactly as the whole night does without divisions. Merge does not borrow to avoid
+repeats.
+
+**Reasoning:** the owner's option (a). Predictable beats clever, and repeats are already normal in
+this app. The organizer can always override a pairing by hand.
+
+### D-060 — A division that cannot pair is warned about before the start, and held to confirm
+**Decision:** in Strict, a division with someone on one side and nobody on the other (a lone
+Champions leader) is named on the start step in plain words — who will go without a partner, and
+the two ways out: switch to Merge, or pair them by hand. Starting anyway takes a press-and-hold,
+not a tap. In the list they sit at the bottom as *No partner in Champions*.
+
+**Reasoning:** the owner asked for the warning *before* the organizer commits, and for a hold so it
+cannot be tapped through without being read. Strict is the organizer's choice, so the app does not
+silently break it.
+
+### D-061 — A dancer without a division is treated as Novice, and the app says so
+**Decision:** with divisions on, a dancer with no division set is matched as **Novice**, and the
+roster and start step both say which dancers that applies to.
+
+**Reasoning:** the owner's call — Novice is where most unrated dancers would land anyway, and it is
+not worth blocking a session over. Saying so keeps it from being a quiet filter.
+
+### D-062 — Division order: Ascending by default, Descending or Mixed by choice
+**Decision:** with divisions on, Quick list runs **Ascending** (Newcomer first) unless the
+organizer picks **Descending** or **Mixed**. On the wheel, the first spin draws from everyone and
+the second wheel shows only partners who fit, labelled with the division ("Followers —
+Intermediate"). The order setting does not lock the wheel to one division at a time.
+
+**Reasoning:** the owner's defaults. On the wheel, locking to one division would mean every spin
+from the first goes to Newcomers until they run out, which works against the wheel. Drawing within
+a division is still honest randomness — as long as the screen says so, which it does.
+
+### D-063 — Practice nights are labelled for history; history itself is still v1.6
+**Decision:** a Quick list session is tagged *Practice*. When saved event history (v1.6, D-043) is
+built, practice nights save to it with that label.
+
+**Reasoning:** the owner wants practice nights remembered. History does not exist in code yet, so
+there is nothing to save to today; the label is carried now so nothing has to be migrated later.
+**Also noted:** only one roster is saved on a device until v1.1's multiple rosters land, so an
+All-Star running her own group shares that one list with anyone else on the device.
+
+### D-064 — Owner answers on 0.15.0: skip empty divisions, organizer handles lopsided groups, a way to leave
+**Decision:** four answers from the owner after trying 0.15.0 in the browser pane.
+1. **Merge skips empty divisions.** With no All-Stars present, a lone Champions dancer folds into
+   Advanced. Confirmed as intended; it should almost always be the case.
+2. **Back-to-back dances in a lopsided group are the organizer's call.** The app avoids them when
+   anyone else is as due and otherwise lets them happen. Tapping couples off out of order is the
+   organizer's tool for giving someone a break — it does not disturb "Next up," which the owner
+   singled out as working well. No change.
+3. **Someone left** — new. Takes a dancer off tonight's list, keeps them on the saved roster, and
+   rearranges everything still to dance without them. Danced couples, theirs included, stay.
+   Change remains for fixing it by hand.
+4. **The 10-couple ceiling applies to spotlight nights only.** The Quick list has no cap. intent.md
+   updated in both places it appears.
+
+**Also found:** the owner's phone was "stuck on 0.14.0". Nothing was wrong with it — 0.15.0 had not
+been pushed, and the live site only changes on a push to `main`.
 
 ## Known issues and in-flight notes
 
