@@ -1730,13 +1730,33 @@ organizer make moving a roster part of the first slice rather than a later one.
 - **Dance pools** — the owner's new idea (occasional dancers kept on file, brought in for a night,
   and asked about at the end) — are being talked through and may reshape point 2.
 
+### D-070 — Pools live inside each roster; scanning happens in the app
+**Decision:** the owner's dance pools become a second section of each roster — *Regulars* and
+*Pool* — rather than a separate list shared across groups. Rosters are shared by a QR code scanned
+with a camera preview inside the app. The full spec is in [PRD § Saved rosters](prd.md).
+
+**Reasoning — pools:** pools, the nightly check-in and the end-of-night question are one feature
+seen three ways: who is in by default, who can be pulled in, and where each person ends up. One
+mechanism is simpler to build and to explain. Per group was the owner's choice over one shared pool:
+sharing a roster then carries everything it needs, at the cost of someone in two groups being two
+entries.
+
+**Reasoning — in-app camera:** the owner's ask. A QR read by the phone's own camera opens a link in
+the browser, and an iPhone keeps the browser's storage apart from the installed app's, so the
+roster would land where the operator cannot see it. A camera preview inside the app needs one
+permission prompt and keeps everything on the device. Chrome on Android decodes QR codes natively;
+iPhone needs a small decoding library bundled with the app, so it still works offline.
+
+**Flagged:** a QR code has a size ceiling. A typical group fits easily; a very large roster may need
+to be compressed or split across codes. The build measures this rather than guessing.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
 disappears between checkpoints.
 
 ### Open — needs an answer from the owner
-- **Saved rosters — dance pools.** Roster answers are in D-069; how pools fit is still open.
+- ~~Saved rosters — dance pools~~ — settled in D-070; spec in PRD § Saved rosters. Building next.
 - **Re-share the guide on Drive.** The regenerated `organizer-guide.docx` is in the repo; any copy
   already on Google Drive is the 2026-10-05 version and has to be replaced by hand.
 

@@ -605,11 +605,8 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
     cannot sneak back in through a second deck.
 - **Three built-in decks ship**, all editable: **West Coast Swing starter**, **Sudden Death**
   (harder, for head-to-head), **All Skate** (silly, low-pressure, whole-floor).
-- **Saved Rosters / Data** — multiple named rosters, saved indefinitely with each dancer's role.
-  This is where the roster/session split defined in v1.0 above becomes real: loading a roster
-  copies its dancers into the session, and write-back is an explicit action.
-  Mid-session edits affect the live session; writing them back to the saved roster is the
-  operator's explicit choice, never automatic. A one-night guest shouldn't silently join the regulars.
+- **Saved rosters** — one per group, each with regulars and a pool, a check-in every night, and
+  sharing by QR code. Specified in full under *Saved rosters* below (D-069, D-070).
 - **Options screen** — the configurable layer on top of the always-on accessibility baseline:
   - **Color-blind palettes** that shift the bright default scheme into distinguishable ranges.
   - **Large touch targets.** When switched on, *every* control in the app is raised to a minimum
@@ -629,8 +626,58 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
 - Full title screen: **Start a Session · Create Decks · Saved Rosters / Data · Options**
   (Share/Receive Decks arrives in v1.4).
 
+### Saved rosters
+*Specified 2026-10-24 from the owner's answers (D-069, D-070). First slice of v1.1.*
+
+**What a roster is.** A named list for **one group** — "Wednesday social", "West Philly practice".
+Not one list of everyone the operator knows. A device holds as many as the operator likes.
+
+**Two sections in every roster.**
+- **Regulars** — the people who usually come.
+- **Pool** — people the group knows who come now and then. Kept on file so they never have to be
+  typed again, but not expected on a given night.
+- A dancer is in one section or the other, never both, and remembers their **role** and **division**.
+  The same person in two groups is two separate entries — one per roster, by design.
+
+**Check-in, every night.** Starting a session from a roster opens on who is here tonight:
+- **Regulars are in by default.** Set one aside for tonight if they are out.
+- **The pool is out by default.** Tap someone to bring them in for tonight.
+- **A brand-new guest** can be added for tonight too.
+- None of this changes the saved roster. It shapes tonight only.
+
+**At the end of the night, the app asks — and nothing moves until it is answered.**
+- A **pool dancer who came**: keep them as a regular, or back to the pool?
+- A **new guest**: save to regulars, save to the pool, or don't save?
+- Asked once per person, with a sensible default highlighted (back to the pool; don't save) so a
+  tired operator can tap through. Never automatic: a one-night guest does not silently join a group.
+
+**A roster remembers its group's settings.** Whatever How it runs was set to last time for that
+roster — wheel or Quick list, match by division, Strict or Merge, division order, who goes first,
+challenges on or off — is pre-filled next time, and can be changed at setup as always.
+
+**Birthdays are per night, and the app says so.** Marking a birthday is never saved to a roster.
+Where a birthday is set, and in How it works, the app states that it lasts for this session only.
+
+**Sharing a roster to another device — in-app QR.**
+- **Share Roster** on a roster shows a QR code holding the whole roster: regulars, pool, roles,
+  divisions and remembered settings.
+- **Receive a roster** on the other device asks for camera permission and opens a live camera
+  preview *inside the app* — never the phone's camera app, because on iPhone the browser and the
+  installed app keep separate storage and a link would land the roster in the wrong one.
+- Once scanned, the app shows exactly what it is about to add — the roster's name and every dancer
+  — and adds it only on confirmation. A roster with a name already on the device asks whether to
+  add it as a copy or replace the existing one.
+- **Fallback:** if the camera is refused or unavailable, the same roster can be passed as a
+  copy-and-paste code.
+- Everything stays device to device: no server, no account, works offline.
+
+**Carrying over the roster already on each device.** The single roster every device holds today
+becomes a named roster (all regulars) the first time the new version opens. Nothing an operator has
+entered is lost — including the second organizer's, which she starts entering at 1.0.0.
+
 ### Open questions — v1.1
-- Should a saved roster remember its **last-used deck and prompts on/off**, or is that per-session?
+- ~~Should a saved roster remember its **last-used deck and prompts on/off**, or is that
+  per-session?~~ **Answered (D-069):** it remembers the group's last-used settings.
 - When a deck is edited **mid-session**, do the edits affect the live pool immediately?
 
 ---
