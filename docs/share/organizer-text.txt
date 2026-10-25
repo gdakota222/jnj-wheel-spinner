@@ -1,4 +1,4 @@
-Hi! Here is how to get the JnJ Wheel Spinner and use it. It is a spinning wheel for Jack & Jill partner draws: spin for a leader, a follower, and a challenge for the couple. No accounts, no ads, works offline once installed.
+Hi! Here is how to get the JnJ Wheel Spinner and use it. It is a spinning wheel for Jack & Jill partner draws: spin for a leader, a follower, and a challenge for the couple. There is also a Quick list for practice nights. No accounts, no ads, works offline once installed.
 
 THE APP: https://gdakota222.github.io/jnj-wheel-spinner/
 
@@ -18,17 +18,20 @@ IPHONE / IPAD (must be Safari)
 
 After that it works with no signal. Your dancers and night are saved on that one device only.
 
-RUN A NIGHT
+SET UP A NIGHT
 1. Start a Session.
-2. How it runs: pick the Wheel (the show) or the Quick list (every pairing at once, for practice nights). Turn on Match by division if you want couples kept within a level. On the wheel, pick who is drawn first and whether couples get a challenge.
-3. Dancers: add each one as Leader, Follower or Switch (names need a last initial, like "Sarah M"). On the wheel, 5 couples is the sweet spot, 10 max. The Quick list has no limit.
-4. Check the summary and start.
-5. Tap the wheel to spin. Tap again to hurry it, double-tap to skip. Spin for the first dancer, the second, then the challenge.
-6. While they dance, the screen holds. Press and HOLD "Next couple" when they are done.
-7. At the end: Crown a Winner and/or AllSkate, or neither.
+2. How it runs: pick the Wheel (the show) or the Quick list (every pairing at once, for practice). Turn on Match by division if you want couples kept within a level. On the wheel, pick who is drawn first and whether couples get a challenge.
+3. Dancers: add each one as Leader, Follower or Switch (names need a last initial, like "Sarah M").
+4. Start: check the summary and go. On the wheel, 5 couples is the sweet spot, 10 max. The Quick list has no limit.
+
+ON THE WHEEL
+Tap the wheel to spin. Tap again to hurry it, double-tap to skip. Spin for the first dancer, the second, then the challenge. While they dance, the screen holds. Press and HOLD "Next couple" when they are done. At the end: Crown a Winner and/or AllSkate, or neither.
+
+ON THE QUICK LIST
+Tap a couple once they have danced. Reshuffle, Late arrival, Someone left and Change fix the list as the night changes.
 
 Handy: Undo (asks first), Tools (re-spin, redraw a challenge, add a late arrival), Lock (hold to unlock). Nobody sits out and no couple repeats. You can hand the device to someone else and it carries on where it was.
 
 Stuck? "How it works" on the title screen explains every feature. If the app looks old or will not open, connect to wifi and open it twice. On iPhone, no "Add to Home Screen" usually means you are not in Safari.
 
-Tell me what you think. It is early and feedback shapes it!
+(Written for version 1.0.0, shown on the title screen.) Tell me what you think. Feedback shapes what gets built next!

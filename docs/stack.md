@@ -27,6 +27,7 @@ clever — when the owner searches for an answer without Claude present, the ans
 | Tests | **Vitest**, domain logic only | See below. Plus one guard that the support QR codes match the handles. |
 | Lint | **oxlint** | Fast, zero-config; `npm run lint`. |
 | Build-time assets | **`qrcode`** (dev dependency only) | `npm run qr` draws the About page's QR codes into `src/supportQr.ts`, so nothing QR-related ships to the browser and they work offline. `npm run icons` does the same for the PWA icons (D-019). |
+| Share guide | **`docx`** (dev dependency only) | `npm run share` writes the organizer guide, Word and text, into `docs/share/`, stamped with the app version. |
 | Hosting | **GitHub Pages** | Free, git-native, static. Repo needed anyway. |
 
 ### Why SVG for the wheel, not canvas

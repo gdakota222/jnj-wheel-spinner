@@ -1,7 +1,7 @@
 {
   "name": "jnj-wheel-spinner",
   "private": true,
-  "version": "0.16.4",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "icons": "node scripts/generate-icons.mjs",
-    "qr": "node scripts/generate-support-qr.mjs"
+    "qr": "node scripts/generate-support-qr.mjs",
+    "share": "node scripts/generate-share-guide.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -20,6 +21,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
+    "docx": "^9.14.0",
     "oxlint": "^1.79.0",
     "qrcode": "^1.5.4",
     "typescript": "~6.0.2",

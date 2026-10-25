@@ -19,7 +19,7 @@ No accounts, no ads, no server: everything stays on the device.
 | [rehearsal.md](docs/rehearsal.md) | Device testing, the first real event, the handoff rehearsal |
 | [prompts.md](docs/prompts.md) | Every challenge, current and archived |
 | [costs-and-monetization.md](docs/costs-and-monetization.md) | What it costs to run, and the asset licensing rule |
-| [share/organizer-text.txt](docs/share/organizer-text.txt) | Install-and-run instructions to send another organizer |
+| [share/](docs/share/) | Install-and-run guide to send another organizer — Word for Drive, text for a message |
 
 ## Development
 
@@ -31,6 +31,7 @@ npm run dev       # local dev server (no service worker in dev, D-021)
 npx vitest run    # domain-logic tests
 npm run lint
 npm run build
+npm run share     # regenerate the organizer guide in docs/share/
 ```
 
 Every push to `main` deploys to GitHub Pages.

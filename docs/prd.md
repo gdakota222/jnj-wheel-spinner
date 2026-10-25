@@ -1,8 +1,8 @@
 # JnJ Wheel Spinner — Product Requirements
 
-**Status:** v1.0 is **built, deployed and in real use** (0.16.4). It has run a real event and passed
-a handoff rehearsal; declaring 1.0.0 is the owner's call. Parts of v1.2 and a practice mode shipped
-early. Later versions outlined.
+**Status:** **v1.0 is done** — declared 1.0.0 on 2026-10-24 (D-067), after a real event and a passed
+handoff rehearsal. Parts of v1.2 and a practice mode shipped early. **v1.1 is next, saved rosters
+first** (D-068). Later versions outlined.
 **Last updated:** 2026-10-24
 **Progress:** see [build-tracker.md](build-tracker.md) · **Live:** https://gdakota222.github.io/jnj-wheel-spinner/
 **Companion doc:** [intent.md](intent.md) — why this exists, design principles, permanent non-goals.
@@ -586,6 +586,9 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
 ---
 
 ## v1.1 — Self-sufficiency
+
+> **Next up (D-068), saved rosters first.** The roster design below predates real use and is being
+> re-talked before it is built — expect this section to change.
 
 **Goal:** run events without touching source code.
 

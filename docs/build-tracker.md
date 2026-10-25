@@ -1,7 +1,7 @@
 # Build Tracker — v1.0
 
-**Current version:** 0.16.4 — live
-**Current phase:** Handoff rehearsal passed. Working through its findings; 1.0.0 is the owner’s call
+**Current version:** 1.0.0 — live, declared 2026-10-24
+**Current phase:** v1.0 done. Next: v1.1, starting with saved rosters (in discussion). Polish on hold until more people use it
 **Last updated:** 2026-10-24
 **Companion docs:** [intent.md](intent.md) · [prd.md](prd.md) · [stack.md](stack.md) · [prompts.md](prompts.md)
 
@@ -29,9 +29,10 @@ so the history of *why* stays intact.
 | | |
 |---|---|
 | **Scope** | v1.0 — one complete session ([PRD § v1.0](prd.md)) |
-| **Versions shipped** | 0.1.0 → 0.16.4 — every rung of the ladder below except 1.0.0 |
-| **Blocked on** | Nothing. 1.0.0's bar was met in rehearsal Round 4; declaring it is the owner's call |
-| **Next up** | Owner's choice — see *Open — needs an answer from the owner* below |
+| **Versions shipped** | 0.1.0 → 1.0.0 — the whole ladder below |
+| **Blocked on** | Nothing |
+| **Next up** | v1.1 — saved rosters first ([PRD § v1.1](prd.md)); the design is being talked through before anything is built (D-068) |
+| **Second organizer** | Has 1.0.0 from 2026-10-24 to explore; first real use expected December 2026 |
 | **Live URL** | https://gdakota222.github.io/jnj-wheel-spinner/ |
 | **Repository** | https://github.com/gdakota222/jnj-wheel-spinner |
 | **First real event** | Ran 2026-08-26 — it worked; its findings were closed across 0.9.x–0.13.0 |
@@ -65,7 +66,7 @@ code drop — something that can be opened on the tablet and looked at.
 | **0.15.0** | Practice mode | Quick list, divisions (Quick list only), Strict/Merge, the unmatched warning held to confirm, How it works › Practice, a first-time tip | ✅ Shipped 2026-10-24 |
 | **0.16.0** | Divisions on the wheel | The second spin shows only partners in the same division, labelled as such; re-spin aims at the right pool | ✅ Shipped 2026-10-24 |
 | **0.16.1–0.16.4** | Support and setup polish | Ko-fi, Venmo and QR codes on About; the owner's avatar; setup asks How it runs first and scrolls itself to the next question | ✅ Shipped 2026-10-24 |
-| **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | 🟢 **Bar met** in rehearsal Round 4 — declaring it is the owner's call |
+| **1.0.0** | **Live** | Both event blockers closed and the app run by someone other than its author | ✅ **Declared 2026-10-24** — bar met in rehearsal Round 4; same code as 0.16.4 (D-067) |
 
 **Why 0.9.x exists and was not planned.** The ladder above was written before the app had ever
 been in a room. The first real event produced a backlog large enough that shipping 1.0.0 on top of
@@ -94,6 +95,18 @@ backlog, worked through in order of what actually broke the night.
 ## Build log
 
 Newest first. Every entry dated.
+
+### 2026-10-24 — 1.0.0: declared
+
+- **1.0.0 is declared.** The code is 0.16.4's; only the version number changed. See D-067.
+- **The organizer share guide is regenerated** for 1.0.0, Word and text both, from a script now kept in
+  the repo: `npm run share` (`scripts/generate-share-guide.mjs`, `docx` as a dev dependency only).
+  The script that made the first version lived in a chat's scratch folder and was lost, which is how
+  the guide went stale. It now covers the new setup order, the Quick list and divisions, and stamps
+  the version it describes on the first page, so an old copy on Drive says it is old.
+- **Handed to a second organizer** to explore now; she expects to run it for real in December.
+- **Next is v1.1, saved rosters first, and polish waits for more hands.** See D-068.
+- 163 tests pass; the build carries `1.0.0`.
 
 ### 2026-10-24 — Documentation audit
 
@@ -1654,22 +1667,51 @@ scrolling between every tap. With the next decision always at the top, setting u
 - **The panel is scrolled by hand, not with `scrollIntoView`,** which also scrolls overflow-hidden
   ancestors and would push the pinned step bar off the top (the same family of bug as D-046).
 
+### D-067 — 1.0.0 is declared on 0.16.4's code
+**Decision:** call the current app 1.0.0. No code changes with it.
+
+**Reasoning:** 1.0.0's bar was "both event blockers closed and the app run by someone other than its
+author". Both were met in rehearsal Round 4, in September. Everything shipped since — the help
+screen, practice mode, divisions, support links, setup polish — was additive, and nothing was
+waiting on a fix. Holding the number back had stopped meaning anything while the 0.x count kept
+climbing past the ladder it was written for. It also matters now for a practical reason: the app is
+going to a second organizer, and "1.0.0" on her title screen is a clean reference point for anything
+she reports.
+
+**Known and accepted at 1.0.0:** divisions on the wheel have not run in a room (see Testing gaps), and
+v1.0 is broader than the PRD's original scope — the winner, AllSkate and practice mode shipped early,
+each with its own decision.
+
+### D-068 — Next is v1.1, saved rosters first; polish waits for more hands
+**Decision:** the next build work is v1.1, beginning with saved rosters. UI polish pauses until
+people other than the owner have used 1.0.0.
+
+**Reasoning — v1.1:** the roadmap ranked self-sufficiency first after the first event, and then the
+work went elsewhere (v1.2's ending, practice mode) for good reasons. Real use now points straight back
+at it: the owner's events and the practice group share one roster on one device (D-063), and a
+second organizer is starting. Saved rosters are the piece with the clearest pain; deck authoring
+stays in v1.1 behind it.
+
+**Reasoning — polish:** most of the last day's versions were polish asked for by the person who knows
+the app best. The next useful signal is what someone *new* trips on, and the second organizer is
+about to provide it. Polish built before that is polish chosen without it.
+
+**Process:** the roster design is talked through in chat before the PRD's v1.1 section is rewritten
+or any code is written.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
 disappears between checkpoints.
 
 ### Open — needs an answer from the owner
-- **Declare 1.0.0?** The bar (both event blockers closed, run by someone other than its author) was
-  met in rehearsal Round 4 in September. Everything since has been additive. (open since 0.13.0)
-- **The organizer guide .docx is out of date.** `docs/share/organizer-text.txt` was updated in the
-  2026-10-24 audit (setup order, the Quick list, the 10-couple cap applying to spotlight nights only);
-  the Word version, and any copy already shared on Google Drive, still say the old thing. Regenerate
-  it, or retire it in favour of the text? (found 2026-10-24)
-- **Divisions on the wheel have not been run in a room.** 0.16.0 was proven by simulation and
-  checked in the browser pane; the practice group is the natural first real test. (found 2026-10-24)
+- **Saved rosters — the design questions.** Being talked through before v1.1 is specced (D-068).
+- **Re-share the guide on Drive.** The regenerated `organizer-guide.docx` is in the repo; any copy
+  already on Google Drive is the 2026-10-05 version and has to be replaced by hand.
 
 ### Closed
+- ~~Declare 1.0.0?~~ — declared 2026-10-24 (D-067).
+- ~~The organizer guide .docx is out of date~~ — regenerated for 1.0.0 by `npm run share`.
 - ~~Spin-order choice is not on the roster screen~~ — resolved in 0.9.5. Setup is staged now, and
   the choice sits on step 2, *How it runs*, exactly where the PRD's screen table always put it.
 - ~~Storage failure is silent~~ — resolved in 0.6.0 by D-031; a failed write raises a banner.
@@ -1687,6 +1729,10 @@ disappears between checkpoints.
   made it and what it does with your data. (found 2026-08-31)
 
 ### Testing gaps
+- **Divisions on the wheel have not been run in a room.** 0.16.0 was proven by 80 simulated nights
+  and played with by the owner, but never at a real event. Expected to wait: the owner rarely uses
+  divisions; they came from another organizer's need. The first real test is most likely hers.
+  (found 2026-10-24)
 - **Real touch interaction is verified on devices, not in the harness.** The rehearsal and a full
   real event both put fingers on real screens, which is the confidence that matters. What remains
   true is that the browser pane's click handling times out often enough that screens are usually
