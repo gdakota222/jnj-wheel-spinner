@@ -617,7 +617,8 @@ panel, last-dancer spin with a special treatment. v1.0 is fully specified and re
     button being the first such case — see D-025). Off by default, because the slimmer treatment
     is what makes secondary controls read as secondary; on by request, because hierarchy is worth
     less than being able to hit the thing.
-- **Add a dancer mid-session.** Requires confirmation, like removal. A switch added mid-session
+- ~~**Add a dancer mid-session.**~~ *Shipped early in 0.9.0, from Tools — the first real event asked
+  for it.* Requires confirmation, like removal. A switch added mid-session
   is assigned to whichever pool is short at that moment, and locked from then on.
 - **Announce a re-spin.** Per re-spin, the operator chooses whether the room is told
   ("Re-spinning — Marco is sitting out") or it happens silently. Announcing protects the draw's
