@@ -1699,13 +1699,44 @@ about to provide it. Polish built before that is polish chosen without it.
 **Process:** the roster design is talked through in chat before the PRD's v1.1 section is rewritten
 or any code is written.
 
+### D-069 — Saved rosters: the owner's answers
+**Decision:** the owner's answers on saved rosters, 2026-10-24, before the PRD's v1.1 section is
+rewritten.
+1. **One roster per group** — "Wednesday social", "West Philly practice". Not one list of everyone.
+2. **A check-in each night.** Before a session, set someone aside for tonight or add someone in for
+   tonight, without changing the saved list.
+3. **Guests are never saved automatically.** At the end of a night the app asks, for each person
+   added that night, whether to save them to that roster. Yes or no; nothing joins until saved.
+4. **Rosters move between devices by QR code.** *Share Roster* shows a code; the other device scans
+   it, shows exactly what it is about to add, and adds it only on confirmation.
+5. **A roster remembers each dancer's role and division, and the group's last-used settings** —
+   wheel or Quick list, divisions, and the rest of How it runs — all still changeable at setup.
+6. **Birthdays stay per night**, and the app should say so where the birthday is set: it lasts for
+   this session only and is not saved to the roster.
+
+**Reasoning:** the owner's call from running two kinds of group. Regulars vary week to week, so a
+check-in is cheaper than editing the list; a one-night guest should not silently become a regular
+(the PRD has said this since v1.0); and the phone-to-tablet gap (rehearsal F3) plus a second
+organizer make moving a roster part of the first slice rather than a later one.
+
+**Flagged, not yet decided:**
+- **Scanning needs a camera inside the app.** A QR that opens a link would land in the browser, and
+  on iPhone the browser and the home-screen app keep separate storage — the roster would arrive in
+  the wrong place. So the app needs its own scanner: Chrome on Android has one built in; iPhone
+  needs a small decoding library. A copy-paste code is the fallback for a device whose camera
+  cannot be used.
+- **The one roster already on each device must carry over** into the new model as a named roster —
+  including the second organizer's, which she starts entering now.
+- **Dance pools** — the owner's new idea (occasional dancers kept on file, brought in for a night,
+  and asked about at the end) — are being talked through and may reshape point 2.
+
 ## Known issues and in-flight notes
 
 Discovered during the build, deferred within v1.0, and tracked here so nothing quietly
 disappears between checkpoints.
 
 ### Open — needs an answer from the owner
-- **Saved rosters — the design questions.** Being talked through before v1.1 is specced (D-068).
+- **Saved rosters — dance pools.** Roster answers are in D-069; how pools fit is still open.
 - **Re-share the guide on Drive.** The regenerated `organizer-guide.docx` is in the repo; any copy
   already on Google Drive is the 2026-10-05 version and has to be replaced by hand.
 
